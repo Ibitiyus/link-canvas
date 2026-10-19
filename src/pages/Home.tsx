@@ -1,3 +1,4 @@
+import { useAuth } from "../auth/AuthContext";
 import { Link } from "react-router-dom";
 import {
   ArrowDown,
@@ -40,6 +41,7 @@ const features = [
   },
 ];
 export function Home() {
+  const { session } = useAuth();
   return (
     <div className="home-page">
       <a className="skip-link" href="#home-main">
@@ -62,6 +64,7 @@ export function Home() {
         >
           ОТКРЫТЬ РЕДАКТОР <ArrowUpRight size={17} />
         </Link>
+        <Link className="home-account" to="/dashboard">{session?"Мой аккаунт":"Войти"}</Link>
       </nav>
       <main id="home-main">
         <section className="hero">

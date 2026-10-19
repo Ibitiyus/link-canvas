@@ -1,3 +1,4 @@
+import { isCloudRef } from "../cloud/projectAssets";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { LoaderCircle, Upload, X } from "lucide-react";
 import { Field } from "./Fields";
@@ -26,7 +27,7 @@ export function ImageInput({
     },
     [],
   );
-  const embedded = value.startsWith("data:") || isAssetRef(value);
+  const embedded = value.startsWith("data:") || isAssetRef(value) || isCloudRef(value);
   const upload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -53,7 +54,7 @@ export function ImageInput({
         label={label}
         hint={
           embedded
-            ? "Файл сохранён в этом браузере. Экспорт JSON включает файл."
+            ? "Файл выбран. Экспорт JSON включает файл; статус облака показан отдельно."
             : hint
         }
       >

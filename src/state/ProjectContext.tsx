@@ -11,13 +11,18 @@ import {
 import { clampDecoration } from "../model/decoration";
 import { addBlock, demoProject } from "../model/defaults";
 import { arrange, editBlock, firstFree } from "../model/grid";
-import { readProject, writeProject } from "../model/storage";
+import { parseProject, STORAGE_KEY } from "../model/storage";
 import type { Block, BlockType, PageSettings, Project } from "../model/types";
 import { historyReducer, type History } from "./history";
 
-function load() {
+function load(storageKey: string, fallbackProject?: Project) {
   try {
-    return { project: readProject(localStorage) ?? demoProject(), error: "" };
+    return {
+      project: localStorage.getItem(storageKey)
+        ? parseProject(localStorage.getItem(storageKey)!)
+        : (fallbackProject ?? demoProject()),
+      error: "",
+    };
   } catch (error) {
     return {
       project: demoProject(),
@@ -27,6 +32,7 @@ function load() {
 }
 interface ProjectStore {
   project: Project;
+  replace: (project: Project) => void;
   selectedId: string | null;
   select: (id: string | null) => void;
   change: (update: Project | ((project: Project) => Project)) => void;
@@ -46,8 +52,16 @@ interface ProjectStore {
   notify: (message: string) => void;
 }
 const Context = createContext<ProjectStore | null>(null);
-export function ProjectProvider({ children }: { children: ReactNode }) {
-  const [initial] = useState(load);
+export function ProjectProvider({
+  children,
+  storageKey = STORAGE_KEY,
+  fallbackProject,
+}: {
+  children: ReactNode;
+  storageKey?: string;
+  fallbackProject?: Project;
+}) {
+  const [initial] = useState(() => load(storageKey, fallbackProject));
   const [history, dispatch] = useReducer(historyReducer, {
     past: [],
     present: initial.project,
@@ -60,6 +74,11 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   );
   const [edited, setEdited] = useState(false);
   const project = history.present;
+  const replace = useCallback((project: Project) => {
+    setEdited(true);
+    dispatch({ type: "replace", project });
+    select(null);
+  }, []);
   const change = useCallback(
     (update: Project | ((project: Project) => Project)) => {
       setEdited(true);
@@ -69,7 +88,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   );
   const saveNow = useCallback(() => {
     try {
-      writeProject(localStorage, project);
+      localStorage.setItem(storageKey, JSON.stringify(project));
       setStatus("saved");
       return true;
     } catch {
@@ -79,7 +98,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       );
       return false;
     }
-  }, [project]);
+  }, [project, storageKey]);
   useEffect(() => {
     if (initial.error && !edited) return;
     setStatus("saving");
@@ -87,7 +106,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     // Flush this exact version before the next change, navigation or unmount.
     const flush = () => {
       try {
-        writeProject(localStorage, project);
+        localStorage.setItem(storageKey, JSON.stringify(project));
       } catch {
         /* saveNow reports errors */
       }
@@ -98,7 +117,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("pagehide", flush);
       flush();
     };
-  }, [project, saveNow, initial.error, edited]);
+  }, [project, saveNow, initial.error, edited, storageKey]);
   const add = (type: BlockType) => {
     if (project.blocks.length >= 200) {
       notify("Максимум 200 блоков на странице.");
@@ -167,6 +186,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     <Context.Provider
       value={{
         project,
+        replace,
         selectedId: project.blocks.some((b) => b.id === selectedId)
           ? selectedId
           : null,

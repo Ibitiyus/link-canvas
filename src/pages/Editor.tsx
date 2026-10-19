@@ -1,3 +1,4 @@
+import { CloudBar } from "../components/CloudBar";
 import { useEffect, useState } from "react";
 import {
   CircleHelp,
@@ -63,6 +64,7 @@ export function Editor() {
   return (
     <div className="editor-shell" data-mobile-panel={mobilePanel}>
       <Toolbar />
+      <CloudBar />
       {message && (
         <div role="alert" className="notification">
           <CircleHelp size={16} />

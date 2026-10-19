@@ -25,7 +25,7 @@ export function Preview() {
         <div className="preview-notice">
           <span className="preview-mode">[ ПРЕДПРОСМОТР ]</span>
           <BackLink />
-          <span>Локальный предпросмотр · доступен только в этом браузере</span>
+          <span>Предпросмотр черновика · для публичного доступа опубликуйте страницу</span>
           <button
             aria-label="Скрыть подсказку"
             title="Скрыть подсказку"

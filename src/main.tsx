@@ -10,6 +10,7 @@ import "@fontsource/ibm-plex-mono/latin-500.css";
 import "@fontsource/ibm-plex-mono/cyrillic-400.css";
 import "@fontsource/ibm-plex-mono/cyrillic-500.css";
 import "./style.css";
+import "./styles/accounts.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AppErrorBoundary>

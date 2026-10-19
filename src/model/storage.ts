@@ -1,3 +1,5 @@
+import { isCloudRef } from "../cloud/projectAssets";
+import { safeUrl } from "./media";
 import { dataUrlMime, MAX_CUSTOM_FONTS, parseImageSource } from "./assets";
 import { isAssetRef } from "./fileStore";
 import { validFontChoice } from "./fonts";
@@ -77,7 +79,7 @@ export function parseProject(raw: string): Project {
       throw new Error("Некорректный или повторяющийся идентификатор шрифта.");
     if (
       typeof font.dataUrl !== "string" ||
-      (!isAssetRef(font.dataUrl) && !dataUrlMime(font.dataUrl, "font"))
+      (!isAssetRef(font.dataUrl) && !isCloudRef(font.dataUrl) && !safeUrl(font.dataUrl) && !dataUrlMime(font.dataUrl, "font"))
     )
       throw new Error("Некорректный файл шрифта в проекте.");
     fontIds.add(id);
