@@ -72,8 +72,8 @@
 .hero h1 {
   position: relative;
   z-index: 1;
-  font: 400 clamp(60px, 9.05vw, 139px)/1.02 var(--display-font);
-  letter-spacing: -0.062em;
+  font: 900 clamp(60px, 9.05vw, 139px)/1.02 var(--display-font);
+  letter-spacing: -0.025em;
 }
 .rules-word {
   color: var(--red);
@@ -202,7 +202,7 @@
   color: var(--ink);
   border-block: 1px solid var(--red);
   overflow: hidden;
-  font: 400 clamp(17px, 2vw, 27px)/1.3 var(--display-font);
+  font: 900 clamp(17px, 2vw, 27px)/1.3 var(--display-font);
   letter-spacing: -0.8px;
 }
 .manifesto-strip > span {
@@ -228,7 +228,7 @@
   font-size: 9px;
 }
 .product-intro h2 {
-  font: 400 clamp(38px, 4.5vw, 64px)/1.05 var(--display-font);
+  font: 900 clamp(38px, 4.5vw, 64px)/1.05 var(--display-font);
   letter-spacing: -0.055em;
   margin: 30px 0 24px;
 }
@@ -252,7 +252,7 @@
   border-bottom: var(--line);
 }
 .product-steps > div > span {
-  font: 400 37px/1 var(--display-font);
+  font: 900 37px/1 var(--display-font);
   letter-spacing: -3px;
   color: transparent;
   -webkit-text-stroke: 1px var(--border-strong);
@@ -378,7 +378,7 @@
   margin-bottom: 45px;
 }
 .section-header h2 {
-  font: 400 clamp(28px, 3.7vw, 50px)/1.12 var(--display-font);
+  font: 900 clamp(28px, 3.7vw, 50px)/1.12 var(--display-font);
   letter-spacing: -0.05em;
 }
 .section-header h2 > span {
@@ -408,7 +408,7 @@
   gap: 10px;
 }
 .feature-top > span:first-child {
-  font: 400 33px/1 var(--display-font);
+  font: 900 33px/1 var(--display-font);
   letter-spacing: -2px;
   color: var(--red);
 }
@@ -425,7 +425,7 @@
   position: relative;
 }
 .feature h3 {
-  font: 400 25px/1.12 var(--display-font);
+  font: 900 25px/1.12 var(--display-font);
   letter-spacing: -0.9px;
   white-space: pre-line;
   margin-bottom: 15px;
@@ -526,7 +526,7 @@
   justify-content: center;
 }
 .media-art i {
-  font: 400 27px var(--display-font);
+  font: 900 27px var(--display-font);
   color: var(--ink);
   background: var(--paper);
   padding: 15px 14px;
@@ -584,8 +584,8 @@
   padding-block: 40px;
 }
 .cta-content h2 {
-  font: 400 clamp(35px, 6.2vw, 87px)/1.02 var(--display-font);
-  letter-spacing: -0.065em;
+  font: 900 clamp(35px, 6.2vw, 87px)/1.02 var(--display-font);
+  letter-spacing: -0.025em;
 }
 .cta-content h2 > span {
   color: var(--paper);
@@ -922,7 +922,7 @@
   .hero h1 {
     font-size: 11vw;
     line-height: 1.08;
-    letter-spacing: -0.07em;
+    letter-spacing: -0.025em;
   }
   .hero-heading {
     margin-bottom: 34px;

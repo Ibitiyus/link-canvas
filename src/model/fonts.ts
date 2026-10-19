@@ -1,6 +1,6 @@
 import type { CustomFont } from "./types";
 export const BUILTIN_FONTS = {
-  system: { label: "Системный Sans", family: "system-ui, sans-serif" },
+  system: { label: "Системный без засечек", family: "system-ui, sans-serif" },
   arial: { label: "Arial", family: "Arial, sans-serif" },
   verdana: { label: "Verdana", family: "Verdana, sans-serif" },
   georgia: { label: "Georgia", family: "Georgia, serif" },

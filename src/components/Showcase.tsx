@@ -10,7 +10,7 @@ function specimen(): Project {
     ...emptyProject(),
     page: {
       ...emptyProject().page,
-      title: "OUT OF THE FEED.",
+      title: "ВНЕ ЛЕНТЫ.",
       maxWidth: 700,
       gap: 10,
       background: "#17171a",
@@ -21,10 +21,10 @@ function specimen(): Project {
         ...newBlock("text"),
         id: "spec-text",
         name: "Манифест",
-        content: "OFFLINE\nMIND.\nONLINE\nWORLD.",
+        content: "МЫСЛИ\nБЕЗ СЕТИ.\nМИР\nВ СЕТИ.",
         colSpan: 2,
         rowSpan: 3,
-        fontSize: 35,
+        fontSize: 25,
         bold: true,
         background: "#f2efeb",
         color: "#0d0d0f",
@@ -44,7 +44,7 @@ function specimen(): Project {
         ...newBlock("link"),
         id: "spec-link-1",
         name: "Instagram",
-        content: "INSTAGRAM",
+        content: "Instagram",
         url: "https://www.instagram.com",
         col: 0,
         row: 3,
@@ -57,7 +57,7 @@ function specimen(): Project {
         ...newBlock("link"),
         id: "spec-link-2",
         name: "GitHub",
-        content: "GITHUB",
+        content: "GitHub",
         url: "https://github.com",
         col: 1,
         row: 3,
@@ -91,7 +91,7 @@ function specimen(): Project {
         ...newBlock("text"),
         id: "spec-note",
         name: "Заметка",
-        content: "A LITTLE CHAOS.\nA LOT OF YOU.\n\n[ THIS SPACE IS MINE ]",
+        content: "НЕМНОГО ХАОСА.\nМНОГО ВАС.\n\n[ ЭТО МОЁ МЕСТО ]",
         col: 2,
         row: 4,
         colSpan: 2,
@@ -151,9 +151,9 @@ export function Showcase() {
     <div className="specimen" data-testid="showcase">
       <div className="specimen-top">
         <span className="tiny-dot" />
-        <span>PLAYGROUND_01</span>
+        <span>ПЕСОЧНИЦА / 01</span>
         <span className="specimen-mode">
-          {editing ? "EDIT_MODE" : "VIEW_MODE"}
+          {editing ? "РЕДАКТИРОВАНИЕ" : "ПРОСМОТР"}
         </span>
         <button onClick={() => setEditing(!editing)} aria-pressed={!editing}>
           {editing ? <Eye size={14} /> : <Grip size={14} />}

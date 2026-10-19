@@ -130,7 +130,7 @@ test("inspector edits, page settings and reload preserve every property", async 
   await page.getByLabel("Цвет текста", { exact: true }).fill("#fedcba");
   await page.getByLabel("Скругление", { exact: true }).fill("31");
   await page.getByLabel("Прозрачность, %", { exact: true }).fill("75");
-  await page.getByLabel("Рамка, px", { exact: true }).fill("2");
+  await page.getByLabel("Рамка, пкс", { exact: true }).fill("2");
   await page.getByRole("button", { name: "Справа", exact: true }).click();
   await page.getByRole("button", { name: "Страница", exact: true }).click();
   await page.getByLabel("Колонки", { exact: true }).selectOption("3");
@@ -171,7 +171,7 @@ test("layers duplicate/delete and reorder free decorations; drag changes coordin
     .getByRole("button", { name: "Дублировать блок", exact: true })
     .click();
   await page.getByLabel("Название блока", { exact: true }).fill("Смайл");
-  await page.getByLabel("Emoji или символ", { exact: true }).fill("🙂");
+  await page.getByLabel("Эмодзи или символ", { exact: true }).fill("🙂");
   const original = await saved(page);
   await page.getByRole("button", { name: /Слои/ }).click();
   await page.getByRole("button", { name: "Ниже: Смайл", exact: true }).click();
@@ -204,7 +204,7 @@ test("JSON export/import round-trip and invalid files show errors", async ({
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Экспорт JSON", exact: true }).click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("link-canvas.json");
+  expect(download.suggestedFilename()).toBe("zin.json");
   const stream = await download.createReadStream();
   const chunks = [];
   for await (const chunk of stream!) chunks.push(chunk);
@@ -267,20 +267,20 @@ test("media URLs render images/GIF, safe YouTube embed, direct video and real li
   await reset(page);
   await add(page, "Изображение");
   await page
-    .getByLabel("URL изображения", { exact: true })
+    .getByLabel("Ссылка на изображение", { exact: true })
     .fill("https://media.example.test/image.gif");
   await add(page, "GIF");
   await page
-    .getByLabel("URL GIF", { exact: true })
+    .getByLabel("Ссылка на GIF", { exact: true })
     .fill("https://media.example.test/animated.gif");
   await add(page, "Видео");
   await page
-    .getByLabel("URL видео", { exact: true })
+    .getByLabel("Ссылка на видео", { exact: true })
     .fill("https://youtu.be/dQw4w9WgXcQ");
   await add(page, "Видео");
   await page.getByLabel("Название блока", { exact: true }).fill("Файл");
   await page
-    .getByLabel("URL видео", { exact: true })
+    .getByLabel("Ссылка на видео", { exact: true })
     .fill("https://media.example.test/clip.webm");
   await expect(page.locator("video")).toHaveAttribute(
     "src",
@@ -292,20 +292,20 @@ test("media URLs render images/GIF, safe YouTube embed, direct video and real li
     )
     .toBeGreaterThanOrEqual(1);
   await page
-    .getByLabel("URL видео", { exact: true })
+    .getByLabel("Ссылка на видео", { exact: true })
     .fill("https://example.com/unsupported");
   await expect(
     page.getByText("Эта ссылка на видео не поддерживается."),
   ).toBeVisible();
   await page
-    .getByLabel("URL видео", { exact: true })
+    .getByLabel("Ссылка на видео", { exact: true })
     .fill("https://media.example.test/clip.webm");
   await add(page, "Ссылка");
   await page
     .getByLabel("Текст кнопки", { exact: true })
     .fill("Открыть назначение");
   await page
-    .getByLabel("URL ссылки", { exact: true })
+    .getByLabel("Ссылка для перехода", { exact: true })
     .fill("https://example.com/destination");
   await page.getByRole("button", { name: "Предпросмотр", exact: true }).click();
   const images = page.locator(".block-content img");

@@ -18,10 +18,7 @@ export class AppErrorBoundary extends Component<
         });
         return;
       }
-      downloadBackup(
-        await exportProject(JSON.parse(raw)),
-        "link-canvas-recovery.json",
-      );
+      downloadBackup(await exportProject(JSON.parse(raw)), "zin-recovery.json");
     } catch {
       this.setState({ message: "Не удалось прочитать сохранение браузера." });
     }
@@ -31,7 +28,7 @@ export class AppErrorBoundary extends Component<
     return (
       <div className="error-page">
         <main>
-          <span className="error-label">[ APPLICATION_ERROR ]</span>
+          <span className="error-label">[ ОШИБКА ПРИЛОЖЕНИЯ ]</span>
           <h1>Не удалось открыть приложение</h1>
           <p>
             Сохранённая страница не удалена.

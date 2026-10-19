@@ -67,7 +67,7 @@ describe("embedded assets", () => {
           ],
         }),
       ),
-    ).toThrow("ID");
+    ).toThrow("идентификатор");
   });
 });
 

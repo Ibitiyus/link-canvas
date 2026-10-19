@@ -11,6 +11,7 @@ import { Toolbar } from "../components/Toolbar";
 import { Library } from "../components/Library";
 import { Inspector } from "../components/Inspector";
 import { Canvas } from "../components/Canvas";
+const blockForms = new Intl.PluralRules("ru");
 export function Editor() {
   const [mobilePanel, setMobilePanel] = useState<
     "library" | "canvas" | "inspector"
@@ -27,6 +28,9 @@ export function Editor() {
     message,
     notify,
   } = useProject();
+  const blockForm = blockForms.select(project.blocks.length);
+  const blockWord =
+    blockForm === "one" ? "блок" : blockForm === "few" ? "блока" : "блоков";
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
@@ -109,15 +113,16 @@ export function Editor() {
         <main className="workspace" id="workspace-panel">
           <div className="workspace-heading">
             <div>
-              <span className="eyebrow">02 / YOUR PERSONAL INTERNET</span>
+              <span className="eyebrow">02 / ВАШЕ МЕСТО В ИНТЕРНЕТЕ</span>
               <h1>
                 {project.page.title || "Без названия"}
-                <span className="draft-badge">LOCAL DRAFT</span>
+                <span className="draft-badge">ЛОКАЛЬНЫЙ ЧЕРНОВИК</span>
               </h1>
             </div>
             <span className="grid-label">
               <Grid2X2 size={14} />
-              {project.page.columns} колонки
+              {project.page.columns}{" "}
+              {project.page.columns === 5 ? "колонок" : "колонки"}
             </span>
           </div>
           <div className="canvas-scroll">
@@ -146,8 +151,8 @@ export function Editor() {
           </div>
           <div className="workspace-footer">
             <span>
-              <span className="tiny-dot" /> SYSTEM_READY /{" "}
-              {project.blocks.length} блоков
+              <span className="tiny-dot" /> ВСЁ ГОТОВО / {project.blocks.length}{" "}
+              блоков
             </span>
             <span>Ctrl/⌘ Z — отменить · Esc — снять выбор</span>
           </div>

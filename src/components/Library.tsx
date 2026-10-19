@@ -32,7 +32,7 @@ export const BLOCK_ICONS = {
 const DESCRIPTIONS: Record<BlockType, string> = {
   link: "Кнопка с переходом",
   text: "Слова и заголовки",
-  image: "Картинка по ссылке",
+  image: "Файл или ссылка",
   gif: "Немного движения",
   video: "YouTube или файл",
   audio: "Свой звук и плеер",
@@ -40,9 +40,9 @@ const DESCRIPTIONS: Record<BlockType, string> = {
   decoration: "Поверх вашей сетки",
 };
 const GROUPS: { code: string; title: string; types: BlockType[] }[] = [
-  { code: "A", title: "BLOCKS", types: ["link", "text", "qrcode"] },
-  { code: "B", title: "MEDIA", types: ["image", "gif", "video", "audio"] },
-  { code: "C", title: "DECOR", types: ["decoration"] },
+  { code: "А", title: "БЛОКИ", types: ["link", "text", "qrcode"] },
+  { code: "Б", title: "МЕДИА", types: ["image", "gif", "video", "audio"] },
+  { code: "В", title: "ДЕКОР", types: ["decoration"] },
 ];
 export function Library({ onAdd }: { onAdd?: () => void }) {
   const [tab, setTab] = useState<"blocks" | "layers">("blocks");
@@ -64,7 +64,7 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
     >
       <PanelHeader
         index="01"
-        title="THE TOOLBOX"
+        title="БИБЛИОТЕКА БЛОКОВ"
         subtitle="ДОБАВЬТЕ НЕМНОГО СЕБЯ"
       />
       <div className="panel-tabs">
@@ -75,7 +75,7 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
           onClick={() => setTab("blocks")}
         >
           <Plus size={14} />
-          BLOCKS
+          БЛОКИ
         </button>
         <button
           aria-label={`Слои ${project.blocks.length}`}
@@ -84,7 +84,7 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
           onClick={() => setTab("layers")}
         >
           <Layers size={14} />
-          LAYERS <small>{String(project.blocks.length).padStart(2, "0")}</small>
+          СЛОИ <small>{String(project.blocks.length).padStart(2, "0")}</small>
         </button>
       </div>
       {tab === "blocks" ? (
@@ -128,7 +128,7 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
           <div className="library-tip">
             <MousePointer2 size={19} />
             <div>
-              <span>DRAG_TO_PLACE</span>
+              <span>ПЕРЕТАЩИТЕ НА МЕСТО</span>
               <p>
                 Тяните блок за ручку ⠿.
                 <br />
@@ -142,7 +142,7 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
       ) : (
         <div className="layers-list">
           <div className="layer-count">
-            <span>STACK_ORDER</span>
+            <span>ПОРЯДОК СЛОЁВ</span>
             <b>{project.blocks.length} ЭЛ.</b>
           </div>
           <p className="muted caption">
@@ -152,7 +152,7 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
           {!layers.length && (
             <p className="empty-note">
               [ ПУСТО ]<br />
-              Добавьте первый блок во вкладке BLOCKS.
+              Добавьте первый блок во вкладке «Блоки».
             </p>
           )}
           {layers.map((block, i) => {
@@ -214,7 +214,7 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
       )}
       <div className="library-bottom">
         <span className="tiny-dot" />
-        LOCAL_FIRST. ALWAYS YOURS.
+        ХРАНИТСЯ У ВАС. ВСЕГДА ВАШЕ.
       </div>
     </aside>
   );

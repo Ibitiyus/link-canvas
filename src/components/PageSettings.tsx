@@ -7,7 +7,7 @@ export function PageSettings() {
   return (
     <div className="inspector-fields">
       <div className="page-settings-intro">
-        <span>MAKE IT YOURS.</span>
+        <span>СДЕЛАЙТЕ ПО-СВОЕМУ.</span>
         <p>
           Тема интерфейса — наша.
           <br />
@@ -22,7 +22,7 @@ export function PageSettings() {
         />
       </Field>
       <h3>
-        <span>01 /</span> APPEARANCE <small>Стиль страницы</small>
+        <span>01 /</span> ОФОРМЛЕНИЕ
       </h3>
       <div className="theme-presets" aria-label="Варианты оформления">
         <button
@@ -85,13 +85,13 @@ export function PageSettings() {
             updatePage({ font: event.target.value as typeof page.font })
           }
         >
-          <option value="system">Современный · Sans</option>
-          <option value="serif">Классический · Serif</option>
-          <option value="mono">Моноширинный · Mono</option>
+          <option value="system">Современный · без засечек</option>
+          <option value="serif">Классический · с засечками</option>
+          <option value="mono">Моноширинный</option>
         </select>
       </Field>
       <h3>
-        <span>02 /</span> GRID_SYSTEM <small>Полотно</small>
+        <span>02 /</span> СЕТКА
       </h3>
       <Field label="Колонки">
         <select

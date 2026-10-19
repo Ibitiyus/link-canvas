@@ -26,11 +26,7 @@ function openDatabase(): Promise<IDBDatabase> {
       };
       request.onerror = () => reject(request.error);
       request.onblocked = () =>
-        reject(
-          new Error(
-            "Закройте другие вкладки Link Canvas и повторите загрузку.",
-          ),
-        );
+        reject(new Error("Закройте другие вкладки ZIN и повторите загрузку."));
     }).catch((error) => {
       database = undefined;
       throw error;

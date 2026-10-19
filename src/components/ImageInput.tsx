@@ -9,7 +9,7 @@ export function ImageInput({
   label,
   value,
   onChange,
-  hint = "URL или файл PNG, JPEG, WebP, GIF",
+  hint = "Ссылка или файл PNG, JPEG, WebP, GIF",
 }: {
   label: string;
   value: string;
@@ -102,7 +102,7 @@ export function ImageInput({
       </div>
       {value && !safeImageSource(value) && (
         <p className="field-error">
-          Нужен корректный URL или поддерживаемый файл изображения.
+          Нужна корректная ссылка или поддерживаемый файл изображения.
         </p>
       )}
     </div>

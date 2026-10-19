@@ -32,8 +32,8 @@ export function RemoteImage({
               : failed
                 ? "Не удалось загрузить изображение"
                 : url
-                  ? "Нужен корректный HTTP(S) URL"
-                  : "Добавьте URL изображения"}
+                  ? "Введите корректную ссылку"
+                  : "Добавьте изображение или ссылку"}
         </span>
       </div>
     );
@@ -66,7 +66,7 @@ function Video({ block }: { block: Block }) {
                 ? "Видео недоступно"
                 : block.url
                   ? "Нужна ссылка YouTube или файл MP4, WebM, OGV"
-                  : "Добавьте URL видео"}
+                  : "Добавьте видео или ссылку"}
         </span>
       </div>
     );
@@ -169,7 +169,7 @@ export function BlockContent({
       ) : (
         <div className="link-content" style={alignment}>
           {inner}
-          {!url && <small>Некорректный URL</small>}
+          {!url && <small>Некорректная ссылка</small>}
         </div>
       );
   }

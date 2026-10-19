@@ -64,6 +64,6 @@ test("a render failure shows recovery actions instead of a black page", async ({
     .getByRole("button", { name: "Сохранить резервную копию", exact: true })
     .click();
   const download = await downloading;
-  expect(download.suggestedFilename()).toBe("link-canvas-recovery.json");
+  expect(download.suggestedFilename()).toBe("zin-recovery.json");
   expect(await project(page)).toEqual(saved);
 });

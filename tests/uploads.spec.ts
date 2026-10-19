@@ -123,13 +123,13 @@ test("device images persist in image/GIF/link/decor/video cover and page backgro
     await add(page, type);
     if (type === "Видео")
       await page
-        .getByLabel("URL видео", { exact: true })
+        .getByLabel("Ссылка на видео", { exact: true })
         .fill(new URL("/demo/transmission.webm", page.url()).href);
     const label =
       type === "Изображение"
-        ? "URL изображения"
+        ? "Ссылка на изображение"
         : type === "GIF"
-          ? "URL GIF"
+          ? "Ссылка на GIF"
           : type === "Видео"
             ? "Обложка видео (необязательно)"
             : "Изображение (необязательно)";
@@ -206,7 +206,7 @@ test("original raster pictures retain resolution while unsupported image/font fi
     return canvas.toDataURL("image/png").split(",")[1];
   });
   await page
-    .getByLabel("Файл: URL изображения", { exact: true })
+    .getByLabel("Файл: Ссылка на изображение", { exact: true })
     .setInputFiles({
       name: "photo.png",
       mimeType: "image/png",
@@ -227,7 +227,7 @@ test("original raster pictures retain resolution while unsupported image/font fi
     .toBe(2200);
   const saved = await project(page);
   await page
-    .getByLabel("Файл: URL изображения", { exact: true })
+    .getByLabel("Файл: Ссылка на изображение", { exact: true })
     .setInputFiles({
       name: "fake.png",
       mimeType: "image/png",

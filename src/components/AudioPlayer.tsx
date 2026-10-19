@@ -74,7 +74,7 @@ export function AudioPlayer({ block }: { block: Block }) {
           )}
         </div>
         <div className="audio-track-info">
-          <small>LINK CANVAS / AUDIO</small>
+          <small>ZIN / МУЗЫКА</small>
           <strong>{block.content || "Мой трек"}</strong>
           <span>
             {error

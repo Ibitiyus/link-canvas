@@ -131,7 +131,7 @@ export async function importProject(raw: string): Promise<Project> {
     })),
   };
 }
-export function downloadBackup(blob: Blob, name = "link-canvas.json") {
+export function downloadBackup(blob: Blob, name = "zin.json") {
   const url = URL.createObjectURL(blob),
     anchor = document.createElement("a");
   anchor.href = url;

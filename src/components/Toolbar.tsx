@@ -83,7 +83,7 @@ export function Toolbar() {
     <header className="editor-toolbar">
       <Brand />
       <span className="toolbar-edition" aria-hidden="true">
-        EDITOR_01
+        РЕДАКТОР / 01
       </span>
       <span className="toolbar-divider" />
       <span className="project-name" title={project.page.title}>

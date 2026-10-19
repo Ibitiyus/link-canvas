@@ -7,10 +7,10 @@ export function NotFound() {
     <div className="error-page">
       <header>
         <Brand />
-        <span className="eyebrow">CONNECTION_LOST / 404</span>
+        <span className="eyebrow">СТРАНИЦА НЕ НАЙДЕНА / 404</span>
       </header>
       <main>
-        <span className="error-label">[ THIS LINK WENT ROGUE ]</span>
+        <span className="error-label">[ ССЫЛКА ВЕДЁТ В НИКУДА ]</span>
         <div className="error-number" aria-hidden="true">
           4
           <span>
@@ -18,7 +18,7 @@ export function NotFound() {
           </span>
           4
         </div>
-        <h1>YOU WENT OFF-GRID.</h1>
+        <h1>ВЫ ВЫШЛИ ЗА РАМКИ.</h1>
         <p>
           Кажется, такой страницы нет.
           <br />
@@ -35,8 +35,8 @@ export function NotFound() {
         </div>
       </main>
       <footer>
-        <span>ERROR_404 / СТРАНИЦА НЕ НАЙДЕНА</span>
-        <span>STAY CURIOUS. STAY STRANGE.</span>
+        <span>ОШИБКА 404 / СТРАНИЦА НЕ НАЙДЕНА</span>
+        <span>ИЩИТЕ НОВОЕ. ОСТАВАЙТЕСЬ СОБОЙ.</span>
       </footer>
     </div>
   );

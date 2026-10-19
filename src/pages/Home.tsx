@@ -12,30 +12,30 @@ import { Showcase } from "../components/Showcase";
 const features = [
   {
     number: "01",
-    title: "GRID BASED\nEDITOR",
+    title: "РЕДАКТОР\nНА СЕТКЕ",
     text: "Собирайте страницу из блоков. Перемещайте, меняйте размеры — сетка найдёт каждому место.",
-    tag: "ORDER IN THE CHAOS",
+    tag: "ПОРЯДОК В ХАОСЕ",
     graphic: "grid",
   },
   {
     number: "02",
-    title: "FREE\nPOSITIONING",
+    title: "СВОБОДНОЕ\nРАЗМЕЩЕНИЕ",
     text: "Выходите за рамки ячеек. Добавляйте декор, вращайте элементы и управляйте слоями.",
-    tag: "BREAK THE GRID",
+    tag: "ЗА РАМКАМИ СЕТКИ",
     graphic: "free",
   },
   {
     number: "03",
-    title: "YOUR STYLE.\nYOUR CHOICE.",
+    title: "ВАШ СТИЛЬ.\nВАШ ВЫБОР.",
     text: "Ваши цвета, шрифты, фоны и формы. От чистого минимализма до цифрового коллажа.",
-    tag: "MAKE IT PERSONAL",
+    tag: "ДОБАВЬТЕ СЕБЯ",
     graphic: "style",
   },
   {
     number: "04",
-    title: "ALL YOUR\nMEDIA.",
+    title: "ВСЕ ВАШИ\nМЕДИА.",
     text: "Ссылки, изображения, GIF, текст, видео и музыка. Всё, из чего складывается ваш интернет.",
-    tag: "MIX. MATCH. REPEAT.",
+    tag: "СОЧЕТАЙТЕ. ПРОБУЙТЕ.",
     graphic: "media",
   },
 ];
@@ -48,9 +48,9 @@ export function Home() {
       <nav className="home-nav" aria-label="Основная навигация">
         <Brand />
         <span className="nav-edition">
-          INDEPENDENT WEB TOOL
+          НЕЗАВИСИМЫЙ РЕДАКТОР
           <br />
-          <b>EST. 2026 — BUILT FOR YOU</b>
+          <b>С 2026 ГОДА — ДЛЯ ВАС</b>
         </span>
         <a className="nav-anchor" href="#playground">
           Песочница <ArrowDownRight size={13} />
@@ -60,7 +60,7 @@ export function Home() {
           to="/editor"
           aria-label="Открыть редактор"
         >
-          OPEN EDITOR <ArrowUpRight size={17} />
+          ОТКРЫТЬ РЕДАКТОР <ArrowUpRight size={17} />
         </Link>
       </nav>
       <main id="home-main">
@@ -68,33 +68,33 @@ export function Home() {
           <div className="hero-meta">
             <span>
               <span className="tiny-dot" />
-              UNLOCK_YOUR_INTERNET
+              ОТКРОЙТЕ СВОЙ ИНТЕРНЕТ
             </span>
-            <span>NO ALGORITHM. JUST YOU. [01—∞]</span>
+            <span>БЕЗ АЛГОРИТМОВ. ТОЛЬКО ВЫ. [01—∞]</span>
           </div>
           <div className="hero-heading">
             <h1>
-              YOUR INTERNET.
+              ВАШ ИНТЕРНЕТ.
               <br />
-              YOUR{" "}
+              ВАШИ{" "}
               <span className="rules-word">
-                RULES<span className="title-period">.</span>
+                ПРАВИЛА<span className="title-period">.</span>
               </span>
             </h1>
             <Starburst className="hero-star" />
             <span className="hero-sticker" aria-hidden="true">
-              NOT ANOTHER
+              БОЛЬШЕ, ЧЕМ
               <br />
-              <b>LINK IN BIO.</b>
+              <b>ССЫЛКА В ПРОФИЛЕ.</b>
             </span>
           </div>
           <div className="hero-bottom">
             <div className="hero-sidenote">
               <span className="barcode" aria-hidden="true" />
               <span>
-                PERSONAL SPACE
+                ЛИЧНОЕ ПРОСТРАНСТВО
                 <br />
-                NOT A TEMPLATE.
+                БЕЗ ШАБЛОНОВ.
               </span>
             </div>
             <p>
@@ -110,7 +110,7 @@ export function Home() {
                 to="/editor"
                 aria-label="Создать своё пространство"
               >
-                START CREATING <ArrowUpRight size={27} />
+                СОЗДАТЬ СВОЁ ПРОСТРАНСТВО <ArrowUpRight size={27} />
               </Link>
               <span>
                 <Check size={12} /> Без регистрации. Сохраняется у вас.
@@ -118,19 +118,19 @@ export function Home() {
             </div>
           </div>
           <a className="hero-scroll" href="#playground">
-            SCROLL TO EXPLORE <ArrowDown size={14} />
+            УЗНАТЬ БОЛЬШЕ <ArrowDown size={14} />
           </a>
         </section>
         <div
           className="manifesto-strip"
-          aria-label="The internet is your canvas. Make it yours."
+          aria-label="Интернет — ваше полотно. Создайте своё."
         >
-          <span>THE INTERNET IS YOUR CANVAS.</span>
+          <span>ИНТЕРНЕТ — ВАШЕ ПОЛОТНО.</span>
           <Starburst className="strip-star" />
-          <span>MAKE IT YOURS.</span>
+          <span>СОЗДАЙТЕ СВОЁ.</span>
           <ArrowUpRight size={35} />
           <span className="strip-extra" aria-hidden="true">
-            THE INTERNET IS YOUR CANVAS.
+            ИНТЕРНЕТ — ВАШЕ ПОЛОТНО.
           </span>
         </div>
         <section
@@ -139,11 +139,11 @@ export function Home() {
           aria-labelledby="product-title"
         >
           <div className="product-intro">
-            <div className="section-kicker">[ 01 / THE PLAYGROUND ]</div>
+            <div className="section-kicker">[ 01 / ПЕСОЧНИЦА ]</div>
             <h2 id="product-title">
-              LESS BIO.
+              МЕНЬШЕ РАМОК.
               <br />
-              MORE <span>YOU.</span>
+              БОЛЬШЕ <span>ВАС.</span>
             </h2>
             <p>
               Это не карточка профиля.
@@ -187,8 +187,8 @@ export function Home() {
           </div>
           <div className="product-demo">
             <div className="demo-caption">
-              <span>YOUR PAGE / YOUR RULES</span>
-              <span>7 BLOCK TYPES + FREE DECOR</span>
+              <span>ВАША СТРАНИЦА / ВАШИ ПРАВИЛА</span>
+              <span>7 ТИПОВ БЛОКОВ + СВОБОДНЫЙ ДЕКОР</span>
             </div>
             <Showcase />
             <p className="sandbox-note">
@@ -203,11 +203,11 @@ export function Home() {
           aria-labelledby="features-title"
         >
           <div className="section-header">
-            <span className="section-kicker">[ 02 / THE TOOLKIT ]</span>
+            <span className="section-kicker">[ 02 / ИНСТРУМЕНТЫ ]</span>
             <h2 id="features-title">
-              SMALL TOOL.
+              ПРОСТОЙ РЕДАКТОР.
               <br />
-              <span>BIG POSSIBILITIES.</span>
+              <span>БОЛЬШИЕ ВОЗМОЖНОСТИ.</span>
             </h2>
             <span className="section-cross" aria-hidden="true">
               +
@@ -242,15 +242,15 @@ export function Home() {
                         <Starburst />
                       </i>
                       <span>
-                        OUTSIDE
+                        ВНЕ
                         <br />
-                        THE BOX.
+                        РАМОК.
                       </span>
                       <MoveUpRight size={20} />
                     </>
                   ) : feature.graphic === "style" ? (
                     <>
-                      <i>Aa</i>
+                      <i>Аа</i>
                       <span />
                       <span />
                       <span />
@@ -271,14 +271,14 @@ export function Home() {
         </section>
         <section className="final-cta">
           <div className="cta-meta">
-            <span>[ 03 / YOUR MOVE ]</span>
-            <span>PERSONAL INTERNET SPACE</span>
+            <span>[ 03 / ВАШ ХОД ]</span>
+            <span>ВАШЕ МЕСТО В ИНТЕРНЕТЕ</span>
           </div>
           <div className="cta-content">
             <h2>
-              DON’T FIT IN.
+              НЕ ПОДСТРАИВАЙТЕСЬ.
               <br />
-              <span>BUILD OUT.</span>
+              <span>СОЗДАВАЙТЕ СВОЁ.</span>
             </h2>
             <div>
               <p>
@@ -287,12 +287,12 @@ export function Home() {
                 Ему нужен ваш.
               </p>
               <Link className="ink-button" to="/editor">
-                MAKE IT YOURS <ArrowUpRight size={24} />
+                СОЗДАТЬ СВОЮ СТРАНИЦУ <ArrowUpRight size={24} />
               </Link>
             </div>
           </div>
           <div className="cta-bottom">
-            <span>YOUR LINKS. YOUR WORLD. YOUR CANVAS.</span>
+            <span>ВАШИ ССЫЛКИ. ВАШ МИР. ВАШЕ ПОЛОТНО.</span>
             <span aria-hidden="true">+++++</span>
           </div>
         </section>
@@ -308,9 +308,9 @@ export function Home() {
           Мой предпросмотр <ArrowUpRight size={14} />
         </Link>
         <span className="footer-edition">
-          © 2026 LINK/CANVAS
+          © 2026 ZIN
           <br />
-          LOCAL FIRST. ALWAYS YOURS.
+          ХРАНИТСЯ У ВАС. ПРИНАДЛЕЖИТ ВАМ.
         </span>
       </footer>
     </div>

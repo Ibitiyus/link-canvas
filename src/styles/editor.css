@@ -97,7 +97,7 @@
   padding: 17px 16px;
 }
 .panel-index {
-  font: 400 21px/1 var(--display-font);
+  font: 900 21px/1 var(--display-font);
   color: var(--red);
 }
 .panel-header > div {

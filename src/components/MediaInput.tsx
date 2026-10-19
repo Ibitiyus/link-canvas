@@ -25,7 +25,7 @@ export function MediaInput({
     [],
   );
   const local = isAssetRef(value),
-    label = kind === "video" ? "URL видео" : "URL музыки";
+    label = kind === "video" ? "Ссылка на видео" : "Ссылка на музыку";
   const upload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";

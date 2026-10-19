@@ -41,11 +41,7 @@ export function Inspector() {
       id="inspector-panel"
       aria-label="Настройки блока и страницы"
     >
-      <PanelHeader
-        index="03"
-        title="CONTROL PANEL"
-        subtitle="ВСЁ РЕШАЮТ ДЕТАЛИ"
-      />
+      <PanelHeader index="03" title="НАСТРОЙКИ" subtitle="ВСЁ РЕШАЮТ ДЕТАЛИ" />
       <div className="panel-tabs">
         <button
           className={tab === "block" ? "active" : ""}
@@ -95,7 +91,7 @@ export function Inspector() {
             </div>
           </div>
           <h3>
-            <span>01 /</span> CONTENT <small>Содержимое</small>
+            <span>01 /</span> СОДЕРЖИМОЕ
           </h3>
           <Field label="Название блока">
             <input
@@ -113,7 +109,7 @@ export function Inspector() {
                 block.type === "link"
                   ? "Текст кнопки"
                   : block.type === "decoration"
-                    ? "Emoji или символ"
+                    ? "Эмодзи или символ"
                     : block.type === "audio"
                       ? "Название трека"
                       : "Текст"
@@ -131,7 +127,9 @@ export function Inspector() {
             <>
               <Field
                 label={
-                  block.type === "qrcode" ? "Ссылка для QR-кода" : "URL ссылки"
+                  block.type === "qrcode"
+                    ? "Ссылка для QR-кода"
+                    : "Ссылка для перехода"
                 }
                 hint="Полный адрес, начиная с https://"
               >
@@ -144,7 +142,9 @@ export function Inspector() {
                 />
               </Field>
               {block.type === "link" && block.url && !safeUrl(block.url) && (
-                <p className="field-error">Введите корректный HTTP(S) URL.</p>
+                <p className="field-error">
+                  Введите корректную ссылку, начиная с http:// или https://.
+                </p>
               )}
             </>
           )}
@@ -176,7 +176,9 @@ export function Inspector() {
           )}
           {(block.type === "image" || block.type === "gif") && (
             <ImageInput
-              label={block.type === "gif" ? "URL GIF" : "URL изображения"}
+              label={
+                block.type === "gif" ? "Ссылка на GIF" : "Ссылка на изображение"
+              }
               value={block.url}
               onChange={(url) => patch({ url })}
             />
@@ -206,13 +208,13 @@ export function Inspector() {
                   patch({ fit: event.target.value as "contain" | "cover" })
                 }
               >
-                <option value="cover">Заполнить · cover</option>
-                <option value="contain">Вместить · contain</option>
+                <option value="cover">Заполнить</option>
+                <option value="contain">Вместить</option>
               </select>
             </Field>
           )}
           <h3>
-            <span>02 /</span> APPEARANCE <small>Оформление</small>
+            <span>02 /</span> ОФОРМЛЕНИЕ
           </h3>
           <div className="field-pair">
             <ColorField
@@ -244,7 +246,7 @@ export function Inspector() {
             </label>
           )}
           <h3>
-            <span>03 /</span> EFFECTS <small>Эффекты</small>
+            <span>03 /</span> ЭФФЕКТЫ
           </h3>
           <div className="field-pair">
             <NumberField
@@ -262,7 +264,7 @@ export function Inspector() {
           </div>
           <div className="field-pair">
             <NumberField
-              label="Рамка, px"
+              label="Рамка, пкс"
               value={block.borderWidth}
               max={20}
               onChange={(borderWidth) => patch({ borderWidth })}
@@ -315,7 +317,7 @@ export function Inspector() {
             </>
           )}
           <h3>
-            <span>04 /</span> LAYOUT{" "}
+            <span>04 /</span> РАЗМЕЩЕНИЕ{" "}
             <small>{block.type === "decoration" ? "Свободно" : "Сетка"}</small>
           </h3>
           {block.type === "decoration" ? (
@@ -338,14 +340,14 @@ export function Inspector() {
               </div>
               <div className="field-pair">
                 <NumberField
-                  label="Ширина, px"
+                  label="Ширина, пкс"
                   value={Math.round(block.width)}
                   min={24}
                   max={SIZE_LIMIT}
                   onChange={(width) => patch({ width })}
                 />
                 <NumberField
-                  label="Высота, px"
+                  label="Высота, пкс"
                   value={Math.round(block.height)}
                   min={24}
                   max={SIZE_LIMIT}
@@ -361,7 +363,7 @@ export function Inspector() {
                   onChange={(rotation) => patch({ rotation })}
                 />
                 <NumberField
-                  label="z-index"
+                  label="Порядок слоя"
                   value={block.zIndex}
                   min={1}
                   max={10000}

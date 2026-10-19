@@ -74,7 +74,7 @@ export function parseProject(raw: string): Project {
     const font = object(value);
     const id = text(font.id, "", 100);
     if (!/^[A-Za-z0-9_-]{1,100}$/.test(id) || fontIds.has(id))
-      throw new Error("Некорректный или повторяющийся ID шрифта.");
+      throw new Error("Некорректный или повторяющийся идентификатор шрифта.");
     if (
       typeof font.dataUrl !== "string" ||
       (!isAssetRef(font.dataUrl) && !dataUrlMime(font.dataUrl, "font"))

@@ -199,7 +199,7 @@ test("music URLs load real audio and report service pages and unavailable files"
   );
   await start(page, "Музыка");
   await page
-    .getByLabel("URL музыки", { exact: true })
+    .getByLabel("Ссылка на музыку", { exact: true })
     .fill("https://media.example.test/track.wav");
   await page
     .getByRole("button", { name: "Воспроизвести музыку", exact: true })
@@ -212,14 +212,14 @@ test("music URLs load real audio and report service pages and unavailable files"
     )
     .toBeGreaterThan(0);
   await page
-    .getByLabel("URL музыки", { exact: true })
+    .getByLabel("Ссылка на музыку", { exact: true })
     .fill("https://youtube.com/watch?v=dQw4w9WgXcQ");
   await expect(page.locator(".field-error")).toContainText("прямая ссылка");
   await expect(
     page.getByRole("button", { name: "Воспроизвести музыку", exact: true }),
   ).toBeDisabled();
   await page
-    .getByLabel("URL музыки", { exact: true })
+    .getByLabel("Ссылка на музыку", { exact: true })
     .fill("https://media.example.test/missing.mp3");
   await expect(page.locator(".audio-track-info")).toContainText(
     "Аудио недоступно",
@@ -321,7 +321,7 @@ test("images larger than 10 MB keep their original bytes and dimensions", async 
   const bytes = Buffer.from(png, "base64");
   expect(bytes.length).toBeGreaterThan(10_000_000);
   await page
-    .getByLabel("Файл: URL изображения", { exact: true })
+    .getByLabel("Файл: Ссылка на изображение", { exact: true })
     .setInputFiles({ name: "large.png", mimeType: "image/png", buffer: bytes });
   await expect
     .poll(async () => (await project(page)).blocks[0]?.url)

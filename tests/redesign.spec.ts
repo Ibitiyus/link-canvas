@@ -108,7 +108,7 @@ test("live homepage playground edits are separate from the saved project and med
     .click();
   await expect(showcase.locator(".drag-handle, .resize-handle")).toHaveCount(0);
   await expect(
-    showcase.getByRole("link", { name: "INSTAGRAM", exact: true }),
+    showcase.getByRole("link", { name: "Instagram", exact: true }),
   ).toHaveAttribute("href", "https://www.instagram.com/");
   await showcase.locator("video").evaluate(async (el: HTMLVideoElement) => {
     el.muted = true;
@@ -215,7 +215,7 @@ test("not found page offers working routes back into the application", async ({
 }) => {
   await page.goto("/this-page-does-not-exist");
   await expect(
-    page.getByRole("heading", { name: "YOU WENT OFF-GRID." }),
+    page.getByRole("heading", { name: "ВЫ ВЫШЛИ ЗА РАМКИ." }),
   ).toBeVisible();
   await page
     .getByRole("link", { name: "Открыть редактор", exact: true })

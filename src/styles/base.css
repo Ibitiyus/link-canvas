@@ -132,12 +132,8 @@ select:focus {
   color: var(--ink);
 }
 .brand-wordmark {
-  font: 400 18px/1 var(--display-font);
+  font: 900 18px/1 var(--display-font);
   letter-spacing: -0.8px;
-}
-.brand-slash {
-  color: var(--red);
-  margin: 0 1px;
 }
 .brand-asterisk {
   font: 400 9px var(--ui-font);
