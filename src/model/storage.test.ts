@@ -13,9 +13,9 @@ describe("versioned persistence", () => {
   it("round-trips all block types, geometry, layer order and page settings", () => {
     const project = demoProject();
     project.blocks.push(
-      ...(["image", "gif", "video", "decoration"] as const).map((type) =>
-        newBlock(type),
-      ),
+      ...(
+        ["image", "gif", "video", "audio", "qrcode", "decoration"] as const
+      ).map((type) => newBlock(type)),
     );
     const normalized = parseProject(JSON.stringify(project));
     const values = new Map<string, string>();

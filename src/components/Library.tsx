@@ -14,6 +14,7 @@ import {
   Type,
   Video,
   Music2,
+  QrCode,
 } from "lucide-react";
 import { useProject } from "../state/ProjectContext";
 import { LABELS, type BlockType } from "../model/types";
@@ -25,6 +26,7 @@ export const BLOCK_ICONS = {
   gif: Sparkles,
   video: Video,
   audio: Music2,
+  qrcode: QrCode,
   decoration: Shapes,
 };
 const DESCRIPTIONS: Record<BlockType, string> = {
@@ -34,10 +36,11 @@ const DESCRIPTIONS: Record<BlockType, string> = {
   gif: "Немного движения",
   video: "YouTube или файл",
   audio: "Свой звук и плеер",
+  qrcode: "Сканируй или нажми",
   decoration: "Поверх вашей сетки",
 };
 const GROUPS: { code: string; title: string; types: BlockType[] }[] = [
-  { code: "A", title: "BLOCKS", types: ["link", "text"] },
+  { code: "A", title: "BLOCKS", types: ["link", "text", "qrcode"] },
   { code: "B", title: "MEDIA", types: ["image", "gif", "video", "audio"] },
   { code: "C", title: "DECOR", types: ["decoration"] },
 ];

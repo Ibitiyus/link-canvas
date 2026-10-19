@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useProject } from "../state/ProjectContext";
 import { LABELS, type Align } from "../model/types";
+import { createQR } from "../model/qr";
 import { safeUrl, videoSource } from "../model/media";
 import { ColorField, Field, NumberField } from "./Fields";
 import { PanelHeader } from "./ui/PanelHeader";
@@ -27,6 +28,10 @@ export function Inspector() {
     if (selectedId) setTab("block");
   }, [selectedId]);
   const block = project.blocks.find((b) => b.id === selectedId);
+  const qrError =
+    block?.type === "qrcode" && block.url
+      ? createQR(block.url).error
+      : undefined;
   const patch = (update: Parameters<typeof updateBlock>[1]) => {
     if (block) updateBlock(block.id, update);
   };
@@ -122,9 +127,14 @@ export function Inspector() {
               />
             </Field>
           )}
-          {block.type === "link" && (
+          {(block.type === "link" || block.type === "qrcode") && (
             <>
-              <Field label="URL ссылки" hint="Полный адрес, начиная с https://">
+              <Field
+                label={
+                  block.type === "qrcode" ? "Ссылка для QR-кода" : "URL ссылки"
+                }
+                hint="Полный адрес, начиная с https://"
+              >
                 <input
                   type="url"
                   maxLength={2048}
@@ -133,9 +143,23 @@ export function Inspector() {
                   onChange={(event) => patch({ url: event.target.value })}
                 />
               </Field>
-              {block.url && !safeUrl(block.url) && (
+              {block.type === "link" && block.url && !safeUrl(block.url) && (
                 <p className="field-error">Введите корректный HTTP(S) URL.</p>
               )}
+            </>
+          )}
+          {block.type === "qrcode" && (
+            <>
+              {qrError && (
+                <p className="field-error" role="status">
+                  {qrError}
+                </p>
+              )}
+              <p className="muted caption">
+                Код обновляется при изменении ссылки. Нажатие открывает её в
+                предпросмотре. Для сканирования выбирайте тёмный код и светлый
+                фон.
+              </p>
             </>
           )}
           {(block.type === "video" || block.type === "audio") && (
@@ -197,7 +221,7 @@ export function Inspector() {
               onChange={(background) => patch({ background })}
             />
             <ColorField
-              label="Цвет текста"
+              label={block.type === "qrcode" ? "Цвет QR-кода" : "Цвет текста"}
               value={block.color}
               onChange={(color) => patch({ color })}
             />

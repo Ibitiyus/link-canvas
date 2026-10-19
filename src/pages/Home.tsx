@@ -188,7 +188,7 @@ export function Home() {
           <div className="product-demo">
             <div className="demo-caption">
               <span>YOUR PAGE / YOUR RULES</span>
-              <span>6 BLOCK TYPES + FREE DECOR</span>
+              <span>7 BLOCK TYPES + FREE DECOR</span>
             </div>
             <Showcase />
             <p className="sandbox-note">

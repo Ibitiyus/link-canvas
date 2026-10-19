@@ -4,6 +4,7 @@ import { safeUrl, videoSource } from "../model/media";
 import { safeImageSource } from "../model/assets";
 import { resolveBlockFont } from "../model/fonts";
 import { useAssetSource } from "../hooks/useAssetSource";
+import { QRBlock } from "./QRBlock";
 import { AudioPlayer } from "./AudioPlayer";
 import type { Block } from "../model/types";
 
@@ -131,6 +132,8 @@ export function BlockContent({
     content = <RemoteImage url={block.url} fit={block.fit} alt={block.name} />;
   else if (block.type === "video") content = <Video block={block} />;
   else if (block.type === "audio") content = <AudioPlayer block={block} />;
+  else if (block.type === "qrcode")
+    content = <QRBlock block={block} editing={editing} />;
   else if (block.type === "decoration")
     content = block.imageUrl ? (
       <RemoteImage url={block.imageUrl} fit={block.fit} alt={block.name} />

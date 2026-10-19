@@ -14,16 +14,19 @@ export function newBlock(type: BlockType): Block {
           : type === "audio"
             ? "Мой трек"
             : "Открыть ссылку",
-    url: type === "link" ? "https://example.com" : "",
+    url: type === "link" || type === "qrcode" ? "https://example.com" : "",
     imageUrl: "",
     fit: "cover",
     background:
-      type === "text"
-        ? "#f2efeb"
-        : type === "decoration"
-          ? "#00000000"
-          : "#222226",
-    color: type === "text" ? "#0d0d0f" : "#ffffff",
+      type === "qrcode"
+        ? "#ffffff"
+        : type === "text"
+          ? "#f2efeb"
+          : type === "decoration"
+            ? "#00000000"
+            : "#222226",
+    color:
+      type === "qrcode" ? "#000000" : type === "text" ? "#0d0d0f" : "#ffffff",
     radius: 2,
     opacity: 1,
     borderWidth: 0,
@@ -33,8 +36,14 @@ export function newBlock(type: BlockType): Block {
     bold: type === "text",
     col: 0,
     row: 0,
-    colSpan: type === "text" || type === "video" || type === "audio" ? 2 : 1,
-    rowSpan: type === "video" || type === "audio" ? 2 : 1,
+    colSpan:
+      type === "text" ||
+      type === "video" ||
+      type === "audio" ||
+      type === "qrcode"
+        ? 2
+        : 1,
+    rowSpan: type === "video" || type === "audio" || type === "qrcode" ? 2 : 1,
     x: 24,
     y: 24,
     width: 100,
