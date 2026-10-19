@@ -3,6 +3,7 @@ import { LoaderCircle, Upload, X } from "lucide-react";
 import { Field } from "./Fields";
 import { useProject } from "../state/ProjectContext";
 import { readImageFile } from "../model/uploads";
+import { isAssetRef } from "../model/fileStore";
 import { safeImageSource } from "../model/assets";
 export function ImageInput({
   label,
@@ -25,7 +26,7 @@ export function ImageInput({
     },
     [],
   );
-  const embedded = value.startsWith("data:");
+  const embedded = value.startsWith("data:") || isAssetRef(value);
   const upload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -50,7 +51,11 @@ export function ImageInput({
     <div className="image-input">
       <Field
         label={label}
-        hint={embedded ? "Файл с устройства сохранён внутри проекта." : hint}
+        hint={
+          embedded
+            ? "Файл сохранён в этом браузере. Экспорт JSON включает файл."
+            : hint
+        }
       >
         <input
           type="url"

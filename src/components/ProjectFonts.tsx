@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useProject } from "../state/ProjectContext";
+import { getFile, isAssetRef } from "../model/fileStore";
 import { customFontFamily } from "../model/fonts";
 interface Entry {
   dataUrl: string;
@@ -24,11 +25,13 @@ export function ProjectFonts() {
     for (const font of fonts) {
       let entry = entries.current.get(font.id);
       if (!entry) {
-        const face = new FontFace(
-          customFontFamily(font.id),
-          `url("${font.dataUrl}")`,
-        );
-        entry = { dataUrl: font.dataUrl, promise: face.load() };
+        const promise = (async () => {
+          const source = isAssetRef(font.dataUrl)
+            ? await (await getFile(font.dataUrl)).blob.arrayBuffer()
+            : `url("${font.dataUrl}")`;
+          return new FontFace(customFontFamily(font.id), source).load();
+        })();
+        entry = { dataUrl: font.dataUrl, promise };
         entries.current.set(font.id, entry);
       }
       const current = entry;

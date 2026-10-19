@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowDownToLine,
@@ -16,6 +16,7 @@ import {
 import { useProject } from "../state/ProjectContext";
 import { Brand } from "./ui/Brand";
 import { emptyProject } from "../model/defaults";
+import { exportProject, importProject, downloadBackup } from "../model/backup";
 import { parseProject } from "../model/storage";
 export function Toolbar() {
   const {
@@ -32,32 +33,39 @@ export function Toolbar() {
   } = useProject();
   const input = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const exportJSON = () => {
-    const blob = new Blob([JSON.stringify(project, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob),
-      anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "link-canvas.json";
-    anchor.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    notify("JSON экспортирован. Храните файл как резервную копию проекта.");
+  const [busy, setBusy] = useState(false);
+  const exportJSON = async () => {
+    setBusy(true);
+    try {
+      downloadBackup(await exportProject(project));
+      notify(
+        "JSON экспортирован вместе с файлами. Храните его как резервную копию.",
+      );
+    } catch (error) {
+      notify(
+        error instanceof Error
+          ? error.message
+          : "Не удалось экспортировать проект.",
+      );
+    } finally {
+      setBusy(false);
+    }
   };
   const importJSON = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    setBusy(true);
     try {
-      if (file.size > 10_000_000)
-        throw new Error("Максимальный размер файла — 10 МБ.");
-      const loaded = parseProject(await file.text());
+      const raw = await file.text();
+      parseProject(raw);
       if (
         !window.confirm(
           "Заменить текущую страницу проектом из файла? Действие можно отменить.",
         )
       )
         return;
+      const loaded = await importProject(raw);
       change(loaded);
       select(null);
       notify("Проект импортирован.");
@@ -67,6 +75,8 @@ export function Toolbar() {
           ? error.message
           : "Не удалось импортировать проект.",
       );
+    } finally {
+      setBusy(false);
     }
   };
   return (
@@ -125,6 +135,7 @@ export function Toolbar() {
         className="icon-button"
         title="Импорт JSON"
         aria-label="Импорт JSON"
+        disabled={busy}
         onClick={() => input.current?.click()}
       >
         <ArrowUpFromLine size={18} />
@@ -141,6 +152,7 @@ export function Toolbar() {
         className="icon-button"
         title="Экспорт JSON"
         aria-label="Экспорт JSON"
+        disabled={busy}
         onClick={exportJSON}
       >
         <ArrowDownToLine size={18} />

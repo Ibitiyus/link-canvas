@@ -1,3 +1,5 @@
+import { POSITION_LIMIT, SIZE_LIMIT } from "../model/decoration";
+import { MediaInput } from "./MediaInput";
 import { useEffect, useState } from "react";
 import {
   AlignCenter,
@@ -99,6 +101,7 @@ export function Inspector() {
           </Field>
           {(block.type === "link" ||
             block.type === "text" ||
+            block.type === "audio" ||
             block.type === "decoration") && (
             <Field
               label={
@@ -106,7 +109,9 @@ export function Inspector() {
                   ? "Текст кнопки"
                   : block.type === "decoration"
                     ? "Emoji или символ"
-                    : "Текст"
+                    : block.type === "audio"
+                      ? "Название трека"
+                      : "Текст"
               }
             >
               <textarea
@@ -117,24 +122,9 @@ export function Inspector() {
               />
             </Field>
           )}
-          {["link", "video"].includes(block.type) && (
+          {block.type === "link" && (
             <>
-              <Field
-                label={
-                  block.type === "video"
-                    ? "URL видео"
-                    : block.type === "link"
-                      ? "URL ссылки"
-                      : block.type === "gif"
-                        ? "URL GIF"
-                        : "URL изображения"
-                }
-                hint={
-                  block.type === "video"
-                    ? "YouTube, MP4, WebM или OGV"
-                    : "Полный адрес, начиная с https://"
-                }
-              >
+              <Field label="URL ссылки" hint="Полный адрес, начиная с https://">
                 <input
                   type="url"
                   maxLength={2048}
@@ -143,17 +133,17 @@ export function Inspector() {
                   onChange={(event) => patch({ url: event.target.value })}
                 />
               </Field>
-              {block.url &&
-                (block.type === "video"
-                  ? !videoSource(block.url)
-                  : !safeUrl(block.url)) && (
-                  <p className="field-error">
-                    {block.type === "video"
-                      ? "Эта ссылка на видео не поддерживается."
-                      : "Введите корректный HTTP(S) URL."}
-                  </p>
-                )}
+              {block.url && !safeUrl(block.url) && (
+                <p className="field-error">Введите корректный HTTP(S) URL.</p>
+              )}
             </>
+          )}
+          {(block.type === "video" || block.type === "audio") && (
+            <MediaInput
+              kind={block.type === "video" ? "video" : "audio"}
+              value={block.url}
+              onChange={(url) => patch({ url })}
+            />
           )}
           {block.type === "video" && (
             <p className="muted caption media-hint">
@@ -169,6 +159,7 @@ export function Inspector() {
           )}
           {(block.type === "link" ||
             block.type === "decoration" ||
+            block.type === "audio" ||
             (block.type === "video" &&
               videoSource(block.url)?.kind === "file")) && (
             <ImageInput
@@ -309,13 +300,15 @@ export function Inspector() {
                 <NumberField
                   label="X"
                   value={Math.round(block.x)}
-                  max={project.page.maxWidth - 24}
+                  min={-POSITION_LIMIT}
+                  max={POSITION_LIMIT}
                   onChange={(x) => patch({ x })}
                 />
                 <NumberField
                   label="Y"
                   value={Math.round(block.y)}
-                  max={30000}
+                  min={-POSITION_LIMIT}
+                  max={POSITION_LIMIT}
                   onChange={(y) => patch({ y })}
                 />
               </div>
@@ -324,14 +317,14 @@ export function Inspector() {
                   label="Ширина, px"
                   value={Math.round(block.width)}
                   min={24}
-                  max={project.page.maxWidth}
+                  max={SIZE_LIMIT}
                   onChange={(width) => patch({ width })}
                 />
                 <NumberField
                   label="Высота, px"
                   value={Math.round(block.height)}
                   min={24}
-                  max={2000}
+                  max={SIZE_LIMIT}
                   onChange={(height) => patch({ height })}
                 />
               </div>

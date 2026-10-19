@@ -1,6 +1,7 @@
 import { dataUrlMime, MAX_CUSTOM_FONTS, parseImageSource } from "./assets";
+import { isAssetRef } from "./fileStore";
 import { validFontChoice } from "./fonts";
-import { clampDecoration } from "./decoration";
+import { clampDecoration, POSITION_LIMIT, SIZE_LIMIT } from "./decoration";
 import { arrange } from "./grid";
 import { emptyProject, newBlock } from "./defaults";
 import {
@@ -37,8 +38,6 @@ function color(value: unknown, fallback: string): string {
     : fallback;
 }
 export function parseProject(raw: string): Project {
-  if (raw.length > 10_000_000)
-    throw new Error("Файл слишком большой (максимум 10 МБ).");
   let input: Record<string, unknown>;
   try {
     input = object(JSON.parse(raw));
@@ -76,7 +75,10 @@ export function parseProject(raw: string): Project {
     const id = text(font.id, "", 100);
     if (!/^[A-Za-z0-9_-]{1,100}$/.test(id) || fontIds.has(id))
       throw new Error("Некорректный или повторяющийся ID шрифта.");
-    if (typeof font.dataUrl !== "string" || !dataUrlMime(font.dataUrl, "font"))
+    if (
+      typeof font.dataUrl !== "string" ||
+      (!isAssetRef(font.dataUrl) && !dataUrlMime(font.dataUrl, "font"))
+    )
       throw new Error("Некорректный файл шрифта в проекте.");
     fontIds.add(id);
     return {
@@ -122,10 +124,10 @@ export function parseProject(raw: string): Project {
       row: Math.round(number(source.row, 0, 0, 5000)),
       colSpan: Math.round(number(source.colSpan, 1, 1, 5)),
       rowSpan: Math.round(number(source.rowSpan, 1, 1, 12)),
-      x: number(source.x, 24, 0, 1400),
-      y: number(source.y, 24, 0, 30000),
-      width: number(source.width, 100, 24, 1400),
-      height: number(source.height, 100, 24, 2000),
+      x: number(source.x, 24, -POSITION_LIMIT, POSITION_LIMIT),
+      y: number(source.y, 24, -POSITION_LIMIT, POSITION_LIMIT),
+      width: number(source.width, 100, 24, SIZE_LIMIT),
+      height: number(source.height, 100, 24, SIZE_LIMIT),
       rotation: number(source.rotation, 0, -180, 180),
       zIndex: Math.round(number(source.zIndex, 1, 1, 1_000_000)),
     };

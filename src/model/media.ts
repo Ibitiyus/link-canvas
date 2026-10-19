@@ -1,3 +1,4 @@
+import { isAssetRef } from "./fileStore";
 /** Only http(s) URLs are rendered as links, images or media. */
 export function safeUrl(value: string): string | null {
   try {
@@ -9,6 +10,7 @@ export function safeUrl(value: string): string | null {
 }
 export type VideoSource = { kind: "youtube" | "file"; src: string };
 export function videoSource(value: string): VideoSource | null {
+  if (isAssetRef(value)) return { kind: "file", src: value };
   const safe = safeUrl(value);
   if (!safe) return null;
   const url = new URL(safe);
@@ -36,7 +38,18 @@ export function videoSource(value: string): VideoSource | null {
       kind: "youtube",
       src: `https://www.youtube-nocookie.com/embed/${id}`,
     };
-  if (/\.(mp4|webm|ogv|ogg)$/i.test(url.pathname))
+  if (/\.(mp4|m4v|webm|ogv|ogg|mov)$/i.test(url.pathname))
     return { kind: "file", src: safe };
   return null;
+}
+
+/** Audio URLs must point to a file/stream, rather than a service's HTML player page. */
+export function audioSource(value: string): string | null {
+  if (isAssetRef(value)) return value;
+  const safe = safeUrl(value);
+  if (!safe) return null;
+  const host = new URL(safe).hostname;
+  if (/(^|\.)(youtube\.com|youtu\.be|spotify\.com|soundcloud\.com)$/.test(host))
+    return null;
+  return safe;
 }

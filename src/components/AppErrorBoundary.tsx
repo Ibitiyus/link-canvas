@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from "react";
+import { exportProject, downloadBackup } from "../model/backup";
 import { STORAGE_KEY } from "../model/storage";
 export class AppErrorBoundary extends Component<
   { children: ReactNode },
@@ -8,7 +9,7 @@ export class AppErrorBoundary extends Component<
   static getDerivedStateFromError(error: Error) {
     return { error };
   }
-  backup = () => {
+  backup = async () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
@@ -17,14 +18,10 @@ export class AppErrorBoundary extends Component<
         });
         return;
       }
-      const url = URL.createObjectURL(
-        new Blob([raw], { type: "application/json" }),
+      downloadBackup(
+        await exportProject(JSON.parse(raw)),
+        "link-canvas-recovery.json",
       );
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "link-canvas-recovery.json";
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
       this.setState({ message: "Не удалось прочитать сохранение браузера." });
     }

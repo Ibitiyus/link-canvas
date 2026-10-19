@@ -11,7 +11,9 @@ export function newBlock(type: BlockType): Block {
         ? "Всё начинается с идеи."
         : type === "decoration"
           ? "✦"
-          : "Открыть ссылку",
+          : type === "audio"
+            ? "Мой трек"
+            : "Открыть ссылку",
     url: type === "link" ? "https://example.com" : "",
     imageUrl: "",
     fit: "cover",
@@ -31,13 +33,13 @@ export function newBlock(type: BlockType): Block {
     bold: type === "text",
     col: 0,
     row: 0,
-    colSpan: type === "text" || type === "video" ? 2 : 1,
-    rowSpan: type === "video" ? 2 : 1,
+    colSpan: type === "text" || type === "video" || type === "audio" ? 2 : 1,
+    rowSpan: type === "video" || type === "audio" ? 2 : 1,
     x: 24,
     y: 24,
     width: 100,
     height: 100,
-    rotation: -12,
+    rotation: 0,
     zIndex: 1,
   };
 }

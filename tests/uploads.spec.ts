@@ -71,7 +71,18 @@ test("text fonts install from a device, restore, export/import, remove and undo"
   const chunks = [];
   for await (const chunk of stream!) chunks.push(chunk);
   const raw = Buffer.concat(chunks);
-  expect(JSON.parse(raw.toString())).toEqual(saved);
+  const archived = JSON.parse(raw.toString());
+  const { assets, ...metadata } = archived;
+  expect(metadata).toEqual(saved);
+  expect(assets[font.dataUrl].dataUrl).toMatch(/^data:font\/woff2;base64,/);
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const request = indexedDB.deleteDatabase("link-canvas.files.v1");
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      }),
+  );
   await page.evaluate((key) => localStorage.removeItem(key), KEY);
   await page.reload();
   page.once("dialog", (dialog) => dialog.accept());
@@ -80,6 +91,10 @@ test("text fonts install from a device, restore, export/import, remove and undo"
     mimeType: "application/json",
     buffer: raw,
   });
+  await expect(page.getByRole("alert")).toContainText("Проект импортирован.");
+  await expect
+    .poll(async () => (await project(page)).customFonts?.[0].dataUrl)
+    .not.toBe(font.dataUrl);
   await fontLoaded(page, font.id);
   await expect
     .poll(async () => (await project(page)).customFonts?.length)
@@ -128,7 +143,7 @@ test("device images persist in image/GIF/link/decor/video cover and page backgro
           (type === "Изображение" || type === "GIF"
             ? block?.url
             : block?.imageUrl
-          )?.startsWith("data:image/gif;base64,") ?? false
+          )?.startsWith("asset:") ?? false
         );
       })
       .toBe(true);
@@ -140,7 +155,7 @@ test("device images persist in image/GIF/link/decor/video cover and page backgro
     .setInputFiles("tests/fixtures/animated.gif");
   await expect
     .poll(async () =>
-      (await project(page)).page.backgroundImage.startsWith("data:"),
+      (await project(page)).page.backgroundImage.startsWith("asset:"),
     )
     .toBe(true);
   const saved = await project(page);
@@ -157,10 +172,7 @@ test("device images persist in image/GIF/link/decor/video cover and page backgro
         ),
     )
     .toBe(true);
-  await expect(page.locator("video")).toHaveAttribute(
-    "poster",
-    saved.blocks[4].imageUrl,
-  );
+  await expect(page.locator("video")).toHaveAttribute("poster", /^blob:/);
   await page.locator("video").evaluate(async (el: HTMLVideoElement) => {
     el.muted = true;
     await el.play();
@@ -174,12 +186,12 @@ test("device images persist in image/GIF/link/decor/video cover and page backgro
     await page
       .locator(".preview-page")
       .evaluate((el) =>
-        getComputedStyle(el).backgroundImage.startsWith('url("data:image/gif'),
+        getComputedStyle(el).backgroundImage.startsWith('url("blob:'),
       ),
   ).toBe(true);
 });
 
-test("large raster pictures resize while unsupported image/font files leave the project unchanged", async ({
+test("original raster pictures retain resolution while unsupported image/font files leave the project unchanged", async ({
   page,
 }) => {
   await empty(page);
@@ -203,8 +215,7 @@ test("large raster pictures resize while unsupported image/font files leave the 
   await expect
     .poll(
       async () =>
-        (await project(page)).blocks[0]?.url.startsWith("data:image/webp") ??
-        false,
+        (await project(page)).blocks[0]?.url.startsWith("asset:") ?? false,
     )
     .toBe(true);
   await expect
@@ -213,7 +224,7 @@ test("large raster pictures resize while unsupported image/font files leave the 
         .locator(".block-content img")
         .evaluate((el: HTMLImageElement) => el.naturalWidth),
     )
-    .toBe(1600);
+    .toBe(2200);
   const saved = await project(page);
   await page
     .getByLabel("Файл: URL изображения", { exact: true })
@@ -260,8 +271,7 @@ test("mobile file picker buttons upload images and fonts without randomUUID", as
   await expect
     .poll(
       async () =>
-        (await project(page)).blocks[0]?.url.startsWith("data:image/gif") ??
-        false,
+        (await project(page)).blocks[0]?.url.startsWith("asset:") ?? false,
     )
     .toBe(true);
   await page

@@ -4,6 +4,7 @@ export type BlockType =
   | "image"
   | "gif"
   | "video"
+  | "audio"
   | "decoration";
 export type Align = "left" | "center" | "right";
 export interface Block {
@@ -62,6 +63,7 @@ export const LABELS: Record<BlockType, string> = {
   image: "Изображение",
   gif: "GIF",
   video: "Видео",
+  audio: "Музыка",
   decoration: "Декор",
 };
 export const FONTS = {

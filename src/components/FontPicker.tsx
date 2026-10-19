@@ -120,8 +120,8 @@ export function FontPicker({ block }: { block: Block }) {
         {busy ? "Проверка шрифта…" : "Установить шрифт"}
       </button>
       <p className="muted caption upload-hint">
-        WOFF2, WOFF, TTF, OTF · до 1 МБ. До 8 шрифтов в проекте. Кириллица
-        зависит от выбранного файла.
+        WOFF2, WOFF, TTF, OTF. До 8 шрифтов в проекте. Кириллица зависит от
+        выбранного файла.
       </p>
       {!!fonts.length && (
         <ul className="installed-fonts" aria-label="Установленные шрифты">

@@ -9,7 +9,7 @@
   padding: 40px 20px;
   min-height: 100svh;
 }
-.preview-content > .page-surface {
+.preview-content .page-surface {
   background-color: transparent !important;
   background-image: none !important;
 }
@@ -144,7 +144,7 @@
   .preview-content {
     padding: 24px 10px;
   }
-  .preview-content > .page-surface {
+  .preview-content .page-surface {
     padding: 8px;
   }
   .error-page header .eyebrow {

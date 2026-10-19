@@ -87,11 +87,21 @@ describe("grid placement", () => {
   });
 });
 
-it("keeps free decorations inside page width after inspector edits", () => {
+it("allows free decorations beyond every grid edge without displacing grid blocks", () => {
   const decoration = { ...newBlock("decoration"), x: 850, width: 200 };
-  const project = { ...emptyProject(), blocks: [decoration] };
-  const result = editBlock(project, decoration.id, { width: 400 });
-  expect(result.blocks[0].x + result.blocks[0].width).toBeLessThanOrEqual(
-    project.page.maxWidth,
-  );
+  expect(decoration.rotation).toBe(0);
+  const project = { ...emptyProject(), blocks: [decoration, block("grid")] };
+  const result = editBlock(project, decoration.id, {
+    x: -150,
+    y: -120,
+    width: 1400,
+    height: 2500,
+  });
+  expect(result.blocks[0]).toMatchObject({
+    x: -150,
+    y: -120,
+    width: 1400,
+    height: 2500,
+  });
+  expect(result.blocks[1]).toEqual(project.blocks[1]);
 });

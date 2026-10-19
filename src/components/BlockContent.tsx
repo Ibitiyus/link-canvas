@@ -3,6 +3,8 @@ import { ArrowUpRight, ImageIcon, Play, TriangleAlert } from "lucide-react";
 import { safeUrl, videoSource } from "../model/media";
 import { safeImageSource } from "../model/assets";
 import { resolveBlockFont } from "../model/fonts";
+import { useAssetSource } from "../hooks/useAssetSource";
+import { AudioPlayer } from "./AudioPlayer";
 import type { Block } from "../model/types";
 
 export function RemoteImage({
@@ -14,19 +16,23 @@ export function RemoteImage({
   fit: "cover" | "contain";
   alt: string;
 }) {
-  const src = safeImageSource(url);
+  const { src, error, loading } = useAssetSource(safeImageSource(url));
   const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [url]);
-  if (!src || failed)
+  useEffect(() => setFailed(false), [url, src]);
+  if (!src || failed || error)
     return (
       <div className="media-placeholder">
         <ImageIcon size={28} />
         <span>
-          {failed
-            ? "Не удалось загрузить изображение"
-            : url
-              ? "Нужен корректный HTTP(S) URL"
-              : "Добавьте URL изображения"}
+          {loading
+            ? "Загрузка файла…"
+            : error
+              ? "Файл не найден. Загрузите заново."
+              : failed
+                ? "Не удалось загрузить изображение"
+                : url
+                  ? "Нужен корректный HTTP(S) URL"
+                  : "Добавьте URL изображения"}
         </span>
       </div>
     );
@@ -42,18 +48,24 @@ export function RemoteImage({
 }
 function Video({ block }: { block: Block }) {
   const source = videoSource(block.url);
+  const file = useAssetSource(source?.kind === "file" ? source.src : null);
+  const poster = useAssetSource(safeImageSource(block.imageUrl));
   const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [block.url]);
-  if (!source || failed)
+  useEffect(() => setFailed(false), [block.url, file.src]);
+  if (!source || failed || file.error || (source.kind === "file" && !file.src))
     return (
       <div className="media-placeholder">
         {failed ? <TriangleAlert size={28} /> : <Play size={28} />}
         <span>
-          {failed
-            ? "Видео недоступно"
-            : block.url
-              ? "Нужна ссылка YouTube или файл MP4, WebM, OGV"
-              : "Добавьте URL видео"}
+          {file.loading
+            ? "Загрузка файла…"
+            : file.error
+              ? "Файл не найден. Загрузите заново."
+              : failed
+                ? "Видео недоступно"
+                : block.url
+                  ? "Нужна ссылка YouTube или файл MP4, WebM, OGV"
+                  : "Добавьте URL видео"}
         </span>
       </div>
     );
@@ -70,8 +82,8 @@ function Video({ block }: { block: Block }) {
     );
   return (
     <video
-      src={source.src}
-      poster={safeImageSource(block.imageUrl) ?? undefined}
+      src={file.src}
+      poster={poster.src || undefined}
       controls
       preload="metadata"
       playsInline
@@ -118,6 +130,7 @@ export function BlockContent({
   else if (block.type === "image" || block.type === "gif")
     content = <RemoteImage url={block.url} fit={block.fit} alt={block.name} />;
   else if (block.type === "video") content = <Video block={block} />;
+  else if (block.type === "audio") content = <AudioPlayer block={block} />;
   else if (block.type === "decoration")
     content = block.imageUrl ? (
       <RemoteImage url={block.imageUrl} fit={block.fit} alt={block.name} />

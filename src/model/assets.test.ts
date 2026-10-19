@@ -70,3 +70,24 @@ describe("embedded assets", () => {
     ).toThrow("ID");
   });
 });
+
+it("round-trips local file references, music and decorations outside the grid", () => {
+  const project = demoProject();
+  project.customFonts = [
+    { id: "font", name: "Local", dataUrl: "asset:font-file" },
+  ];
+  project.page.backgroundImage = "asset:background";
+  project.blocks = [
+    { ...newBlock("audio"), url: "asset:track", imageUrl: "asset:cover" },
+    { ...newBlock("video"), col: 2, url: "asset:clip" },
+    {
+      ...newBlock("decoration"),
+      x: -200,
+      y: -300,
+      width: 2000,
+      height: 2400,
+      rotation: 0,
+    },
+  ];
+  expect(parseProject(JSON.stringify(project))).toEqual(project);
+});

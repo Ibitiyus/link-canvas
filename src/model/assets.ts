@@ -1,6 +1,5 @@
 import { safeUrl } from "./media";
-export const MAX_ASSET_BYTES = 1_048_576;
-export const MAX_DATA_URL_LENGTH = 1_400_000;
+import { isAssetRef } from "./fileStore";
 export const MAX_CUSTOM_FONTS = 8;
 export type ImageMime = "image/png" | "image/jpeg" | "image/webp" | "image/gif";
 export type FontMime = "font/woff2" | "font/woff" | "font/ttf" | "font/otf";
@@ -32,22 +31,31 @@ export function dataUrlMime(
   value: string,
   kind: "image" | "font",
 ): string | null {
-  if (value.length > MAX_DATA_URL_LENGTH) return null;
-  const match = /^data:([a-z0-9/-]+);base64,([a-zA-Z0-9+/]+={0,2})$/.exec(
-    value,
-  );
-  if (!match || match[2].length % 4 !== 0) return null;
+  const comma = value.indexOf(",");
+  const header = /^data:([a-z0-9/-]+);base64$/.exec(value.slice(0, comma));
+  if (!header || (value.length - comma - 1) % 4 !== 0) return null;
+  // Validate in chunks: large files must not exhaust the regexp engine stack.
+  for (let i = comma + 1; i < value.length; i += 65536) {
+    const chunk = value.slice(i, i + 65536);
+    if (
+      !/^[A-Za-z0-9+/]*={0,2}$/.test(chunk) ||
+      (chunk.includes("=") && i + 65536 < value.length)
+    )
+      return null;
+  }
   try {
-    const bytes = Uint8Array.from(atob(match[2].slice(0, 64)), (c) =>
-      c.charCodeAt(0),
+    const bytes = Uint8Array.from(
+      atob(value.slice(comma + 1, comma + 65)),
+      (c) => c.charCodeAt(0),
     );
     const mime = kind === "image" ? imageMime(bytes) : fontMime(bytes);
-    return mime === match[1] ? mime : null;
+    return mime === header[1] ? mime : null;
   } catch {
     return null;
   }
 }
 export function safeImageSource(value: string): string | null {
+  if (isAssetRef(value)) return value;
   return value.startsWith("data:")
     ? dataUrlMime(value, "image")
       ? value

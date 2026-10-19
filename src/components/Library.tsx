@@ -13,6 +13,7 @@ import {
   Trash2,
   Type,
   Video,
+  Music2,
 } from "lucide-react";
 import { useProject } from "../state/ProjectContext";
 import { LABELS, type BlockType } from "../model/types";
@@ -23,6 +24,7 @@ export const BLOCK_ICONS = {
   image: Image,
   gif: Sparkles,
   video: Video,
+  audio: Music2,
   decoration: Shapes,
 };
 const DESCRIPTIONS: Record<BlockType, string> = {
@@ -31,11 +33,12 @@ const DESCRIPTIONS: Record<BlockType, string> = {
   image: "Картинка по ссылке",
   gif: "Немного движения",
   video: "YouTube или файл",
+  audio: "Свой звук и плеер",
   decoration: "Поверх вашей сетки",
 };
 const GROUPS: { code: string; title: string; types: BlockType[] }[] = [
   { code: "A", title: "BLOCKS", types: ["link", "text"] },
-  { code: "B", title: "MEDIA", types: ["image", "gif", "video"] },
+  { code: "B", title: "MEDIA", types: ["image", "gif", "video", "audio"] },
   { code: "C", title: "DECOR", types: ["decoration"] },
 ];
 export function Library({ onAdd }: { onAdd?: () => void }) {
