@@ -1127,7 +1127,7 @@
     padding-block: 28px;
   }
   .cta-content h2 {
-    font-size: 11vw;
+    font-size: clamp(28px, 9.5vw, 60px);
     margin-bottom: 25px;
   }
   .cta-content p {

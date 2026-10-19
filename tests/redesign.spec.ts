@@ -141,6 +141,22 @@ test("responsive compositions and panel switching fit phones, tablets, laptops a
         ),
         `${route} at ${width}px`,
       ).toBe(true);
+      const clippedHeadings = await page
+        .locator("h1, h2, h3")
+        .evaluateAll((nodes) =>
+          nodes
+            .filter((node) => {
+              const rect = node.getBoundingClientRect();
+              return (
+                rect.width > 0 &&
+                (node.scrollWidth > node.clientWidth + 1 ||
+                  rect.left < -1 ||
+                  rect.right > innerWidth + 1)
+              );
+            })
+            .map((node) => node.textContent),
+        );
+      expect(clippedHeadings, `${route} headings at ${width}px`).toEqual([]);
     }
     if (width <= 1050) {
       await page.goto("/editor");
