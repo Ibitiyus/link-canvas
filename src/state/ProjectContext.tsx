@@ -1,3 +1,4 @@
+import { createId } from "../model/id";
 import {
   createContext,
   useCallback,
@@ -120,7 +121,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     if (!source) return;
     let copy: Block = {
       ...source,
-      id: crypto.randomUUID(),
+      id: createId(),
       name: `${source.name} — копия`,
       x: source.x + 20,
       y: source.y + 20,

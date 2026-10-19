@@ -1,8 +1,9 @@
+import { createId } from "./id";
 import { firstFree } from "./grid";
 import { LABELS, type Block, type BlockType, type Project } from "./types";
 export function newBlock(type: BlockType): Block {
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     type,
     name: LABELS[type],
     content:

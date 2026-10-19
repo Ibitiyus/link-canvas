@@ -188,3 +188,21 @@
     flex-wrap: wrap;
   }
 }
+.error-details {
+  margin: 24px 0;
+  max-width: min(600px, 100%);
+  text-align: left;
+  font-size: 11px;
+  color: var(--muted);
+}
+.error-details summary {
+  cursor: pointer;
+  padding: 10px;
+  border: var(--line);
+}
+.error-details pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  border: var(--line);
+}

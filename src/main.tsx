@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { App } from "./App";
 import "@fontsource/archivo-black/latin-400.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
@@ -9,6 +10,8 @@ import "@fontsource/ibm-plex-mono/cyrillic-500.css";
 import "./style.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <AppErrorBoundary>
+      <App />
+    </AppErrorBoundary>
   </StrictMode>,
 );
