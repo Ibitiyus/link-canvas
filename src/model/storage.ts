@@ -85,7 +85,7 @@ export function parseProject(raw: string): Project {
       borderWidth: number(source.borderWidth, 0, 0, 20),
       fontSize: number(source.fontSize, 18, 8, 144),
       col: Math.round(number(source.col, 0, 0, 4)),
-      row: Math.round(number(source.row, 0, 0, 2000)),
+      row: Math.round(number(source.row, 0, 0, 5000)),
       colSpan: Math.round(number(source.colSpan, 1, 1, 5)),
       rowSpan: Math.round(number(source.rowSpan, 1, 1, 12)),
       x: number(source.x, 24, 0, 1400),
@@ -93,7 +93,7 @@ export function parseProject(raw: string): Project {
       width: number(source.width, 100, 24, 1400),
       height: number(source.height, 100, 24, 2000),
       rotation: number(source.rotation, 0, -180, 180),
-      zIndex: Math.round(number(source.zIndex, 1, 1, 10000)),
+      zIndex: Math.round(number(source.zIndex, 1, 1, 1_000_000)),
     };
     return clampDecoration(block, settings.maxWidth);
   });

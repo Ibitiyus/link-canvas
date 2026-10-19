@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { arrange } from "./grid";
 import { demoProject, newBlock } from "./defaults";
 import {
   parseProject,
@@ -83,4 +84,21 @@ describe("safe media", () => {
     ).toBeNull();
     expect(videoSource("https://example.com/page")).toBeNull();
   });
+});
+
+it("restores rows expanded by collision redistribution beyond the direct input limit", () => {
+  const project = demoProject();
+  project.blocks = arrange(
+    Array.from({ length: 30 }, (_, i) => ({
+      ...newBlock("text"),
+      id: String(i),
+      row: 2000,
+      col: 0,
+      colSpan: 4,
+      rowSpan: 12,
+    })),
+    4,
+    "29",
+  );
+  expect(parseProject(JSON.stringify(project))).toEqual(project);
 });
