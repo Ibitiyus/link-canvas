@@ -3,11 +3,11 @@ import { X } from "lucide-react";
 import { Canvas } from "../components/Canvas";
 import { BackLink } from "../components/Toolbar";
 import { useProject } from "../state/ProjectContext";
-import { safeUrl } from "../model/media";
+import { safeImageSource } from "../model/assets";
 export function Preview() {
   const { project } = useProject();
   const [notice, setNotice] = useState(true);
-  const background = safeUrl(project.page.backgroundImage);
+  const background = safeImageSource(project.page.backgroundImage);
   return (
     <div
       className="preview-page"

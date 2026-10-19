@@ -411,7 +411,19 @@ test("mobile layout and touch dragging are usable without horizontal overflow", 
     type: "touchEnd",
     touchPoints: [],
   });
-  expect((await saved(page)).blocks[0].row).toBe(1);
+  // CDP may acknowledge touchEnd before React commits and starts the save timer.
+  await expect
+    .poll(
+      async () =>
+        (
+          await page.evaluate(
+            (key) => JSON.parse(localStorage.getItem(key)!),
+            KEY,
+          )
+        ).blocks[0].row,
+    )
+    .toBe(1);
+  await saved(page);
   await page.getByRole("button", { name: "Предпросмотр", exact: true }).click();
   await expect(page.locator(".text-content")).toHaveText("Мобильный текст");
   expect(

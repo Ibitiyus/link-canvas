@@ -21,6 +21,7 @@ export interface Block {
   borderWidth: number;
   borderColor: string;
   fontSize: number;
+  fontFamily?: string;
   align: Align;
   bold: boolean;
   col: number;
@@ -43,8 +44,14 @@ export interface PageSettings {
   maxWidth: number;
   font: "system" | "serif" | "mono";
 }
+export interface CustomFont {
+  id: string;
+  name: string;
+  dataUrl: string;
+}
 export interface Project {
   version: 1;
+  customFonts?: CustomFont[];
   page: PageSettings;
   blocks: Block[];
 }

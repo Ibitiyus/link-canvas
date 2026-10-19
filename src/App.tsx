@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ProjectProvider } from "./state/ProjectContext";
+import { ProjectFonts } from "./components/ProjectFonts";
 import { Home } from "./pages/Home";
 import { Editor } from "./pages/Editor";
 import { NotFound } from "./pages/NotFound";
@@ -8,6 +9,7 @@ export function App() {
   return (
     <BrowserRouter>
       <ProjectProvider>
+        <ProjectFonts />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/editor" element={<Editor />} />

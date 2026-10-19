@@ -256,3 +256,5 @@
     padding: 12px;
   }
 }
+/* Uploaded regular font files can still use the block's bold setting. */
+.block-content { font-synthesis: weight style; }

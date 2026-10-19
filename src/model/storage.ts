@@ -1,7 +1,15 @@
+import { dataUrlMime, MAX_CUSTOM_FONTS, parseImageSource } from "./assets";
+import { validFontChoice } from "./fonts";
 import { clampDecoration } from "./decoration";
 import { arrange } from "./grid";
 import { emptyProject, newBlock } from "./defaults";
-import { LABELS, type Block, type BlockType, type Project } from "./types";
+import {
+  LABELS,
+  type Block,
+  type BlockType,
+  type CustomFont,
+  type Project,
+} from "./types";
 
 export const STORAGE_KEY = "link-canvas.project.v1";
 const MAX_BLOCKS = 200;
@@ -46,7 +54,7 @@ export function parseProject(raw: string): Project {
   const settings: Project["page"] = {
     title: text(page.title, defaults.title, 160),
     background: color(page.background, defaults.background),
-    backgroundImage: text(page.backgroundImage, "", 2048),
+    backgroundImage: parseImageSource(page.backgroundImage),
     columns: [3, 4, 5].includes(page.columns as number)
       ? (page.columns as 3 | 4 | 5)
       : 4,
@@ -54,6 +62,29 @@ export function parseProject(raw: string): Project {
     maxWidth: number(page.maxWidth, 880, 320, 1400),
     font: page.font === "serif" || page.font === "mono" ? page.font : "system",
   };
+  const fontInput = input.customFonts;
+  if (
+    fontInput !== undefined &&
+    (!Array.isArray(fontInput) || fontInput.length > MAX_CUSTOM_FONTS)
+  )
+    throw new Error("В проекте может быть не больше 8 установленных шрифтов.");
+  const fontIds = new Set<string>();
+  const customFonts: CustomFont[] = (
+    (fontInput as unknown[] | undefined) ?? []
+  ).map((value) => {
+    const font = object(value);
+    const id = text(font.id, "", 100);
+    if (!/^[A-Za-z0-9_-]{1,100}$/.test(id) || fontIds.has(id))
+      throw new Error("Некорректный или повторяющийся ID шрифта.");
+    if (typeof font.dataUrl !== "string" || !dataUrlMime(font.dataUrl, "font"))
+      throw new Error("Некорректный файл шрифта в проекте.");
+    fontIds.add(id);
+    return {
+      id,
+      name: text(font.name, "Мой шрифт", 80),
+      dataUrl: font.dataUrl,
+    };
+  });
   const ids = new Set<string>();
   const blocks = input.blocks.map((value) => {
     const source = object(value);
@@ -69,8 +100,11 @@ export function parseProject(raw: string): Project {
       id,
       name: text(source.name, defaults.name, 160),
       content: text(source.content, defaults.content),
-      url: text(source.url, "", 2048),
-      imageUrl: text(source.imageUrl, "", 2048),
+      url:
+        source.type === "image" || source.type === "gif"
+          ? parseImageSource(source.url)
+          : text(source.url, "", 2048),
+      imageUrl: parseImageSource(source.imageUrl),
       fit: source.fit === "contain" ? "contain" : "cover",
       background: color(source.background, defaults.background),
       color: color(source.color, defaults.color),
@@ -95,10 +129,16 @@ export function parseProject(raw: string): Project {
       rotation: number(source.rotation, 0, -180, 180),
       zIndex: Math.round(number(source.zIndex, 1, 1, 1_000_000)),
     };
+    if (source.fontFamily !== undefined) {
+      if (!validFontChoice(source.fontFamily, customFonts))
+        throw new Error("Неизвестный шрифт или отсутствует его файл.");
+      block.fontFamily = source.fontFamily;
+    }
     return clampDecoration(block, settings.maxWidth);
   });
   return {
     version: 1,
+    ...(fontInput === undefined ? {} : { customFonts }),
     page: settings,
     blocks: arrange(blocks, settings.columns),
   };

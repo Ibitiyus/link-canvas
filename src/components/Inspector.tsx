@@ -14,6 +14,8 @@ import { LABELS, type Align } from "../model/types";
 import { safeUrl, videoSource } from "../model/media";
 import { ColorField, Field, NumberField } from "./Fields";
 import { PanelHeader } from "./ui/PanelHeader";
+import { ImageInput } from "./ImageInput";
+import { FontPicker } from "./FontPicker";
 import { PageSettings } from "./PageSettings";
 
 export function Inspector() {
@@ -115,7 +117,7 @@ export function Inspector() {
               />
             </Field>
           )}
-          {["link", "image", "gif", "video"].includes(block.type) && (
+          {["link", "video"].includes(block.type) && (
             <>
               <Field
                 label={
@@ -158,16 +160,26 @@ export function Inspector() {
               Плеер можно запустить в предпросмотре.
             </p>
           )}
-          {(block.type === "link" || block.type === "decoration") && (
-            <Field label="Изображение (необязательно)">
-              <input
-                type="url"
-                value={block.imageUrl}
-                maxLength={2048}
-                placeholder="https://…"
-                onChange={(event) => patch({ imageUrl: event.target.value })}
-              />
-            </Field>
+          {(block.type === "image" || block.type === "gif") && (
+            <ImageInput
+              label={block.type === "gif" ? "URL GIF" : "URL изображения"}
+              value={block.url}
+              onChange={(url) => patch({ url })}
+            />
+          )}
+          {(block.type === "link" ||
+            block.type === "decoration" ||
+            (block.type === "video" &&
+              videoSource(block.url)?.kind === "file")) && (
+            <ImageInput
+              label={
+                block.type === "video"
+                  ? "Обложка видео (необязательно)"
+                  : "Изображение (необязательно)"
+              }
+              value={block.imageUrl}
+              onChange={(imageUrl) => patch({ imageUrl })}
+            />
           )}
           {(["image", "gif", "link", "decoration"].includes(block.type) ||
             (block.type === "video" &&
@@ -246,6 +258,7 @@ export function Inspector() {
               onChange={(borderColor) => patch({ borderColor })}
             />
           </div>
+          {block.type === "text" && <FontPicker block={block} />}
           {["text", "link", "decoration"].includes(block.type) && (
             <>
               <NumberField

@@ -6,7 +6,7 @@ import {
 } from "react";
 import { Grip, MoveUpRight } from "lucide-react";
 import { clampBlock, gridRows } from "../model/grid";
-import { safeUrl } from "../model/media";
+import { safeImageSource } from "../model/assets";
 import { FONTS, ROW_HEIGHT, type Block, type Project } from "../model/types";
 import { BlockContent } from "./BlockContent";
 
@@ -151,7 +151,7 @@ export function Canvas({
   const decorBlocks = blocks
     .filter((b) => b.type === "decoration")
     .sort((a, b) => a.zIndex - b.zIndex);
-  const backgroundImage = safeUrl(page.backgroundImage);
+  const backgroundImage = safeImageSource(page.backgroundImage);
   return (
     <div
       className={`page-surface ${editing ? "editor-surface" : ""}`}

@@ -1,6 +1,6 @@
 import { useProject } from "../state/ProjectContext";
 import { ColorField, Field, NumberField } from "./Fields";
-import { safeUrl } from "../model/media";
+import { ImageInput } from "./ImageInput";
 export function PageSettings() {
   const { project, updatePage } = useProject();
   const { page } = project;
@@ -73,20 +73,11 @@ export function PageSettings() {
         value={page.background}
         onChange={(background) => updatePage({ background })}
       />
-      <Field label="Фоновое изображение" hint="Полный HTTP(S) URL">
-        <input
-          type="url"
-          placeholder="https://…"
-          value={page.backgroundImage}
-          maxLength={2048}
-          onChange={(event) =>
-            updatePage({ backgroundImage: event.target.value })
-          }
-        />
-      </Field>
-      {page.backgroundImage && !safeUrl(page.backgroundImage) && (
-        <p className="field-error">Некорректный URL фонового изображения.</p>
-      )}
+      <ImageInput
+        label="Фоновое изображение"
+        value={page.backgroundImage}
+        onChange={(backgroundImage) => updatePage({ backgroundImage })}
+      />
       <Field label="Основной шрифт">
         <select
           value={page.font}

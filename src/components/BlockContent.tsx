@@ -1,6 +1,8 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { ArrowUpRight, ImageIcon, Play, TriangleAlert } from "lucide-react";
 import { safeUrl, videoSource } from "../model/media";
+import { safeImageSource } from "../model/assets";
+import { resolveBlockFont } from "../model/fonts";
 import type { Block } from "../model/types";
 
 export function RemoteImage({
@@ -12,7 +14,7 @@ export function RemoteImage({
   fit: "cover" | "contain";
   alt: string;
 }) {
-  const src = safeUrl(url);
+  const src = safeImageSource(url);
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [url]);
   if (!src || failed)
@@ -69,7 +71,7 @@ function Video({ block }: { block: Block }) {
   return (
     <video
       src={source.src}
-      poster={safeUrl(block.imageUrl) ?? undefined}
+      poster={safeImageSource(block.imageUrl) ?? undefined}
       controls
       preload="metadata"
       playsInline
@@ -86,6 +88,8 @@ export function blockStyle(block: Block): CSSProperties {
     opacity: block.opacity,
     border: `${block.borderWidth}px solid ${block.borderColor}`,
     fontSize: block.fontSize,
+    fontFamily:
+      block.type === "text" ? resolveBlockFont(block.fontFamily) : undefined,
     textAlign: block.align,
     fontWeight: block.bold ? 700 : 400,
   };
