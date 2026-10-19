@@ -69,6 +69,7 @@ function Video({ block }: { block: Block }) {
   return (
     <video
       src={source.src}
+      poster={safeUrl(block.imageUrl) ?? undefined}
       controls
       preload="metadata"
       playsInline

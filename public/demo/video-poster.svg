@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+<defs><pattern id="lines" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 0h6" stroke="#89898e" stroke-width="1"/></pattern></defs>
+<path fill="#17171a" d="M0 0h640v360H0z"/><path fill="url(#lines)" d="M0 0h640v360H0z" opacity=".25"/>
+<g fill="none" stroke="#f2efeb" stroke-width="2"><ellipse cx="320" cy="175" rx="160" ry="90"/><ellipse cx="320" cy="175" rx="110" ry="90"/><ellipse cx="320" cy="175" rx="45" ry="90"/><ellipse cx="320" cy="175" rx="160" ry="38"/><path d="M160 175h320M320 85v180"/></g>
+<rect x="239" y="146" width="162" height="58" fill="#ff3355"/><text x="263" y="182" fill="#0d0d0f" font-size="21" font-family="monospace" font-weight="bold">PLAY ME ↗</text>
+<text x="22" y="29" fill="#f2efeb" font-family="monospace" font-size="13">TRANSMISSION_01 // 00:03</text><text x="22" y="335" fill="#ff4fa3" font-family="monospace" font-size="12">INDEPENDENT SIGNAL. NO ALGORITHM.</text>
+</svg>

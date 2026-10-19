@@ -16,6 +16,15 @@ async function reset(page: Page) {
   await expect(page.locator("[data-block-id]")).toHaveCount(0);
 }
 async function add(page: Page, type: string) {
+  if (
+    !(await page
+      .getByRole("button", { name: `Добавить: ${type}`, exact: true })
+      .isVisible())
+  ) {
+    await page
+      .getByRole("button", { name: "Открыть библиотеку", exact: true })
+      .click();
+  }
   await page
     .getByRole("button", { name: `Добавить: ${type}`, exact: true })
     .click();
@@ -379,6 +388,9 @@ test("mobile layout and touch dragging are usable without horizontal overflow", 
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+  await page
+    .getByRole("button", { name: "Открыть полотно", exact: true })
+    .click();
   const handle = page.getByRole("button", {
     name: "Переместить: Текст",
     exact: true,

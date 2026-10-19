@@ -1,7 +1,8 @@
-import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ProjectProvider } from "./state/ProjectContext";
 import { Home } from "./pages/Home";
 import { Editor } from "./pages/Editor";
+import { NotFound } from "./pages/NotFound";
 import { Preview } from "./pages/Preview";
 export function App() {
   return (
@@ -11,17 +12,7 @@ export function App() {
           <Route path="/" element={<Home />} />
           <Route path="/editor" element={<Editor />} />
           <Route path="/preview" element={<Preview />} />
-          <Route
-            path="*"
-            element={
-              <main className="not-found">
-                <h1>Страница не найдена</h1>
-                <Link className="primary-button" to="/editor">
-                  Открыть редактор
-                </Link>
-              </main>
-            }
-          />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </ProjectProvider>
     </BrowserRouter>

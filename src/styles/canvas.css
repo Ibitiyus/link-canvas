@@ -1,0 +1,258 @@
+/* Content rendering is independent of the app theme. User values remain inline. */
+.page-surface {
+  padding: 20px;
+  margin: 0 auto;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  color-scheme: normal;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.canvas {
+  display: grid;
+  position: relative;
+  align-content: start;
+  isolation: isolate;
+  width: 100%;
+}
+.canvas-block {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  z-index: 1;
+}
+.block-content {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+.block-content img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  user-select: none;
+}
+.text-content {
+  width: 100%;
+  padding: 22px;
+  white-space: pre-wrap;
+  max-height: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.block-content iframe,
+.block-content video {
+  border: 0;
+  width: 100%;
+  height: 100%;
+  background: #08080c;
+}
+.block-content.editing iframe,
+.block-content.editing video {
+  pointer-events: none;
+}
+.media-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  width: 100%;
+  padding: 14px;
+  font-size: 11px;
+  font-weight: 400;
+  color: inherit;
+  opacity: 0.65;
+  text-align: center;
+}
+.link-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 10px;
+  padding: 22px;
+  flex-wrap: wrap;
+  color: inherit;
+  isolation: isolate;
+  text-align: inherit;
+}
+.link-content > span {
+  position: relative;
+  z-index: 1;
+  white-space: pre-wrap;
+}
+.link-arrow {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  z-index: 1;
+}
+.link-image {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.link-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #0005;
+}
+.link-content small {
+  font-size: 10px;
+  font-weight: 400;
+  flex-basis: 100%;
+}
+.free-block {
+  position: absolute;
+  min-width: 0;
+  touch-action: none;
+}
+.decoration-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  user-select: none;
+  white-space: pre-wrap;
+}
+/* Only editor affordances use the interface tokens below. */
+.editor-surface {
+  outline: 1px solid var(--border-strong);
+}
+.grid-cell {
+  border: 1px dashed #ffffff29;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  min-width: 0;
+}
+.grid-cell span {
+  font: 400 16px var(--ui-font);
+  color: #ffffff55;
+}
+.grid-cell.occupied {
+  background: repeating-linear-gradient(
+    135deg,
+    #ffffff09 0 1px,
+    transparent 1px 7px
+  );
+}
+.canvas-block.editable {
+  cursor: pointer;
+}
+.canvas-block.selected,
+.free-block.selected {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+.free-block.editable {
+  cursor: move;
+}
+.drag-handle {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  max-width: calc(100% - 12px);
+  border: 1px solid var(--border-strong);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 4px 6px;
+  cursor: grab;
+  touch-action: none;
+  font: 400 9px/1.4 var(--ui-font);
+  z-index: 3;
+  opacity: 0;
+  transition: opacity var(--fast);
+}
+.drag-handle span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 90px;
+}
+.editable:hover .drag-handle,
+.editable:focus-within .drag-handle,
+.selected .drag-handle {
+  opacity: 1;
+}
+.selected .drag-handle {
+  color: var(--ink);
+  background: var(--red);
+  border-color: var(--red);
+}
+.resize-handle {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: var(--red);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  z-index: 5;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+.resize-handle svg {
+  transform: rotate(90deg);
+}
+.size-badge {
+  position: absolute;
+  bottom: 6px;
+  right: 7px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 400 9px/1.4 var(--ui-font);
+  padding: 3px 5px;
+  pointer-events: none;
+}
+.drag-source {
+  opacity: 0.35;
+}
+.drop-ghost {
+  z-index: 4;
+  background: #ff33552a;
+  border: 2px dashed var(--red);
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+}
+.drop-ghost span {
+  background: var(--red);
+  padding: 6px;
+  font: 500 10px/1.4 var(--ui-font);
+  color: var(--ink);
+}
+.canvas.is-dragging .drag-handle {
+  cursor: grabbing;
+}
+@media (max-width: 1050px), (hover: none) {
+  .drag-handle {
+    opacity: 1;
+  }
+}
+@media (max-width: 640px) {
+  .page-surface {
+    padding: 12px;
+  }
+  .text-content,
+  .link-content {
+    padding: 12px;
+  }
+}

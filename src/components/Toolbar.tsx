@@ -14,6 +14,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useProject } from "../state/ProjectContext";
+import { Brand } from "./ui/Brand";
 import { emptyProject } from "../model/defaults";
 import { parseProject } from "../model/storage";
 export function Toolbar() {
@@ -70,16 +71,12 @@ export function Toolbar() {
   };
   return (
     <header className="editor-toolbar">
-      <Link className="brand" to="/" aria-label="Link Canvas — главная">
-        <span className="brand-mark">
-          <ArrowUpRight size={22} />
-        </span>
-        <span>
-          link<span className="brand-light">canvas</span>
-        </span>
-      </Link>
+      <Brand />
+      <span className="toolbar-edition" aria-hidden="true">
+        EDITOR_01
+      </span>
       <span className="toolbar-divider" />
-      <span className="project-name">
+      <span className="project-name" title={project.page.title}>
         {project.page.title || "Без названия"}
       </span>
       <button
@@ -173,6 +170,7 @@ export function Toolbar() {
       >
         <Eye size={16} />
         <span>Предпросмотр</span>
+        <ArrowUpRight size={16} />
       </button>
     </header>
   );

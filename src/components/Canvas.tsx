@@ -12,6 +12,7 @@ import { BlockContent } from "./BlockContent";
 
 interface Props {
   project: Project;
+  rowHeight?: number;
   editing?: boolean;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
@@ -25,6 +26,7 @@ interface Gesture {
 export function Canvas({
   project,
   editing = false,
+  rowHeight = ROW_HEIGHT,
   selectedId,
   onSelect,
   onUpdate,
@@ -46,10 +48,7 @@ export function Canvas({
       .filter((b) => b.type === "decoration")
       .map((b) => b.y + b.height + 32),
   );
-  const height = Math.max(
-    rows * ROW_HEIGHT + (rows - 1) * page.gap,
-    decoBottom,
-  );
+  const height = Math.max(rows * rowHeight + (rows - 1) * page.gap, decoBottom);
   const start = (
     event: ReactPointerEvent,
     block: Block,
@@ -64,7 +63,7 @@ export function Canvas({
       startY = event.clientY;
     const rect = board.current.getBoundingClientRect();
     const unitX = (rect.width + page.gap) / page.columns,
-      unitY = ROW_HEIGHT + page.gap;
+      unitY = rowHeight + page.gap;
     let candidate = block;
     setGesture({ id: block.id, mode, block });
     const move = (next: PointerEvent) => {
@@ -171,7 +170,7 @@ export function Canvas({
         data-testid="canvas"
         style={{
           gridTemplateColumns: `repeat(${page.columns}, minmax(0, 1fr))`,
-          gridAutoRows: ROW_HEIGHT,
+          gridAutoRows: rowHeight,
           gap: page.gap,
           minHeight: height,
         }}

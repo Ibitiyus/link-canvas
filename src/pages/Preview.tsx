@@ -20,6 +20,7 @@ export function Preview() {
     >
       {notice && (
         <div className="preview-notice">
+          <span className="preview-mode">[ PREVIEW_MODE ]</span>
           <BackLink />
           <span>Локальный предпросмотр · доступен только в этом браузере</span>
           <button

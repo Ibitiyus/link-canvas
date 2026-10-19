@@ -1,0 +1,190 @@
+/* Preview content uses the saved page theme. Only the dismissible notice is app UI. */
+.preview-page {
+  min-height: 100svh;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.preview-content {
+  padding: 40px 20px;
+  min-height: 100svh;
+}
+.preview-content > .page-surface {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+.preview-notice {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--red);
+  color: var(--muted);
+  font-size: 9px;
+  padding: 13px 20px;
+}
+.preview-mode {
+  font-size: 9px;
+  color: var(--red);
+}
+.preview-notice > span:not(.preview-mode) {
+  margin-left: auto;
+}
+.preview-notice button {
+  color: var(--paper);
+  width: 28px;
+  height: 28px;
+}
+.preview-notice button:hover {
+  color: var(--pink);
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--paper);
+  font-size: 10px;
+}
+.text-link:hover {
+  color: var(--pink);
+}
+.error-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  background: var(--bg);
+  padding: 0 clamp(24px, 5vw, 80px);
+}
+.error-page header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: 90px;
+  border-bottom: var(--line);
+}
+.error-page main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 70px 0;
+  flex: 1;
+  text-align: center;
+}
+.error-label {
+  font-size: 10px;
+  color: var(--pink);
+  letter-spacing: 1px;
+}
+.error-number {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 400 clamp(90px, 20vw, 260px)/1 var(--display-font);
+  letter-spacing: -0.08em;
+  color: var(--paper);
+  margin: 22px 0;
+}
+.error-number > span > svg {
+  display: block;
+  width: 0.85em;
+  height: 0.85em;
+}
+.error-number > span {
+  color: var(--red);
+  font-family: Arial, sans-serif;
+  transform: rotate(-15deg);
+}
+.error-page h1 {
+  font: 400 clamp(25px, 4vw, 48px)/1.1 var(--display-font);
+  letter-spacing: -0.05em;
+}
+.error-page main > p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.9;
+  margin-top: 24px;
+}
+.error-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+.error-page footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: var(--line);
+  padding-block: 23px;
+  color: var(--muted);
+  font-size: 8px;
+}
+@media (max-width: 760px) {
+  .preview-notice {
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+  .preview-notice > span:not(.preview-mode) {
+    order: 4;
+    width: 100%;
+    margin-left: 0;
+    font-size: 8px;
+  }
+  .preview-notice button {
+    margin-left: auto;
+  }
+  .text-link {
+    font-size: 9px;
+  }
+  .preview-content {
+    padding: 24px 10px;
+  }
+  .preview-content > .page-surface {
+    padding: 8px;
+  }
+  .error-page header .eyebrow {
+    font-size: 7px;
+    max-width: 100px;
+    text-align: right;
+  }
+  .error-page header .brand-wordmark {
+    font-size: 15px;
+  }
+  .error-page header .brand-mark {
+    width: 28px;
+    height: 28px;
+  }
+  .error-actions {
+    flex-wrap: wrap;
+  }
+  .error-page footer {
+    font-size: 7px;
+  }
+  .error-page footer > span:last-child {
+    text-align: right;
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 400px) {
+  .error-page header {
+    gap: 12px;
+  }
+  .error-page header .eyebrow {
+    max-width: 74px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 6px;
+  }
+  .error-page header .brand-wordmark {
+    font-size: 13px;
+  }
+  .error-page footer {
+    flex-wrap: wrap;
+  }
+}

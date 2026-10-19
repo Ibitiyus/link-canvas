@@ -13,6 +13,7 @@ import { useProject } from "../state/ProjectContext";
 import { LABELS, type Align } from "../model/types";
 import { safeUrl, videoSource } from "../model/media";
 import { ColorField, Field, NumberField } from "./Fields";
+import { PanelHeader } from "./ui/PanelHeader";
 import { PageSettings } from "./PageSettings";
 
 export function Inspector() {
@@ -26,7 +27,16 @@ export function Inspector() {
     if (block) updateBlock(block.id, update);
   };
   return (
-    <aside className="inspector panel">
+    <aside
+      className="inspector panel"
+      id="inspector-panel"
+      aria-label="Настройки блока и страницы"
+    >
+      <PanelHeader
+        index="03"
+        title="CONTROL PANEL"
+        subtitle="ВСЁ РЕШАЮТ ДЕТАЛИ"
+      />
       <div className="panel-tabs">
         <button
           className={tab === "block" ? "active" : ""}
@@ -75,6 +85,9 @@ export function Inspector() {
               </button>
             </div>
           </div>
+          <h3>
+            <span>01 /</span> CONTENT <small>Содержимое</small>
+          </h3>
           <Field label="Название блока">
             <input
               maxLength={160}
@@ -171,7 +184,9 @@ export function Inspector() {
               </select>
             </Field>
           )}
-          <h3>Оформление</h3>
+          <h3>
+            <span>02 /</span> APPEARANCE <small>Оформление</small>
+          </h3>
           <div className="field-pair">
             <ColorField
               label="Фон блока"
@@ -194,13 +209,16 @@ export function Inspector() {
                 }
                 onChange={(event) =>
                   patch({
-                    background: event.target.checked ? "#00000000" : "#252136",
+                    background: event.target.checked ? "#00000000" : "#222226",
                   })
                 }
               />
               Прозрачный фон
             </label>
           )}
+          <h3>
+            <span>03 /</span> EFFECTS <small>Эффекты</small>
+          </h3>
           <div className="field-pair">
             <NumberField
               label="Скругление"
@@ -269,9 +287,8 @@ export function Inspector() {
             </>
           )}
           <h3>
-            {block.type === "decoration"
-              ? "Свободное расположение"
-              : "Положение в сетке"}
+            <span>04 /</span> LAYOUT{" "}
+            <small>{block.type === "decoration" ? "Свободно" : "Сетка"}</small>
           </h3>
           {block.type === "decoration" ? (
             <>

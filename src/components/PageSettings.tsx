@@ -6,6 +6,14 @@ export function PageSettings() {
   const { page } = project;
   return (
     <div className="inspector-fields">
+      <div className="page-settings-intro">
+        <span>MAKE IT YOURS.</span>
+        <p>
+          Тема интерфейса — наша.
+          <br />
+          Ваша страница — только ваша.
+        </p>
+      </div>
       <Field label="Название страницы">
         <input
           value={page.title}
@@ -13,13 +21,15 @@ export function PageSettings() {
           onChange={(event) => updatePage({ title: event.target.value })}
         />
       </Field>
-      <h3>Оформление</h3>
+      <h3>
+        <span>01 /</span> APPEARANCE <small>Стиль страницы</small>
+      </h3>
       <div className="theme-presets" aria-label="Варианты оформления">
         <button
           className="theme-dark"
           onClick={() =>
             updatePage({
-              background: "#171321",
+              background: "#0d0d0f",
               backgroundImage: "",
               font: "system",
               gap: 16,
@@ -33,7 +43,7 @@ export function PageSettings() {
           className="theme-paper"
           onClick={() =>
             updatePage({
-              background: "#f5f1e9",
+              background: "#f2efeb",
               backgroundImage: "",
               font: "serif",
               gap: 20,
@@ -89,7 +99,9 @@ export function PageSettings() {
           <option value="mono">Моноширинный · Mono</option>
         </select>
       </Field>
-      <h3>Сетка и полотно</h3>
+      <h3>
+        <span>02 /</span> GRID_SYSTEM <small>Полотно</small>
+      </h3>
       <Field label="Колонки">
         <select
           value={page.columns}

@@ -16,15 +16,15 @@ export function newBlock(type: BlockType): Block {
     fit: "cover",
     background:
       type === "text"
-        ? "#ede9fe"
+        ? "#f2efeb"
         : type === "decoration"
           ? "#00000000"
-          : "#252136",
-    color: type === "text" ? "#211834" : "#ffffff",
-    radius: 22,
+          : "#222226",
+    color: type === "text" ? "#0d0d0f" : "#ffffff",
+    radius: 2,
     opacity: 1,
     borderWidth: 0,
-    borderColor: "#8b5cf6",
+    borderColor: "#ff3355",
     fontSize: type === "text" ? 26 : type === "decoration" ? 64 : 18,
     align: type === "text" ? "left" : "center",
     bold: type === "text",
@@ -44,7 +44,7 @@ export const emptyProject = (): Project => ({
   version: 1,
   page: {
     title: "Моё пространство",
-    background: "#171321",
+    background: "#0d0d0f",
     backgroundImage: "",
     columns: 4,
     gap: 16,
@@ -58,7 +58,7 @@ export function demoProject(): Project {
   const intro = {
     ...newBlock("text"),
     name: "Приветствие",
-    content: "Привет, я Саша ✳\nСобираю идеи и создаю новое.",
+    content: "Привет, я Саша ✦\nСобираю идеи и создаю новое.",
     colSpan: 3,
     rowSpan: 2,
     fontSize: 30,
@@ -68,7 +68,8 @@ export function demoProject(): Project {
     name: "Мои проекты",
     content: "Мои проекты",
     url: "https://github.com",
-    background: "#7c3aed",
+    background: "#ff3355",
+    color: "#0d0d0f",
     col: 3,
     rowSpan: 2,
   };
@@ -80,8 +81,8 @@ export function demoProject(): Project {
     row: 2,
     rowSpan: 2,
     fontSize: 23,
-    background: "#d9f99d",
-    color: "#263916",
+    background: "#ffb6cf",
+    color: "#0d0d0f",
   };
   const another = {
     ...newBlock("link"),
@@ -91,7 +92,7 @@ export function demoProject(): Project {
     col: 2,
     row: 2,
     colSpan: 2,
-    background: "#2c263b",
+    background: "#222226",
   };
   project.blocks = [intro, link, note, another];
   return project;

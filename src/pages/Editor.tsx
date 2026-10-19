@@ -1,11 +1,20 @@
-import { useEffect } from "react";
-import { CircleHelp, Grid2X2, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  CircleHelp,
+  Grid2X2,
+  Layers,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { useProject } from "../state/ProjectContext";
 import { Toolbar } from "../components/Toolbar";
 import { Library } from "../components/Library";
 import { Inspector } from "../components/Inspector";
 import { Canvas } from "../components/Canvas";
 export function Editor() {
+  const [mobilePanel, setMobilePanel] = useState<
+    "library" | "canvas" | "inspector"
+  >("canvas");
   const {
     project,
     selectedId,
@@ -48,7 +57,7 @@ export function Editor() {
     return () => window.removeEventListener("keydown", key);
   }, [selectedId, undo, redo, remove, duplicate, select]);
   return (
-    <div className="editor-shell">
+    <div className="editor-shell" data-mobile-panel={mobilePanel}>
       <Toolbar />
       {message && (
         <div role="alert" className="notification">
@@ -63,15 +72,47 @@ export function Editor() {
           </button>
         </div>
       )}
+      <nav className="mobile-toolbar" aria-label="Панели редактора">
+        <button
+          aria-label="Открыть библиотеку"
+          aria-controls="library-panel"
+          aria-expanded={mobilePanel === "library"}
+          className={mobilePanel === "library" ? "active" : ""}
+          onClick={() => setMobilePanel("library")}
+        >
+          <Layers size={16} />
+          Блоки и слои
+        </button>
+        <button
+          aria-label="Открыть полотно"
+          aria-controls="workspace-panel"
+          aria-expanded={mobilePanel === "canvas"}
+          className={mobilePanel === "canvas" ? "active" : ""}
+          onClick={() => setMobilePanel("canvas")}
+        >
+          <Grid2X2 size={16} />
+          Полотно
+        </button>
+        <button
+          aria-label="Открыть настройки"
+          aria-controls="inspector-panel"
+          aria-expanded={mobilePanel === "inspector"}
+          className={mobilePanel === "inspector" ? "active" : ""}
+          onClick={() => setMobilePanel("inspector")}
+        >
+          <SlidersHorizontal size={16} />
+          Настройки
+        </button>
+      </nav>
       <div className="editor-layout">
-        <Library />
-        <main className="workspace">
+        <Library onAdd={() => setMobilePanel("inspector")} />
+        <main className="workspace" id="workspace-panel">
           <div className="workspace-heading">
             <div>
-              <span className="eyebrow">ВАШЕ ПОЛОТНО</span>
+              <span className="eyebrow">02 / YOUR PERSONAL INTERNET</span>
               <h1>
                 {project.page.title || "Без названия"}
-                <span className="draft-badge">Черновик</span>
+                <span className="draft-badge">LOCAL DRAFT</span>
               </h1>
             </div>
             <span className="grid-label">
@@ -80,6 +121,21 @@ export function Editor() {
             </span>
           </div>
           <div className="canvas-scroll">
+            <div
+              className="canvas-ruler"
+              style={{
+                maxWidth: project.page.maxWidth,
+                gridTemplateColumns: `repeat(${project.page.columns}, minmax(0, 1fr))`,
+              }}
+              aria-hidden="true"
+            >
+              {Array.from({ length: project.page.columns }, (_, i) => (
+                <span key={i}>
+                  {String(i + 1).padStart(2, "0")}
+                  <i>+</i>
+                </span>
+              ))}
+            </div>
             <Canvas
               project={project}
               editing
@@ -90,8 +146,8 @@ export function Editor() {
           </div>
           <div className="workspace-footer">
             <span>
-              <span className="tiny-dot" /> {project.blocks.length} блоков ·
-              сохраняется локально
+              <span className="tiny-dot" /> SYSTEM_READY /{" "}
+              {project.blocks.length} блоков
             </span>
             <span>Ctrl/⌘ Z — отменить · Esc — снять выбор</span>
           </div>

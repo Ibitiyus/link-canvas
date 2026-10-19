@@ -1,0 +1,224 @@
+:root {
+  font-family: var(--ui-font);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--paper);
+  background: var(--bg);
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: inherit;
+  cursor: pointer;
+  border: 0;
+  background: none;
+}
+button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+svg {
+  flex-shrink: 0;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 4px;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 1px solid var(--pink);
+  border-color: var(--pink) !important;
+}
+.primary-button,
+.secondary-button,
+.ink-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--control-height);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 500;
+  transition:
+    background var(--fast),
+    color var(--fast),
+    transform var(--fast),
+    box-shadow var(--fast);
+}
+.primary-button {
+  color: var(--ink);
+  background: var(--red);
+  border-color: var(--red);
+}
+.primary-button:hover {
+  background: var(--pink);
+  border-color: var(--pink);
+  box-shadow: 3px 3px 0 var(--paper);
+  transform: translate(-2px, -2px);
+}
+.secondary-button {
+  border-color: var(--border-strong);
+  background: transparent;
+}
+.secondary-button:hover {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}
+.ink-button {
+  color: var(--paper);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.ink-button:hover {
+  background: var(--paper);
+  color: var(--ink);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: var(--red);
+  color: var(--ink);
+}
+.brand-wordmark {
+  font: 400 18px/1 var(--display-font);
+  letter-spacing: -0.8px;
+}
+.brand-slash {
+  color: var(--red);
+  margin: 0 1px;
+}
+.brand-asterisk {
+  font: 400 9px var(--ui-font);
+  vertical-align: top;
+  margin-left: 3px;
+}
+.brand:hover .brand-mark {
+  background: var(--pink);
+}
+.icon-button {
+  width: 34px;
+  min-height: 36px;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  transition:
+    background var(--fast),
+    color var(--fast),
+    border-color var(--fast);
+}
+.icon-button:hover:not(:disabled) {
+  background: var(--surface-raised);
+  color: var(--pink);
+  border-color: var(--border);
+}
+.tiny-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: var(--red);
+  margin-right: 7px;
+}
+.muted {
+  color: var(--muted);
+}
+.caption {
+  font-size: 10px;
+  line-height: 1.8;
+}
+.eyebrow,
+.section-kicker {
+  font: 400 10px/1.5 var(--ui-font);
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 12px;
+  z-index: 1000;
+}
+.skip-link:focus {
+  top: 12px;
+}
+.spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
