@@ -133,7 +133,7 @@ export function ProjectProvider({
       result.project.blocks = result.project.blocks.map((b) =>
         b.id === result.id ? { ...b, layer: project.blocks.length } : b,
       );
-    change(result.project);
+    change(moveLayer(result.project, result.id, "front"));
     select(result.id);
   };
   const remove = (id: string) => {
@@ -157,7 +157,9 @@ export function ProjectProvider({
       id: createId(),
       name: `${source.name} — копия`,
       ...(source.locked ? { locked: false } : {}),
-      ...(source.layer !== undefined ? { layer: project.blocks.length } : {}),
+      ...(project.blocks.some((b) => b.layer !== undefined)
+        ? { layer: project.blocks.length }
+        : {}),
       x: source.x + 20,
       y: source.y + 20,
     };
@@ -175,10 +177,19 @@ export function ProjectProvider({
         project.blocks.filter((b) => b.type !== "decoration"),
         project.page.columns,
       );
-    change({
-      ...project,
-      blocks: [...project.blocks, clampDecoration(copy, project.page.maxWidth)],
-    });
+    change(
+      moveLayer(
+        {
+          ...project,
+          blocks: [
+            ...project.blocks,
+            clampDecoration(copy, project.page.maxWidth),
+          ],
+        },
+        copy.id,
+        "front",
+      ),
+    );
     select(copy.id);
   };
   const reorder = (id: string, direction: -1 | 1) =>

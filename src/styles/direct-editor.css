@@ -1,0 +1,381 @@
+/* Shared editor selection geometry. Every handle has a 44-screen-pixel hit area. */
+.canvas-editing .canvas-frame {
+  padding: 44px;
+}
+.canvas-editing .canvas-extent {
+  overflow: visible;
+}
+.canvas-block.editable,
+.free-block.editable {
+  cursor: grab;
+  touch-action: pan-y;
+}
+.canvas-block.is-locked,
+.free-block.is-locked {
+  cursor: default;
+}
+.selection-overlay {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  outline: 2px solid var(--red);
+  pointer-events: none;
+}
+.selection-locked {
+  outline: 2px dashed var(--muted);
+}
+.selection-overlay .resize-handle {
+  position: absolute;
+  width: calc(44px / var(--canvas-scale));
+  height: calc(44px / var(--canvas-scale));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  touch-action: none;
+}
+.selection-overlay .resize-handle::after {
+  content: "";
+  width: calc(10px / var(--canvas-scale));
+  height: calc(10px / var(--canvas-scale));
+  background: var(--red);
+  border: calc(1px / var(--canvas-scale)) solid var(--ink);
+}
+.selection-overlay .resize-n {
+  left: 50%;
+  top: calc(-22px / var(--canvas-scale));
+  cursor: ns-resize;
+}
+.selection-overlay .resize-s {
+  left: 50%;
+  top: calc(100% + 22px / var(--canvas-scale));
+  cursor: ns-resize;
+}
+.selection-overlay .resize-e {
+  left: calc(100% + 22px / var(--canvas-scale));
+  top: 50%;
+  cursor: ew-resize;
+}
+.selection-overlay .resize-w {
+  left: calc(-22px / var(--canvas-scale));
+  top: 50%;
+  cursor: ew-resize;
+}
+.selection-overlay .resize-ne {
+  left: calc(100% + 22px / var(--canvas-scale));
+  top: calc(-22px / var(--canvas-scale));
+  cursor: nesw-resize;
+}
+.selection-overlay .resize-nw {
+  left: calc(-22px / var(--canvas-scale));
+  top: calc(-22px / var(--canvas-scale));
+  cursor: nwse-resize;
+}
+.selection-overlay .resize-se {
+  left: calc(100% + 22px / var(--canvas-scale));
+  top: calc(100% + 22px / var(--canvas-scale));
+  cursor: nwse-resize;
+}
+.selection-overlay .resize-sw {
+  left: calc(-22px / var(--canvas-scale));
+  top: calc(100% + 22px / var(--canvas-scale));
+  cursor: nesw-resize;
+}
+.selection-unlock {
+  pointer-events: auto;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: calc(11px / var(--canvas-scale));
+  padding: calc(8px / var(--canvas-scale));
+}
+.canvas-interaction-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  color: var(--muted);
+  font-size: 10px;
+  min-height: 36px;
+}
+.canvas-interaction-bar button,
+.layer-commands button {
+  border: var(--line);
+  padding: 7px;
+  color: var(--paper);
+  background: var(--ink);
+}
+.geometry-fields {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  min-width: 0;
+}
+.geometry-fields:disabled {
+  opacity: 0.5;
+}
+.layer-commands {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-block: 12px;
+  font-size: 10px;
+}
+.layer-row {
+  display: block;
+}
+.layer-main {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 3px;
+}
+.layer-main > button:not(.layer-select) {
+  width: 28px;
+  min-width: 28px;
+  height: 32px;
+  padding: 0;
+}
+.layer-main .layer-select {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.layer-select > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.layer-type {
+  font-size: 8px;
+  opacity: 0.55;
+}
+.layer-grip {
+  touch-action: none;
+  cursor: grab;
+}
+.layer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 5px;
+}
+.layer-drop {
+  outline: 2px solid var(--red);
+}
+.layer-dragging {
+  opacity: 0.5;
+}
+.mobile-editor-tools {
+  display: none;
+}
+@media (max-width: 1050px) {
+  .editor-shell {
+    height: var(--editor-vh, 100dvh);
+  }
+  .editor-toolbar {
+    height: 84px;
+    min-height: 84px;
+    padding: 5px 10px;
+    gap: 4px;
+  }
+  .editor-toolbar .icon-button {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+  }
+  .editor-toolbar .preview-button {
+    min-height: 32px;
+    padding: 6px 10px;
+  }
+  .editor-toolbar .preview-button span,
+  .editor-toolbar .preview-button svg:last-child {
+    display: none;
+  }
+  .editor-toolbar .brand-wordmark {
+    font-size: 18px;
+  }
+  .editor-shell .cloud-bar {
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 8px;
+  }
+  .editor-layout {
+    display: block;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .editor-layout > .workspace {
+    display: flex !important;
+    height: 100%;
+  }
+  .editor-layout > .panel {
+    display: none !important;
+  }
+  .editor-shell[data-mobile-tool="library"] .library,
+  .editor-shell[data-mobile-tool="layers"] .library,
+  .editor-shell[data-mobile-tool="block"] .inspector,
+  .editor-shell[data-mobile-tool="page"] .inspector {
+    display: block !important;
+    position: fixed;
+    z-index: 202;
+    left: 0;
+    right: 0;
+    bottom: calc(
+      60px + env(safe-area-inset-bottom) + var(--keyboard-inset, 0px)
+    );
+    height: calc(var(--mobile-sheet-height, 0px) - 40px);
+    width: 100%;
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 0;
+    border-top: var(--line);
+    background: var(--surface);
+  }
+  .editor-layout > .panel .panel-header,
+  .editor-layout > .panel .panel-tabs,
+  .library-tip,
+  .library-bottom {
+    display: none;
+  }
+  .editor-layout > .panel .inspector-fields {
+    padding: 12px;
+  }
+  .editor-layout > .panel .block-library {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+  .canvas-scroll {
+    padding: 0 8px
+      calc(var(--mobile-sheet-height, 0px) + 90px + env(safe-area-inset-bottom));
+    scroll-behavior: smooth;
+  }
+  .workspace-heading {
+    padding: 10px 12px;
+  }
+  .workspace-heading .eyebrow,
+  .workspace-footer {
+    display: none;
+  }
+  .workspace-heading h1 {
+    font-size: 13px;
+  }
+  .canvas-ruler {
+    display: none;
+  }
+  .workspace .canvas-view-controls {
+    display: none;
+  }
+  .canvas-interaction-bar {
+    font-size: 8px;
+    min-height: 28px;
+  }
+  .mobile-editor-tools {
+    display: block;
+  }
+  .mobile-tool-dock {
+    position: fixed;
+    z-index: 205;
+    bottom: var(--keyboard-inset, 0px);
+    left: 0;
+    right: 0;
+    height: calc(60px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
+    border-top: 2px solid var(--red);
+    display: flex;
+  }
+  .mobile-tool-dock button {
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 9px;
+    color: var(--muted);
+    padding: 5px 1px;
+  }
+  .mobile-tool-dock button.active {
+    color: var(--pink);
+    background: var(--surface-raised);
+  }
+  .mobile-sheet {
+    position: fixed;
+    z-index: 201;
+    bottom: calc(
+      60px + env(safe-area-inset-bottom) + var(--keyboard-inset, 0px)
+    );
+    left: 0;
+    right: 0;
+    border-top: 2px solid var(--red);
+    background: var(--surface);
+    box-shadow: 0 -12px 30px #0008;
+  }
+  .sheet-header {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--line);
+    font-size: 10px;
+  }
+  .sheet-grip {
+    width: 80px;
+    height: 38px;
+    touch-action: none;
+  }
+  .sheet-grip span {
+    width: 36px;
+    height: 4px;
+    background: var(--muted);
+  }
+  .sheet-header > button:last-child {
+    width: 44px;
+    height: 38px;
+  }
+  .sheet-zoom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px;
+  }
+  .sheet-zoom p {
+    width: 100%;
+    font-size: 12px;
+  }
+  .sheet-zoom button {
+    border: var(--line);
+    padding: 12px;
+  }
+  .layer-actions {
+    display: none;
+  }
+  .layer-actions.layer-menu-open {
+    display: flex;
+  }
+  .layer-actions button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .layer-main > button:not(.layer-select) {
+    min-width: 36px;
+    width: 36px;
+    height: 44px;
+  }
+  .layer-row {
+    padding: 8px;
+  }
+  .layer-type {
+    display: none;
+  }
+}
+
+@media (max-width: 1050px) {
+  .editor-layout > .panel input,
+  .editor-layout > .panel textarea,
+  .editor-layout > .panel select {
+    font-size: 16px;
+  }
+}

@@ -1,8 +1,15 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { Minus, Plus } from "lucide-react";
 import { canvasExtent, fitCanvas } from "../model/canvasLayout";
 import type { Block } from "../model/types";
 interface Props {
+  editing?: boolean;
   width: number;
   minHeight: number;
   decorations: Block[];
@@ -11,6 +18,7 @@ interface Props {
 /** One transform for the entire composition. Zoom never writes to the project. */
 export function CanvasViewport({
   width,
+  editing = false,
   minHeight,
   decorations,
   children,
@@ -39,15 +47,41 @@ export function CanvasViewport({
     update();
     return () => observer.disconnect();
   }, []);
+  useLayoutEffect(() => {
+    const root = viewport.current;
+    if (!root) return;
+    const zoom = (event: Event) => {
+      const action = (event as CustomEvent<string>).detail,
+        scale = Number(root.dataset.canvasScale ?? 1);
+      setZoom(
+        action === "fit"
+          ? null
+          : Math.max(
+              0.01,
+              Math.min(4, scale * (action === "in" ? 1.25 : 1 / 1.25)),
+            ),
+      );
+    };
+    root.addEventListener("zin:zoom", zoom);
+    return () => root.removeEventListener("zin:zoom", zoom);
+  }, []);
   const extent = canvasExtent(
     width,
     Math.max(minHeight, size.height),
     decorations,
   );
-  const fit = fitCanvas(size.available || width, extent.width),
+  const fit = fitCanvas(
+      Math.max(1, (size.available || width) - (editing ? 88 : 0)),
+      extent.width,
+    ),
     scale = zoom ?? fit;
   return (
-    <div className="canvas-renderer" ref={viewport} data-canvas-scale={scale}>
+    <div
+      className={`canvas-renderer ${editing ? "canvas-editing" : ""}`}
+      ref={viewport}
+      data-canvas-scale={scale}
+      style={{ "--canvas-scale": scale } as CSSProperties}
+    >
       <div
         className="canvas-view-controls"
         role="group"

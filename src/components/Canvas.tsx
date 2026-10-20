@@ -1,19 +1,15 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
-import { Grip, MoveUpRight } from "lucide-react";
-import { clampDecoration } from "../model/decoration";
-import { clampBlock, gridRows } from "../model/grid";
+import { useEffect, useRef, useState } from "react";
+import { Grip } from "lucide-react";
+import { gridRows } from "../model/grid";
+import { orderedLayers } from "../model/layers";
+import { useCanvasGesture } from "../hooks/useCanvasGesture";
 import { useAssetSource } from "../hooks/useAssetSource";
 import { safeImageSource } from "../model/assets";
 import { FONTS, ROW_HEIGHT, type Block, type Project } from "../model/types";
 import { BlockContent } from "./BlockContent";
 import { CanvasViewport } from "./CanvasViewport";
+import { SelectionHandles } from "./SelectionHandles";
 import { CANVAS_PADDING } from "../model/canvasLayout";
-
 interface Props {
   project: Project;
   rowHeight?: number;
@@ -21,11 +17,6 @@ interface Props {
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
   onUpdate?: (id: string, patch: Partial<Block>) => void;
-}
-interface Gesture {
-  id: string;
-  mode: "move" | "resize";
-  block: Block;
 }
 export function Canvas({
   project,
@@ -35,292 +26,273 @@ export function Canvas({
   onSelect,
   onUpdate,
 }: Props) {
-  const board = useRef<HTMLDivElement>(null);
-  const [gesture, setGesture] = useState<Gesture | null>(null);
-  const cleanup = useRef<(() => void) | null>(null);
-  const suppressClick = useRef(false);
-  useEffect(() => () => cleanup.current?.(), []);
-  useEffect(() => {
-    cleanup.current?.();
-    setGesture(null);
-  }, [project]);
-  const { page, blocks } = project;
-  const rows = gridRows(blocks);
-  const height = rows * rowHeight + (rows - 1) * page.gap;
-  const start = (
-    event: ReactPointerEvent,
-    block: Block,
-    mode: "move" | "resize",
-  ) => {
-    if (!editing || event.button !== 0 || !board.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-    onSelect?.(block.id);
-    cleanup.current?.();
-    const startX = event.clientX,
-      startY = event.clientY;
-    const rect = board.current.getBoundingClientRect();
-    const scale = rect.width / (page.maxWidth - CANVAS_PADDING * 2);
-    const unitX =
-        ((page.maxWidth - CANVAS_PADDING * 2 + page.gap) / page.columns) *
-        scale,
-      unitY = (rowHeight + page.gap) * scale;
-    let candidate = block;
-    setGesture({ id: block.id, mode, block });
-    const move = (next: PointerEvent) => {
-      const dx = next.clientX - startX,
-        dy = next.clientY - startY;
-      if (block.type === "decoration") {
-        const logicalDx = dx / scale,
-          logicalDy = dy / scale;
-        candidate = clampDecoration(
-          mode === "move"
-            ? { ...block, x: block.x + logicalDx, y: block.y + logicalDy }
-            : {
-                ...block,
-                width: block.width + logicalDx,
-                height: block.height + logicalDy,
-              },
-        );
-      } else
-        candidate = clampBlock(
-          mode === "move"
-            ? {
-                ...block,
-                col: block.col + Math.round(dx / unitX),
-                row: Math.min(2000, block.row + Math.round(dy / unitY)),
-              }
-            : {
-                ...block,
-                colSpan: Math.min(
-                  page.columns - block.col,
-                  block.colSpan + Math.round(dx / unitX),
-                ),
-                rowSpan: block.rowSpan + Math.round(dy / unitY),
-              },
-          page.columns,
-        );
-      setGesture({ id: block.id, mode, block: candidate });
-    };
-    const finish = () => {
-      cleanup.current?.();
-      setGesture(null);
-      suppressClick.current = true;
-      window.setTimeout(() => {
-        suppressClick.current = false;
-      }, 0);
-      onUpdate?.(block.id, candidate);
-      onSelect?.(block.id);
-    };
-    const cancel = () => {
-      cleanup.current?.();
-      setGesture(null);
-    };
-    const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") cancel();
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", finish);
-    window.addEventListener("pointercancel", cancel);
-    window.addEventListener("keydown", key);
-    window.addEventListener("blur", cancel);
-    const previousSelect = document.body.style.userSelect;
-    document.body.style.userSelect = "none";
-    cleanup.current = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", finish);
-      window.removeEventListener("pointercancel", cancel);
-      window.removeEventListener("keydown", key);
-      window.removeEventListener("blur", cancel);
-      document.body.style.userSelect = previousSelect;
-      cleanup.current = null;
-    };
-  };
-  const placement = (block: Block) => ({
-    gridColumn: `${block.col + 1} / span ${block.colSpan}`,
-    gridRow: `${block.row + 1} / span ${block.rowSpan}`,
+  const board = useRef<HTMLDivElement>(null),
+    [contentId, setContentId] = useState<string | null>(null);
+  useEffect(() => setContentId(null), [selectedId]);
+  const { page, blocks } = project,
+    rows = gridRows(blocks),
+    height = rows * rowHeight + (rows - 1) * page.gap;
+  const { gesture, mode, begin, suppressClick } = useCanvasGesture({
+    board,
+    width: page.maxWidth,
+    columns: page.columns,
+    gap: page.gap,
+    rowHeight,
+    onSelect,
+    onUpdate,
+    enabled: editing,
+    reset: project,
   });
-  const gridBlocks = blocks.filter((b) => b.type !== "decoration");
-  const decorBlocks = blocks
-    .filter((b) => b.type === "decoration")
-    .sort((a, b) => a.zIndex - b.zIndex);
+  const selected = blocks.find((b) => b.id === selectedId),
+    order = orderedLayers(blocks),
+    stack = new Map(order.map((b, i) => [b.id, i + 1]));
+  const gridBlocks = blocks.filter((b) => b.type !== "decoration"),
+    decorBlocks = order.filter((b) => b.type === "decoration");
+  const placement = (b: Block) => ({
+    gridColumn: `${b.col + 1} / span ${b.colSpan}`,
+    gridRow: `${b.row + 1} / span ${b.rowSpan}`,
+  });
+  const freePlacement = (b: Block) => ({
+    position: "absolute" as const,
+    left: b.x,
+    top: b.y,
+    width: b.width,
+    height: b.height,
+    transform: `rotate(${b.rotation}deg)`,
+  });
   const { src: backgroundImage } = useAssetSource(
     safeImageSource(page.backgroundImage),
   );
+  const display =
+    selected && (gesture?.block.id === selected.id ? gesture.block : selected);
+  const content = !!selected && contentId === selected.id;
   return (
-    <CanvasViewport
-      width={page.maxWidth}
-      minHeight={height + CANVAS_PADDING * 2}
-      decorations={decorBlocks}
-    >
-      <div
-        className={`page-surface ${editing ? "editor-surface" : ""}`}
-        style={{
-          maxWidth: page.maxWidth,
-          width: page.maxWidth,
-          padding: CANVAS_PADDING,
-          backgroundColor: page.background,
-          backgroundImage: backgroundImage
-            ? `url(${JSON.stringify(backgroundImage)})`
-            : undefined,
-          fontFamily: FONTS[page.font],
-        }}
+    <>
+      {editing && (
+        <div className="canvas-interaction-bar" role="status">
+          <span>
+            {content
+              ? "Взаимодействие с содержимым"
+              : mode === "dragging"
+                ? "Перемещение"
+                : mode === "resizing"
+                  ? "Изменение размера"
+                  : mode === "panning"
+                    ? "Прокрутка"
+                    : selected?.locked
+                      ? "Положение закреплено"
+                      : "Нажмите для выбора · удерживайте для перемещения"}
+          </span>
+          {selected &&
+            ["audio", "video", "link", "qrcode"].includes(selected.type) && (
+              <button
+                type="button"
+                onClick={() => setContentId(content ? null : selected.id)}
+              >
+                {content
+                  ? "Вернуться к перемещению"
+                  : "Взаимодействовать с медиа"}
+              </button>
+            )}
+        </div>
+      )}
+      <CanvasViewport
+        editing={editing}
+        width={page.maxWidth}
+        minHeight={height + CANVAS_PADDING * 2}
+        decorations={decorBlocks.filter(
+          (b) => !b.hidden || (editing && b.id === selectedId),
+        )}
       >
         <div
-          ref={board}
-          className={`canvas ${gesture ? "is-dragging" : ""}`}
-          data-testid="canvas"
+          className={`page-surface ${editing ? "editor-surface" : ""}`}
           style={{
-            gridTemplateColumns: `repeat(${page.columns}, minmax(0, 1fr))`,
-            gridAutoRows: rowHeight,
-            gap: page.gap,
-            minHeight: height,
-          }}
-          onClickCapture={(event) => {
-            if (suppressClick.current) {
-              event.stopPropagation();
-              event.preventDefault();
-            }
-          }}
-          onClick={(event) => {
-            if (event.target === event.currentTarget) onSelect?.(null);
+            maxWidth: page.maxWidth,
+            width: page.maxWidth,
+            padding: CANVAS_PADDING,
+            backgroundColor: page.background,
+            backgroundImage: backgroundImage
+              ? `url(${JSON.stringify(backgroundImage)})`
+              : undefined,
+            fontFamily: FONTS[page.font],
           }}
         >
-          {editing &&
-            Array.from({ length: rows * page.columns }, (_, index) => {
-              const col = index % page.columns,
-                row = Math.floor(index / page.columns);
-              const occupied = gridBlocks.some(
-                (b) =>
-                  col >= b.col &&
-                  col < b.col + b.colSpan &&
-                  row >= b.row &&
-                  row < b.row + b.rowSpan,
-              );
-              return (
-                <div
-                  key={`cell-${index}`}
-                  className={`grid-cell ${occupied ? "occupied" : ""}`}
-                  style={{ gridColumn: col + 1, gridRow: row + 1 }}
-                  aria-hidden="true"
-                >
-                  {!occupied && <span>+</span>}
-                </div>
-              );
-            })}
-          {gridBlocks.map((block) => (
-            <div
-              key={block.id}
-              data-testid={`block-${block.id}`}
-              data-block-id={block.id}
-              className={`canvas-block ${editing ? "editable" : ""} ${selectedId === block.id && editing ? "selected" : ""} ${gesture?.id === block.id ? "drag-source" : ""}`}
-              style={placement(block)}
-              onClickCapture={() => {
-                if (editing && block.type === "audio") onSelect?.(block.id);
-              }}
-              onClick={(event) => {
-                if (editing) {
-                  event.stopPropagation();
-                  onSelect?.(block.id);
-                }
-              }}
-              onKeyDown={(event) => {
-                if (editing && (event.key === "Enter" || event.key === " ")) {
-                  event.preventDefault();
-                  onSelect?.(block.id);
-                }
-              }}
-              tabIndex={editing ? 0 : undefined}
-              aria-label={editing ? `Блок: ${block.name}` : undefined}
-            >
-              <BlockContent block={block} editing={editing} />
-              {editing && (
-                <>
-                  <button
-                    type="button"
-                    className="drag-handle"
-                    title={`Переместить: ${block.name}`}
-                    aria-label={`Переместить: ${block.name}`}
-                    onPointerDown={(event) => start(event, block, "move")}
+          <div
+            ref={board}
+            className={`canvas ${gesture ? "is-dragging" : ""}`}
+            data-testid="canvas"
+            data-interaction-mode={content ? "editing-content" : mode}
+            onContextMenu={(event) => {
+              if (editing && !content) event.preventDefault();
+            }}
+            style={{
+              gridTemplateColumns: `repeat(${page.columns},minmax(0,1fr))`,
+              gridAutoRows: rowHeight,
+              gap: page.gap,
+              minHeight: height,
+            }}
+            onClickCapture={(e) => {
+              if (suppressClick.current) {
+                e.stopPropagation();
+                e.preventDefault();
+              }
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) onSelect?.(null);
+            }}
+          >
+            {editing &&
+              Array.from({ length: rows * page.columns }, (_, index) => {
+                const col = index % page.columns,
+                  row = Math.floor(index / page.columns),
+                  occupied = gridBlocks.some(
+                    (b) =>
+                      col >= b.col &&
+                      col < b.col + b.colSpan &&
+                      row >= b.row &&
+                      row < b.row + b.rowSpan,
+                  );
+                return (
+                  <div
+                    key={`cell-${index}`}
+                    className={`grid-cell ${occupied ? "occupied" : ""}`}
+                    style={{ gridColumn: col + 1, gridRow: row + 1 }}
+                    aria-hidden="true"
                   >
-                    <Grip size={13} />
-                    <span>{block.name}</span>
-                  </button>
-                  {selectedId === block.id && (
-                    <>
-                      <span className="size-badge">
-                        {block.colSpan} × {block.rowSpan}
-                      </span>
-                      <button
-                        type="button"
-                        className="resize-handle"
-                        aria-label={`Изменить размер: ${block.name}`}
-                        title="Тяните для изменения ширины и высоты"
-                        onPointerDown={(event) => start(event, block, "resize")}
-                      >
-                        <MoveUpRight size={15} />
-                      </button>
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-          ))}
-          {editing && gesture && gesture.block.type !== "decoration" && (
-            <div
-              className="drop-ghost"
-              style={placement(gesture.block)}
-              aria-live="polite"
-            >
-              <span>
-                {gesture.block.col + 1}:{gesture.block.row + 1} ·{" "}
-                {gesture.block.colSpan} × {gesture.block.rowSpan}
-              </span>
-            </div>
-          )}
-          {decorBlocks.map((original) => {
-            const block =
-              gesture?.id === original.id ? gesture.block : original;
-            return (
+                    {!occupied && <span>+</span>}
+                  </div>
+                );
+              })}
+            {gridBlocks.map((block) => (
               <div
                 key={block.id}
+                data-testid={`block-${block.id}`}
                 data-block-id={block.id}
-                className={`free-block ${editing ? "editable" : ""} ${selectedId === block.id && editing ? "selected" : ""}`}
+                className={`canvas-block ${editing ? "editable" : ""} ${selectedId === block.id && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""} ${gesture?.block.id === block.id ? "drag-source" : ""}`}
                 style={{
-                  left: block.x,
-                  top: block.y,
-                  width: block.width,
-                  height: block.height,
-                  transform: `rotate(${block.rotation}deg)`,
-                  zIndex: block.zIndex + 10,
+                  ...placement(block),
+                  zIndex: stack.get(block.id),
+                  visibility: block.hidden ? "hidden" : undefined,
                 }}
-                tabIndex={editing ? 0 : undefined}
-                aria-label={editing ? `Блок: ${block.name}` : undefined}
+                onPointerDownCapture={(event) => {
+                  if (contentId !== block.id) begin(event, block);
+                  else onSelect?.(block.id);
+                }}
                 onClick={(event) => {
                   if (editing) {
                     event.stopPropagation();
                     onSelect?.(block.id);
                   }
                 }}
-                onPointerDown={(event) => start(event, original, "move")}
+                onKeyDown={(event) => {
+                  if (
+                    editing &&
+                    event.target === event.currentTarget &&
+                    (event.key === "Enter" || event.key === " ")
+                  ) {
+                    event.preventDefault();
+                    onSelect?.(block.id);
+                  }
+                }}
+                tabIndex={editing ? 0 : undefined}
+                aria-label={editing ? `Блок: ${block.name}` : undefined}
               >
-                <BlockContent block={block} editing={editing} />
-                {editing && selectedId === block.id && (
+                <BlockContent
+                  block={block}
+                  editing={editing && contentId !== block.id}
+                />
+                {editing && !block.locked && (
                   <button
                     type="button"
-                    className="resize-handle"
-                    title="Изменить размер"
-                    aria-label={`Изменить размер: ${block.name}`}
-                    onPointerDown={(event) => start(event, original, "resize")}
+                    className="drag-handle"
+                    aria-label={`Переместить: ${block.name}`}
+                    title={`Переместить: ${block.name}`}
+                    onPointerDown={(event) =>
+                      begin(event, block, undefined, true)
+                    }
                   >
-                    <MoveUpRight size={15} />
+                    <Grip size={13} />
+                    <span>{block.name}</span>
                   </button>
                 )}
               </div>
-            );
-          })}
+            ))}
+            {editing && gesture && gesture.block.type !== "decoration" && (
+              <div
+                className="drop-ghost"
+                style={{
+                  ...placement(gesture.block),
+                  zIndex: blocks.length + 1,
+                }}
+                aria-live="polite"
+              >
+                <span>
+                  {gesture.block.col + 1}:{gesture.block.row + 1} ·{" "}
+                  {gesture.block.colSpan} × {gesture.block.rowSpan}
+                </span>
+              </div>
+            )}
+            {decorBlocks.map((original) => {
+              const block =
+                gesture?.block.id === original.id ? gesture.block : original;
+              return (
+                <div
+                  key={block.id}
+                  data-block-id={block.id}
+                  className={`free-block ${editing ? "editable" : ""} ${selectedId === block.id && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""}`}
+                  style={{
+                    ...freePlacement(block),
+                    zIndex: stack.get(block.id),
+                    visibility: block.hidden ? "hidden" : undefined,
+                  }}
+                  tabIndex={editing ? 0 : undefined}
+                  aria-label={editing ? `Блок: ${block.name}` : undefined}
+                  onClick={(event) => {
+                    if (editing) {
+                      event.stopPropagation();
+                      onSelect?.(block.id);
+                    }
+                  }}
+                  onPointerDownCapture={(event) => begin(event, original)}
+                >
+                  <BlockContent block={block} editing={editing} />
+                </div>
+              );
+            })}
+            {editing && selected && display && (
+              <div
+                className={`selection-overlay ${selected.locked ? "selection-locked" : ""}`}
+                data-selection-id={selected.id}
+                style={{
+                  ...(selected.type === "decoration"
+                    ? freePlacement(display)
+                    : placement(display)),
+                  zIndex: blocks.length + 2,
+                }}
+              >
+                {selected.locked ? (
+                  <button
+                    type="button"
+                    className="selection-unlock"
+                    onClick={() => onUpdate?.(selected.id, { locked: false })}
+                  >
+                    Разблокировать
+                  </button>
+                ) : (
+                  !content && (
+                    <SelectionHandles
+                      block={display}
+                      onResize={(event, edge) =>
+                        begin(event, selected, edge, true)
+                      }
+                    />
+                  )
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </CanvasViewport>
+      </CanvasViewport>
+    </>
   );
 }

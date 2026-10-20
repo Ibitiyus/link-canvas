@@ -1,22 +1,45 @@
+import {
+  MobileEditorTools,
+  type MobileTool,
+  type SheetSize,
+} from "../components/MobileEditorTools";
+import type { CSSProperties } from "react";
 import { CloudBar } from "../components/CloudBar";
 import { useEffect, useState } from "react";
-import {
-  CircleHelp,
-  Grid2X2,
-  Layers,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { CircleHelp, Grid2X2, X } from "lucide-react";
 import { useProject } from "../state/ProjectContext";
 import { Toolbar } from "../components/Toolbar";
 import { Library } from "../components/Library";
 import { Inspector } from "../components/Inspector";
 import { Canvas } from "../components/Canvas";
-const blockForms = new Intl.PluralRules("ru");
 export function Editor() {
-  const [mobilePanel, setMobilePanel] = useState<
-    "library" | "canvas" | "inspector"
-  >("canvas");
+  const [tool, setTool] = useState<MobileTool>(null),
+    [sheetSize, setSheetSize] = useState<SheetSize>("medium");
+  const [visual, setVisual] = useState({
+    height: window.innerHeight,
+    inset: 0,
+  });
+  useEffect(() => {
+    const update = () => {
+      const vv = window.visualViewport;
+      setVisual({
+        height: vv?.height ?? window.innerHeight,
+        inset: Math.max(
+          0,
+          window.innerHeight -
+            (vv?.height ?? window.innerHeight) -
+            (vv?.offsetTop ?? 0),
+        ),
+      });
+    };
+    window.visualViewport?.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("scroll", update);
+    update();
+    return () => {
+      window.visualViewport?.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("scroll", update);
+    };
+  }, []);
   const {
     project,
     selectedId,
@@ -29,9 +52,6 @@ export function Editor() {
     message,
     notify,
   } = useProject();
-  const blockForm = blockForms.select(project.blocks.length);
-  const blockWord =
-    blockForm === "one" ? "блок" : blockForm === "few" ? "блока" : "блоков";
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
@@ -55,14 +75,50 @@ export function Editor() {
         selectedId
       ) {
         event.preventDefault();
-        remove(selectedId);
+        if (!project.blocks.find((b) => b.id === selectedId)?.locked)
+          remove(selectedId);
       } else if (event.key === "Escape") select(null);
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [selectedId, undo, redo, remove, duplicate, select]);
+  }, [selectedId, undo, redo, remove, duplicate, select, project]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (!selectedId || !matchMedia("(max-width:1050px)").matches) return;
+      const canvas = document.querySelector(".workspace .canvas");
+      if (
+        ["dragging", "resizing"].includes(
+          canvas?.getAttribute("data-interaction-mode") ?? "",
+        )
+      )
+        return;
+      const block = document.querySelector<HTMLElement>(
+          `[data-block-id="${CSS.escape(selectedId)}"]`,
+        ),
+        scroll = document.querySelector<HTMLElement>(".canvas-scroll");
+      if (!block || !scroll) return;
+      const r = block.getBoundingClientRect(),
+        area = scroll.getBoundingClientRect(),
+        sheet = document
+          .querySelector(".mobile-sheet")
+          ?.getBoundingClientRect();
+      const bottom = Math.min(area.bottom, sheet?.top ?? area.bottom) - 24;
+      const target = area.top + Math.max(24, (bottom - area.top) / 2);
+      scroll.scrollTop += r.top + r.height / 2 - target;
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [selectedId, tool, sheetSize, visual.height]);
   return (
-    <div className="editor-shell" data-mobile-panel={mobilePanel}>
+    <div
+      className="editor-shell"
+      data-mobile-tool={tool ?? "none"}
+      style={
+        {
+          "--editor-vh": `${visual.height}px`,
+          "--keyboard-inset": `${visual.inset}px`,
+        } as CSSProperties
+      }
+    >
       <Toolbar />
       <CloudBar />
       {message && (
@@ -78,40 +134,20 @@ export function Editor() {
           </button>
         </div>
       )}
-      <nav className="mobile-toolbar" aria-label="Панели редактора">
-        <button
-          aria-label="Открыть библиотеку"
-          aria-controls="library-panel"
-          aria-expanded={mobilePanel === "library"}
-          className={mobilePanel === "library" ? "active" : ""}
-          onClick={() => setMobilePanel("library")}
-        >
-          <Layers size={16} />
-          Блоки и слои
-        </button>
-        <button
-          aria-label="Открыть полотно"
-          aria-controls="workspace-panel"
-          aria-expanded={mobilePanel === "canvas"}
-          className={mobilePanel === "canvas" ? "active" : ""}
-          onClick={() => setMobilePanel("canvas")}
-        >
-          <Grid2X2 size={16} />
-          Полотно
-        </button>
-        <button
-          aria-label="Открыть настройки"
-          aria-controls="inspector-panel"
-          aria-expanded={mobilePanel === "inspector"}
-          className={mobilePanel === "inspector" ? "active" : ""}
-          onClick={() => setMobilePanel("inspector")}
-        >
-          <SlidersHorizontal size={16} />
-          Настройки
-        </button>
-      </nav>
       <div className="editor-layout">
-        <Library onAdd={() => setMobilePanel("inspector")} />
+        <Library
+          requestedTab={
+            tool === "layers"
+              ? "layers"
+              : tool === "library"
+                ? "blocks"
+                : undefined
+          }
+          onAdd={() => {
+            setTool("block");
+            setSheetSize("medium");
+          }}
+        />
         <main className="workspace" id="workspace-panel">
           <div className="workspace-heading">
             <div>
@@ -159,8 +195,18 @@ export function Editor() {
             <span>Ctrl/⌘ Z — отменить · Esc — снять выбор</span>
           </div>
         </main>
-        <Inspector />
+        <Inspector
+          requestedTab={
+            tool === "page" ? "page" : tool === "block" ? "block" : undefined
+          }
+        />
       </div>
+      <MobileEditorTools
+        tool={tool}
+        size={sheetSize}
+        onTool={setTool}
+        onSize={setSheetSize}
+      />
     </div>
   );
 }

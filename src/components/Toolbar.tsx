@@ -176,6 +176,7 @@ export function Toolbar() {
       </button>
       <button
         className="primary-button preview-button"
+        aria-label="Предпросмотр"
         onClick={() => {
           if (saveNow()) navigate("/preview");
         }}

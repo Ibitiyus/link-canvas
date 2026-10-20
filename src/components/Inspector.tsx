@@ -22,12 +22,18 @@ import { ImageInput } from "./ImageInput";
 import { FontPicker } from "./FontPicker";
 import { PageSettings } from "./PageSettings";
 
-export function Inspector() {
-  const { project, selectedId, updateBlock, duplicate, remove } = useProject();
+export function Inspector({
+  requestedTab,
+}: {
+  requestedTab?: "block" | "page";
+}) {
+  const { project, selectedId, updateBlock, duplicate, remove, moveLayer } =
+    useProject();
   const [tab, setTab] = useState<"block" | "page">("page");
   useEffect(() => {
-    if (selectedId) setTab("block");
-  }, [selectedId]);
+    if (requestedTab) setTab(requestedTab);
+    else if (selectedId) setTab("block");
+  }, [selectedId, requestedTab]);
   const block = project.blocks.find((b) => b.id === selectedId);
   const qrError =
     block?.type === "qrcode" && block.url
@@ -303,97 +309,126 @@ export function Inspector() {
             <span>04 /</span> РАЗМЕЩЕНИЕ{" "}
             <small>{block.type === "decoration" ? "Свободно" : "Сетка"}</small>
           </h3>
-          {block.type === "decoration" ? (
-            <>
-              <div className="field-pair">
-                <NumberField
-                  label="X"
-                  value={Math.round(block.x)}
-                  min={-POSITION_LIMIT}
-                  max={POSITION_LIMIT}
-                  onChange={(x) => patch({ x })}
-                />
-                <NumberField
-                  label="Y"
-                  value={Math.round(block.y)}
-                  min={-POSITION_LIMIT}
-                  max={POSITION_LIMIT}
-                  onChange={(y) => patch({ y })}
-                />
-              </div>
-              <div className="field-pair">
-                <NumberField
-                  label="Ширина, пкс"
-                  value={Math.round(block.width)}
-                  min={24}
-                  max={SIZE_LIMIT}
-                  onChange={(width) => patch({ width })}
-                />
-                <NumberField
-                  label="Высота, пкс"
-                  value={Math.round(block.height)}
-                  min={24}
-                  max={SIZE_LIMIT}
-                  onChange={(height) => patch({ height })}
-                />
-              </div>
-              <div className="field-pair">
-                <NumberField
-                  label="Поворот, °"
-                  value={block.rotation}
-                  min={-180}
-                  max={180}
-                  onChange={(rotation) => patch({ rotation })}
-                />
-                <NumberField
-                  label="Порядок слоя"
-                  value={block.zIndex}
-                  min={1}
-                  max={10000}
-                  onChange={(zIndex) => patch({ zIndex })}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="field-pair">
-                <NumberField
-                  label="Колонка"
-                  value={block.col + 1}
-                  min={1}
-                  max={project.page.columns - block.colSpan + 1}
-                  onChange={(value) => patch({ col: value - 1 })}
-                />
-                <NumberField
-                  label="Строка"
-                  value={block.row + 1}
-                  min={1}
-                  max={2001}
-                  onChange={(value) => patch({ row: value - 1 })}
-                />
-              </div>
-              <div className="field-pair">
-                <NumberField
-                  label="Ширина, ячеек"
-                  value={block.colSpan}
-                  min={1}
-                  max={project.page.columns}
-                  onChange={(colSpan) => patch({ colSpan })}
-                />
-                <NumberField
-                  label="Высота, ячеек"
-                  value={block.rowSpan}
-                  min={1}
-                  max={12}
-                  onChange={(rowSpan) => patch({ rowSpan })}
-                />
-              </div>
-              <p className="muted caption">
-                Занятые блоки автоматически сдвинутся в свободные ячейки.
-                Перемещение и размер можно отменить.
-              </p>
-            </>
-          )}
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={!!block.locked}
+              onChange={(e) => patch({ locked: e.target.checked })}
+            />
+            Закрепить положение
+          </label>
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={!!block.hidden}
+              onChange={(e) => patch({ hidden: e.target.checked })}
+            />
+            Скрыть элемент
+          </label>
+          <div className="layer-commands">
+            {(["front", "up", "down", "back"] as const).map((action, index) => (
+              <button
+                key={action}
+                type="button"
+                onClick={() => moveLayer(block.id, action)}
+              >
+                {
+                  [
+                    "На передний план",
+                    "На уровень выше",
+                    "На уровень ниже",
+                    "На задний план",
+                  ][index]
+                }
+              </button>
+            ))}
+          </div>
+          <fieldset className="geometry-fields" disabled={!!block.locked}>
+            {block.type === "decoration" ? (
+              <>
+                <div className="field-pair">
+                  <NumberField
+                    label="X"
+                    value={Math.round(block.x)}
+                    min={-POSITION_LIMIT}
+                    max={POSITION_LIMIT}
+                    onChange={(x) => patch({ x })}
+                  />
+                  <NumberField
+                    label="Y"
+                    value={Math.round(block.y)}
+                    min={-POSITION_LIMIT}
+                    max={POSITION_LIMIT}
+                    onChange={(y) => patch({ y })}
+                  />
+                </div>
+                <div className="field-pair">
+                  <NumberField
+                    label="Ширина, пкс"
+                    value={Math.round(block.width)}
+                    min={24}
+                    max={SIZE_LIMIT}
+                    onChange={(width) => patch({ width })}
+                  />
+                  <NumberField
+                    label="Высота, пкс"
+                    value={Math.round(block.height)}
+                    min={24}
+                    max={SIZE_LIMIT}
+                    onChange={(height) => patch({ height })}
+                  />
+                </div>
+                <div className="field-pair">
+                  <NumberField
+                    label="Поворот, °"
+                    value={block.rotation}
+                    min={-180}
+                    max={180}
+                    onChange={(rotation) => patch({ rotation })}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="field-pair">
+                  <NumberField
+                    label="Колонка"
+                    value={block.col + 1}
+                    min={1}
+                    max={project.page.columns - block.colSpan + 1}
+                    onChange={(value) => patch({ col: value - 1 })}
+                  />
+                  <NumberField
+                    label="Строка"
+                    value={block.row + 1}
+                    min={1}
+                    max={2001}
+                    onChange={(value) => patch({ row: value - 1 })}
+                  />
+                </div>
+                <div className="field-pair">
+                  <NumberField
+                    label="Ширина, ячеек"
+                    value={block.colSpan}
+                    min={1}
+                    max={project.page.columns}
+                    onChange={(colSpan) => patch({ colSpan })}
+                  />
+                  <NumberField
+                    label="Высота, ячеек"
+                    value={block.rowSpan}
+                    min={1}
+                    max={12}
+                    onChange={(rowSpan) => patch({ rowSpan })}
+                  />
+                </div>
+                <p className="muted caption">
+                  Занятые блоки автоматически сдвинутся в свободные ячейки.
+                  Перемещение и размер можно отменить.
+                </p>
+              </>
+            )}
+          </fieldset>
         </div>
       )}
     </aside>
