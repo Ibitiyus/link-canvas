@@ -14,6 +14,11 @@
 .free-block.is-locked {
   cursor: default;
 }
+.canvas-block.editable.is-locked,
+.free-block.editable.is-locked {
+  outline: 1px dashed var(--muted);
+  outline-offset: 3px;
+}
 .selection-overlay {
   position: relative;
   min-width: 0;

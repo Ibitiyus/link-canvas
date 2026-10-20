@@ -50,6 +50,8 @@ export function newBlock(type: BlockType): Block {
     height: 100,
     rotation: 0,
     zIndex: 1,
+    locked: false,
+    hidden: false,
   };
 }
 export const emptyProject = (): Project => ({

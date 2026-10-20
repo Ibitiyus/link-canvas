@@ -141,3 +141,42 @@ it("preserves optional locks/visibility/layers through the v1 reader", () => {
   expect(legacy.blocks[0].locked ?? false).toBe(false);
   expect(legacy.blocks[0].hidden ?? false).toBe(false);
 });
+
+it.each(["front", "back", "up", "down"] as const)(
+  "reorders %s in one compact stack independently of the grid",
+  (action) => {
+    const a = { ...newBlock("text"), id: "a" },
+      b = { ...newBlock("decoration"), id: "b" },
+      c = { ...newBlock("decoration"), id: "c", zIndex: 2 };
+    const p = { ...emptyProject(), blocks: [a, b, c] },
+      result = moveLayer(p, "b", action);
+    expect(orderedLayers(result.blocks).map((b) => b.id)).toEqual(
+      action === "front" || action === "up" ? ["a", "c", "b"] : ["b", "a", "c"],
+    );
+    expect(result.blocks.map((b) => [b.id, b.row, b.col, b.x, b.y])).toEqual(
+      p.blocks.map((b) => [b.id, b.row, b.col, b.x, b.y]),
+    );
+  },
+);
+it("cannot unlock and move in the same locked geometry patch", () => {
+  const block = { ...newBlock("decoration"), locked: true };
+  const next = editBlock({ ...emptyProject(), blocks: [block] }, block.id, {
+    locked: false,
+    x: 900,
+    rotation: 90,
+  });
+  expect(next.blocks[0]).toMatchObject({
+    locked: false,
+    x: block.x,
+    rotation: block.rotation,
+  });
+});
+
+it("new blocks persist false defaults while legacy JSON keeps its original shape", () => {
+  const block = newBlock("text");
+  expect(block).toMatchObject({ locked: false, hidden: false });
+  delete block.locked;
+  delete block.hidden;
+  const p = { ...emptyProject(), blocks: [block] };
+  expect(parseProject(JSON.stringify(p))).toEqual(p);
+});

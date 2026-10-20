@@ -138,7 +138,9 @@ export function parseProject(raw: string): Project {
     };
     // Optional fields preserve exact legacy v1 shapes until the feature is used.
     if (source.locked !== undefined) block.locked = source.locked === true;
+    else delete block.locked;
     if (source.hidden !== undefined) block.hidden = source.hidden === true;
+    else delete block.hidden;
     if (source.layer !== undefined)
       block.layer = Math.round(number(source.layer, 0, 0, 1_000_000));
     if (source.fontFamily !== undefined) {
