@@ -15,7 +15,7 @@ export function clampDecoration(block: Block, _pageWidth?: number): Block {
 /** Rotated bounds in displayed pixels, including negative coordinates. */
 export function decorationBounds(block: Block, scale: number) {
   const width = block.width * scale,
-    height = block.height;
+    height = block.height * scale;
   const radians = (block.rotation * Math.PI) / 180;
   const extentX =
     (Math.abs(Math.cos(radians)) * width +
@@ -26,7 +26,7 @@ export function decorationBounds(block: Block, scale: number) {
       Math.abs(Math.cos(radians)) * height) /
     2;
   const centerX = block.x * scale + width / 2,
-    centerY = block.y + height / 2;
+    centerY = block.y * scale + height / 2;
   return {
     left: centerX - extentX,
     right: centerX + extentX,

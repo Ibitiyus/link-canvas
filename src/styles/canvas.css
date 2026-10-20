@@ -6,6 +6,8 @@
   background-size: cover;
   background-position: center;
   color-scheme: normal;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
   letter-spacing: normal;
   text-transform: none;
 }
@@ -117,6 +119,8 @@
 .free-block {
   position: absolute;
   min-width: 0;
+}
+.free-block.editable {
   touch-action: none;
 }
 .decoration-content {
@@ -245,15 +249,6 @@
 @media (max-width: 1050px), (hover: none) {
   .drag-handle {
     opacity: 1;
-  }
-}
-@media (max-width: 640px) {
-  .page-surface {
-    padding: 12px;
-  }
-  .text-content,
-  .link-content {
-    padding: 12px;
   }
 }
 /* Uploaded regular font files can still use the block's bold setting. */
@@ -439,4 +434,53 @@
   width: 100%;
   min-width: 0;
   min-height: 0;
+}
+
+/* Layout width is logical; only the shared outer transform responds to the viewport. */
+.canvas-renderer {
+  width: 100%;
+  min-width: 0;
+}
+.canvas-extent {
+  position: relative;
+  overflow: hidden;
+}
+.canvas-transform {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+.canvas-logical {
+  display: flow-root;
+}
+.canvas-view-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 6px 0;
+  color: var(--paper);
+  font: 10px var(--ui-font);
+}
+.canvas-view-controls button {
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--border-strong);
+  min-height: 32px;
+  min-width: 32px;
+  padding: 6px 9px;
+}
+.canvas-view-controls button[aria-pressed="true"] {
+  border-color: var(--red);
+  color: var(--pink);
+}
+.canvas-view-controls button:disabled {
+  opacity: 0.4;
+}
+.canvas-view-controls output {
+  min-width: 38px;
+  text-align: center;
+  background: var(--ink);
+  padding: 5px;
 }
