@@ -27,6 +27,10 @@ async function decodeRenderedQR(page: Page) {
       image.src = url;
       await image.decode();
       const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = getComputedStyle(svg.closest(".block-content")!).backgroundColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0);
       return {
         width: canvas.width,
