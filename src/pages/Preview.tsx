@@ -1,3 +1,4 @@
+import { ZinFooter } from "../components/ZinFooter";
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Canvas } from "../components/Canvas";
@@ -34,6 +35,7 @@ export function Preview() {
       <main className="preview-content" aria-label={project.page.title}>
         <Canvas project={project} />
       </main>
+      <ZinFooter />
     </div>
   );
 }
