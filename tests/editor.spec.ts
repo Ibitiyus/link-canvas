@@ -92,10 +92,12 @@ test("real pointer dragging, resizing, collision redistribution, undo and redo",
   const moved = await saved(page);
   expect(moved.blocks[0].col).toBe(second.col);
   noOverlap(moved);
-  const sizeHandle = firstCard.getByRole("button", {
-    name: "Изменить размер: Ссылка",
-    exact: true,
-  });
+  const sizeHandle = page
+    .locator(`[data-selection-id="${first.id}"]`)
+    .getByRole("button", {
+      name: "Изменить размер: Ссылка",
+      exact: true,
+    });
   const corner = (await sizeHandle.boundingBox())!;
   await page.mouse.move(corner.x + 10, corner.y + 10);
   await page.mouse.down();
@@ -176,8 +178,8 @@ test("layers duplicate/delete and reorder free decorations; drag changes coordin
   await page.getByRole("button", { name: /Слои/ }).click();
   await page.getByRole("button", { name: "Ниже: Смайл", exact: true }).click();
   const reordered = await saved(page);
-  expect(reordered.blocks.find((b) => b.name === "Смайл")!.zIndex).toBeLessThan(
-    reordered.blocks.find((b) => b.name === "Звезда")!.zIndex,
+  expect(reordered.blocks.find((b) => b.name === "Смайл")!.layer!).toBeLessThan(
+    reordered.blocks.find((b) => b.name === "Звезда")!.layer!,
   );
   const star = reordered.blocks.find((b) => b.name === "Звезда")!;
   const card = page.locator(`[data-block-id="${star.id}"]`);
@@ -216,6 +218,9 @@ test("JSON export/import round-trip and invalid files show errors", async ({
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(project)),
   });
+  await expect(page.locator("[data-block-id]")).toHaveCount(
+    project.blocks.length,
+  );
   expect(await saved(page)).toEqual(project);
   await page.getByLabel("Файл проекта JSON").setInputFiles({
     name: "broken.json",
@@ -389,7 +394,7 @@ test("mobile layout and touch dragging are usable without horizontal overflow", 
     ),
   ).toBe(true);
   await page
-    .getByRole("button", { name: "Открыть полотно", exact: true })
+    .getByRole("button", { name: "Свернуть панель", exact: true })
     .click();
   const handle = page.getByRole("button", {
     name: "Переместить: Текст",

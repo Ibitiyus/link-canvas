@@ -167,10 +167,26 @@ try {
     "create draft",
   );
   check(draft.revision === 1, "create actual PostgreSQL draft");
-  check(draft.project.blocks[0].locked === true && draft.project.blocks[0].hidden === false && draft.project.blocks[0].layer === 0, "database round-trips lock, visibility and universal layer");
-  for (const [field, value] of [["locked", "true"], ["hidden", 1], ["layer", -1], ["layer", 1.5], ["layer", "2"]]) {
-    const invalid = page(); invalid.blocks[0][field] = value;
-    check(!!(await a.rpc("save_draft", {value:invalid,expected_revision:1})).error, `server rejects invalid editor field ${field}=${value}`);
+  check(
+    draft.project.blocks[0].locked === true &&
+      draft.project.blocks[0].hidden === false &&
+      draft.project.blocks[0].layer === 0,
+    "database round-trips lock, visibility and universal layer",
+  );
+  for (const [field, value] of [
+    ["locked", "true"],
+    ["hidden", 1],
+    ["layer", -1],
+    ["layer", 1.5],
+    ["layer", "2"],
+  ]) {
+    const invalid = page();
+    invalid.blocks[0][field] = value;
+    check(
+      !!(await a.rpc("save_draft", { value: invalid, expected_revision: 1 }))
+        .error,
+      `server rejects invalid editor field ${field}=${value}`,
+    );
   }
   const missingColumns = page();
   delete missingColumns.page.columns;

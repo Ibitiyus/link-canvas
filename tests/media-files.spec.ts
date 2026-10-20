@@ -395,7 +395,7 @@ test("mobile music upload and player controls fit a narrow block", async ({
     .poll(async () => (await project(page)).blocks[0]?.url)
     .toMatch(/^asset:/);
   await page
-    .getByRole("button", { name: "Открыть полотно", exact: true })
+    .getByRole("button", { name: "Свернуть панель", exact: true })
     .click();
   await page
     .getByRole("button", { name: "Воспроизвести музыку", exact: true })

@@ -190,6 +190,14 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
       page.getByRole("button", { name: "Сохранено", exact: true }),
     ).toBeVisible();
   }
+  // New editor metadata must survive guest migration, cloud saving and publication.
+  await page.getByLabel("Закрепить положение", { exact: true }).check();
+  await page
+    .getByRole("button", { name: "На задний план", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Сохранено", exact: true }),
+  ).toBeVisible();
   const guest = await page.evaluate((key) => localStorage.getItem(key), KEY);
   await page
     .getByRole("button", { name: "Сохранить в облако", exact: true })
@@ -197,6 +205,17 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
   await expect(page).toHaveURL(/\/login/);
   const user = await register(page);
   await migrate(page);
+  const cloudDraft = await admin
+    .from("drafts")
+    .select("project")
+    .eq("owner_id", user.id)
+    .single();
+  expect(cloudDraft.error).toBeNull();
+  expect(
+    cloudDraft.data!.project.blocks.find(
+      (b: { type: string }) => b.type === "decoration",
+    ),
+  ).toMatchObject({ locked: true, layer: 0 });
   expect(
     JSON.parse((await page.evaluate((key) => localStorage.getItem(key), KEY))!),
   ).toEqual(JSON.parse(guest!));
@@ -211,6 +230,7 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
   try {
     await visitor.goto(address!);
     await expect(visitor.locator("[data-block-id]")).toHaveCount(8);
+    await expect(visitor.locator(".free-block")).toHaveCSS("z-index", "1");
     await expect(
       visitor.locator(
         ".grid-cell,.drag-handle,.resize-handle,.editor-toolbar,.cloud-bar",
@@ -336,6 +356,7 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
     ).toBeVisible();
     await visitor.goto(`/u/${renamed}`);
     await expect(visitor.locator("[data-block-id]")).toHaveCount(8);
+    await expect(visitor.locator(".free-block")).toHaveCSS("z-index", "1");
     await page
       .getByRole("button", { name: "Снять с публикации", exact: true })
       .click();
