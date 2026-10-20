@@ -1,3 +1,4 @@
+import { moveLayer } from "../model/layers";
 import { createId } from "../model/id";
 import {
   createContext,
@@ -42,6 +43,10 @@ interface ProjectStore {
   duplicate: (id: string) => void;
   updatePage: (patch: Partial<PageSettings>) => void;
   reorder: (id: string, direction: -1 | 1) => void;
+  moveLayer: (
+    id: string,
+    action: "front" | "back" | "up" | "down" | number,
+  ) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -124,10 +129,19 @@ export function ProjectProvider({
       return;
     }
     const result = addBlock(project, type);
-    change(result.project);
+    if (project.blocks.some((b) => b.layer !== undefined))
+      result.project.blocks = result.project.blocks.map((b) =>
+        b.id === result.id ? { ...b, layer: project.blocks.length } : b,
+      );
+    change(moveLayer(result.project, result.id, "front"));
     select(result.id);
   };
   const remove = (id: string) => {
+    if (
+      project.blocks.find((b) => b.id === id)?.locked &&
+      !confirm("Удалить закреплённый элемент?")
+    )
+      return;
     change((p) => ({ ...p, blocks: p.blocks.filter((b) => b.id !== id) }));
     if (selectedId === id) select(null);
   };
@@ -142,6 +156,10 @@ export function ProjectProvider({
       ...source,
       id: createId(),
       name: `${source.name} — копия`,
+      ...(source.locked ? { locked: false } : {}),
+      ...(project.blocks.some((b) => b.layer !== undefined)
+        ? { layer: project.blocks.length }
+        : {}),
       x: source.x + 20,
       y: source.y + 20,
     };
@@ -159,29 +177,23 @@ export function ProjectProvider({
         project.blocks.filter((b) => b.type !== "decoration"),
         project.page.columns,
       );
-    change({
-      ...project,
-      blocks: [...project.blocks, clampDecoration(copy, project.page.maxWidth)],
-    });
+    change(
+      moveLayer(
+        {
+          ...project,
+          blocks: [
+            ...project.blocks,
+            clampDecoration(copy, project.page.maxWidth),
+          ],
+        },
+        copy.id,
+        "front",
+      ),
+    );
     select(copy.id);
   };
   const reorder = (id: string, direction: -1 | 1) =>
-    change((p) => {
-      const layers = p.blocks
-        .filter((b) => b.type === "decoration")
-        .sort((a, b) => a.zIndex - b.zIndex);
-      const index = layers.findIndex((b) => b.id === id),
-        target = index + direction;
-      if (index < 0 || target < 0 || target >= layers.length) return p;
-      [layers[index], layers[target]] = [layers[target], layers[index]];
-      const z = new Map(layers.map((block, i) => [block.id, i + 1]));
-      return {
-        ...p,
-        blocks: p.blocks.map((b) =>
-          z.has(b.id) ? { ...b, zIndex: z.get(b.id)! } : b,
-        ),
-      };
-    });
+    change((p) => moveLayer(p, id, direction === 1 ? "up" : "down"));
   return (
     <Context.Provider
       value={{
@@ -197,7 +209,22 @@ export function ProjectProvider({
         remove,
         duplicate,
         reorder,
-        updatePage: (patch) =>
+        moveLayer: (id, action) => change((p) => moveLayer(p, id, action)),
+        updatePage: (patch) => {
+          if (
+            patch.columns &&
+            project.blocks.some(
+              (b) =>
+                b.locked &&
+                b.type !== "decoration" &&
+                b.col + b.colSpan > patch.columns!,
+            )
+          ) {
+            notify(
+              "Сначала разблокируйте элементы, которые не помещаются в новое число колонок.",
+            );
+            return;
+          }
           change((p) => ({
             ...p,
             page: { ...p.page, ...patch },
@@ -207,7 +234,8 @@ export function ProjectProvider({
               ),
               patch.columns ?? p.page.columns,
             ),
-          })),
+          }));
+        },
         undo: () => {
           setEdited(true);
           dispatch({ type: "undo" });

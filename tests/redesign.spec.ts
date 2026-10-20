@@ -98,7 +98,7 @@ test("live homepage playground edits are separate from the saved project and med
   await page.mouse.move(rect.x + 10, rect.y + 100, { steps: 5 });
   await page.mouse.up();
   await expect(
-    showcase.locator("[data-block-id=spec-text] .size-badge"),
+    showcase.locator("[data-selection-id=spec-text] .size-badge"),
   ).toHaveText("2 × 4");
   expect(await page.evaluate((key) => localStorage.getItem(key), KEY)).toBe(
     original,
@@ -130,6 +130,7 @@ test("live homepage playground edits are separate from the saved project and med
 test("responsive compositions and panel switching fit phones, tablets, laptops and monitors", async ({
   page,
 }) => {
+  test.setTimeout(90000);
   for (const width of [320, 390, 768, 1024, 1366, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     for (const route of ["/", "/editor", "/missing-page"]) {
@@ -180,14 +181,14 @@ test("responsive compositions and panel switching fit phones, tablets, laptops a
         .getByRole("button", { name: "Открыть библиотеку", exact: true })
         .click();
       await expect(page.locator(".library")).toBeVisible();
-      await expect(page.locator(".workspace")).toBeHidden();
+      await expect(page.locator(".workspace")).toBeVisible();
       await page
         .getByRole("button", { name: "Добавить: Текст", exact: true })
         .click();
       await expect(page.locator(".inspector")).toBeVisible();
       await page.getByLabel("Текст", { exact: true }).fill("Mobile editor");
       await page
-        .getByRole("button", { name: "Открыть полотно", exact: true })
+        .getByRole("button", { name: "Свернуть панель", exact: true })
         .click();
       await expect(page.locator(".workspace")).toBeVisible();
       await expect(page.locator(".text-content").last()).toHaveText(

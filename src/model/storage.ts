@@ -4,7 +4,7 @@ import { dataUrlMime, MAX_CUSTOM_FONTS, parseImageSource } from "./assets";
 import { isAssetRef } from "./fileStore";
 import { validFontChoice } from "./fonts";
 import { clampDecoration, POSITION_LIMIT, SIZE_LIMIT } from "./decoration";
-import { arrange } from "./grid";
+import { arrange, clampBlock } from "./grid";
 import { emptyProject, newBlock } from "./defaults";
 import {
   LABELS,
@@ -79,7 +79,10 @@ export function parseProject(raw: string): Project {
       throw new Error("Некорректный или повторяющийся идентификатор шрифта.");
     if (
       typeof font.dataUrl !== "string" ||
-      (!isAssetRef(font.dataUrl) && !isCloudRef(font.dataUrl) && !safeUrl(font.dataUrl) && !dataUrlMime(font.dataUrl, "font"))
+      (!isAssetRef(font.dataUrl) &&
+        !isCloudRef(font.dataUrl) &&
+        !safeUrl(font.dataUrl) &&
+        !dataUrlMime(font.dataUrl, "font"))
     )
       throw new Error("Некорректный файл шрифта в проекте.");
     fontIds.add(id);
@@ -133,12 +136,22 @@ export function parseProject(raw: string): Project {
       rotation: number(source.rotation, 0, -180, 180),
       zIndex: Math.round(number(source.zIndex, 1, 1, 1_000_000)),
     };
+    // Optional fields preserve exact legacy v1 shapes until the feature is used.
+    if (source.locked !== undefined) block.locked = source.locked === true;
+    else delete block.locked;
+    if (source.hidden !== undefined) block.hidden = source.hidden === true;
+    else delete block.hidden;
+    if (source.layer !== undefined)
+      block.layer = Math.round(number(source.layer, 0, 0, 1_000_000));
     if (source.fontFamily !== undefined) {
       if (!validFontChoice(source.fontFamily, customFonts))
         throw new Error("Неизвестный шрифт или отсутствует его файл.");
       block.fontFamily = source.fontFamily;
     }
-    return clampDecoration(block, settings.maxWidth);
+    return clampDecoration(
+      block.type === "decoration" ? block : clampBlock(block, settings.columns),
+      settings.maxWidth,
+    );
   });
   return {
     version: 1,

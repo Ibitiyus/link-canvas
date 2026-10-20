@@ -36,6 +36,9 @@ export interface Block {
   height: number;
   rotation: number;
   zIndex: number;
+  locked?: boolean;
+  hidden?: boolean;
+  layer?: number;
 }
 export interface PageSettings {
   title: string;

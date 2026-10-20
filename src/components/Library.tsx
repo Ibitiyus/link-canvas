@@ -1,34 +1,11 @@
-import { useState } from "react";
-import {
-  ArrowDown,
-  ArrowUp,
-  Copy,
-  Image,
-  Layers,
-  Link,
-  MousePointer2,
-  Plus,
-  Shapes,
-  Sparkles,
-  Trash2,
-  Type,
-  Video,
-  Music2,
-  QrCode,
-} from "lucide-react";
+import { LayerList } from "./LayerList";
+import { useEffect, useState } from "react";
+import { Layers, MousePointer2, Plus } from "lucide-react";
 import { useProject } from "../state/ProjectContext";
 import { LABELS, type BlockType } from "../model/types";
 import { PanelHeader } from "./ui/PanelHeader";
-export const BLOCK_ICONS = {
-  link: Link,
-  text: Type,
-  image: Image,
-  gif: Sparkles,
-  video: Video,
-  audio: Music2,
-  qrcode: QrCode,
-  decoration: Shapes,
-};
+import { BLOCK_ICONS } from "./blockIcons";
+export { BLOCK_ICONS } from "./blockIcons";
 const DESCRIPTIONS: Record<BlockType, string> = {
   link: "Кнопка с переходом",
   text: "Слова и заголовки",
@@ -37,25 +14,25 @@ const DESCRIPTIONS: Record<BlockType, string> = {
   video: "YouTube или файл",
   audio: "Свой звук и плеер",
   qrcode: "Сканируй или нажми",
-  decoration: "Поверх вашей сетки",
+  decoration: "Над блоками и за ними",
 };
 const GROUPS: { code: string; title: string; types: BlockType[] }[] = [
   { code: "А", title: "БЛОКИ", types: ["link", "text", "qrcode"] },
   { code: "Б", title: "МЕДИА", types: ["image", "gif", "video", "audio"] },
   { code: "В", title: "ДЕКОР", types: ["decoration"] },
 ];
-export function Library({ onAdd }: { onAdd?: () => void }) {
+export function Library({
+  onAdd,
+  requestedTab,
+}: {
+  onAdd?: () => void;
+  requestedTab?: "blocks" | "layers";
+}) {
   const [tab, setTab] = useState<"blocks" | "layers">("blocks");
-  const { project, selectedId, select, add, remove, duplicate, reorder } =
-    useProject();
-  const layers = [...project.blocks].sort(
-    (a, b) =>
-      (b.type === "decoration" ? b.zIndex + 10000 : 0) -
-      (a.type === "decoration" ? a.zIndex + 10000 : 0),
-  );
-  const free = project.blocks
-    .filter((b) => b.type === "decoration")
-    .sort((a, b) => a.zIndex - b.zIndex);
+  const { project, add } = useProject();
+  useEffect(() => {
+    if (requestedTab) setTab(requestedTab);
+  }, [requestedTab]);
   return (
     <aside
       className="library panel"
@@ -130,9 +107,9 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
             <div>
               <span>ПЕРЕТАЩИТЕ НА МЕСТО</span>
               <p>
-                Тяните блок за ручку ⠿.
+                Тяните блок за поверхность.
                 <br />
-                Меняйте размер за угол.
+                На телефоне сначала удерживайте блок.
                 <br />
                 Правила задаёте вы.
               </p>
@@ -140,77 +117,7 @@ export function Library({ onAdd }: { onAdd?: () => void }) {
           </div>
         </>
       ) : (
-        <div className="layers-list">
-          <div className="layer-count">
-            <span>ПОРЯДОК СЛОЁВ</span>
-            <b>{project.blocks.length} ЭЛ.</b>
-          </div>
-          <p className="muted caption">
-            Декор выше в списке — ближе к зрителю. Сеточные блоки
-            упорядочиваются на полотне.
-          </p>
-          {!layers.length && (
-            <p className="empty-note">
-              [ ПУСТО ]<br />
-              Добавьте первый блок во вкладке «Блоки».
-            </p>
-          )}
-          {layers.map((block, i) => {
-            const Icon = BLOCK_ICONS[block.type],
-              index = free.findIndex((b) => b.id === block.id);
-            return (
-              <div
-                key={block.id}
-                className={`layer-row ${selectedId === block.id ? "active" : ""}`}
-              >
-                <button
-                  className="layer-select"
-                  onClick={() => select(block.id)}
-                >
-                  <small>{String(i + 1).padStart(2, "0")}</small>
-                  <Icon size={15} />
-                  <span>{block.name}</span>
-                </button>
-                <div className="layer-actions">
-                  {block.type === "decoration" && (
-                    <>
-                      <button
-                        title={`Выше: ${block.name}`}
-                        aria-label={`Выше: ${block.name}`}
-                        disabled={index === free.length - 1}
-                        onClick={() => reorder(block.id, 1)}
-                      >
-                        <ArrowUp size={14} />
-                      </button>
-                      <button
-                        title={`Ниже: ${block.name}`}
-                        aria-label={`Ниже: ${block.name}`}
-                        disabled={index === 0}
-                        onClick={() => reorder(block.id, -1)}
-                      >
-                        <ArrowDown size={14} />
-                      </button>
-                    </>
-                  )}
-                  <button
-                    title={`Дублировать: ${block.name}`}
-                    aria-label={`Дублировать: ${block.name}`}
-                    onClick={() => duplicate(block.id)}
-                  >
-                    <Copy size={14} />
-                  </button>
-                  <button
-                    title={`Удалить: ${block.name}`}
-                    aria-label={`Удалить: ${block.name}`}
-                    onClick={() => remove(block.id)}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <LayerList />
       )}
       <div className="library-bottom">
         <span className="tiny-dot" />

@@ -29,7 +29,9 @@ async function decodeRenderedQR(page: Page) {
       const ctx = canvas.getContext("2d")!;
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = getComputedStyle(svg.closest(".block-content")!).backgroundColor;
+      ctx.fillStyle = getComputedStyle(
+        svg.closest(".block-content")!,
+      ).backgroundColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0);
       return {
@@ -92,13 +94,11 @@ test("QR code encodes the edited URL, survives reload/JSON, and opens that URL o
     .click();
   await expect(page.locator("svg.qr-code")).toHaveCount(0);
   page.once("dialog", (dialog) => dialog.accept());
-  await page
-    .getByLabel("Файл проекта JSON", { exact: true })
-    .setInputFiles({
-      name: "qr.json",
-      mimeType: "application/json",
-      buffer: archive,
-    });
+  await page.getByLabel("Файл проекта JSON", { exact: true }).setInputFiles({
+    name: "qr.json",
+    mimeType: "application/json",
+    buffer: archive,
+  });
   await expect(page.getByRole("alert")).toContainText("Проект импортирован.");
   expect(await decodeRenderedQR(page)).toBe(url);
   await page.getByRole("button", { name: "Предпросмотр", exact: true }).click();
@@ -109,14 +109,12 @@ test("QR code encodes the edited URL, survives reload/JSON, and opens that URL o
   await expect(link).toHaveAttribute("href", url);
   await expect(link).toHaveAttribute("rel", "noopener noreferrer");
   expect(await decodeRenderedQR(page)).toBe(url);
-  await page
-    .context()
-    .route("https://destination.example.test/**", (route) =>
-      route.fulfill({
-        contentType: "text/html",
-        body: "<h1>QR destination</h1>",
-      }),
-    );
+  await page.context().route("https://destination.example.test/**", (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<h1>QR destination</h1>",
+    }),
+  );
   for (const keyboard of [false, true]) {
     const opening = page.waitForEvent("popup");
     if (keyboard) {
@@ -185,7 +183,7 @@ test("mobile QR scans after styling and grid resizing", async ({ page }) => {
   await page.getByLabel("Фон блока", { exact: true }).fill("#fff4e6");
   await page.getByLabel("Ширина, ячеек", { exact: true }).fill("4");
   await page
-    .getByRole("button", { name: "Открыть полотно", exact: true })
+    .getByRole("button", { name: "Свернуть панель", exact: true })
     .click();
   expect(await decodeRenderedQR(page)).toBe("https://example.com/mobile");
   await page.getByRole("button", { name: "Предпросмотр", exact: true }).click();

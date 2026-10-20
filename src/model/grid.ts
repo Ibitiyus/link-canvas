@@ -1,3 +1,4 @@
+import { positionPatch } from "./layers";
 import { clampDecoration } from "./decoration";
 import type { Block, Project } from "./types";
 
@@ -42,8 +43,13 @@ export function arrange(
   const ordered = [...blocks.filter((b) => b.type !== "decoration")];
   const index = ordered.findIndex((b) => b.id === priorityId);
   if (index > 0) ordered.unshift(...ordered.splice(index, 1));
+  ordered.sort((a, b) => Number(!!b.locked) - Number(!!a.locked));
   const placed: Block[] = [];
-  for (const block of ordered) placed.push(firstFree(block, placed, columns));
+  for (const block of ordered) {
+    if (block.locked && placed.some((other) => overlaps(block, other)))
+      throw new Error("Закреплённые элементы не должны пересекаться.");
+    placed.push(block.locked ? block : firstFree(block, placed, columns));
+  }
   const byId = new Map(placed.map((block) => [block.id, block]));
   return blocks.map((block) => byId.get(block.id) ?? block);
 }
@@ -54,7 +60,12 @@ export function editBlock(
 ): Project {
   const blocks = project.blocks.map((block) =>
     block.id === id
-      ? { ...block, ...patch, id: block.id, type: block.type }
+      ? {
+          ...block,
+          ...positionPatch(block, patch),
+          id: block.id,
+          type: block.type,
+        }
       : block,
   );
   return {
