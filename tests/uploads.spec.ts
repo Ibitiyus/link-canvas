@@ -184,7 +184,7 @@ test("device images persist in image/GIF/link/decor/video cover and page backgro
     .toBeGreaterThan(0);
   expect(
     await page
-      .locator(".page-surface")
+      .locator(".page-background")
       .evaluate((el) =>
         getComputedStyle(el).backgroundImage.startsWith('url("blob:'),
       ),

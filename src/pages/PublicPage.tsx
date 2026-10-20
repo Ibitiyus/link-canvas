@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Canvas } from "../components/Canvas";
+import { PageBackground } from "../components/PageBackground";
 import { FontFaces } from "../components/ProjectFonts";
 import { supabase } from "../cloud/config";
 import { usernameError } from "../auth/usernames";
@@ -78,6 +79,7 @@ export function PublicPage() {
         backgroundColor: project.page.background,
       }}
     >
+      <PageBackground page={project.page} />
       <FontFaces fonts={project.customFonts} />
       <main className="preview-content" aria-label={project.page.title}>
         <Canvas project={project} />
