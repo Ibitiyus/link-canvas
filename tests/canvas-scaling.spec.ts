@@ -394,3 +394,59 @@ test("scaled editor converts both pointer axes to logical coordinates and refres
     .first()
     .click();
 });
+
+test("preview and public backgrounds fill the viewport independently of canvas zoom", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.ZIN_CANVAS_E2E !== "1",
+    "Use npm run test:canvas for local mocked public API configuration.",
+  );
+  await prepare(page);
+  const withBackground = {
+    ...project,
+    page: {
+      ...project.page,
+      backgroundImage: "https://media.zin.test/photo.svg",
+    },
+  };
+  await page.addInitScript(
+    ({ key, value }) => localStorage.setItem(key, JSON.stringify(value)),
+    { key: KEY, value: withBackground },
+  );
+  await page.route("**/rest/v1/published_pages*", (route) =>
+    route.fulfill({ json: { project: withBackground } }),
+  );
+  for (const path of ["/preview", "/u/scaling_test"]) {
+    await page.goto(path);
+    const background = page.locator(".page-background");
+    await expect(background).toHaveCSS("background-image", /photo\.svg/);
+    await expect(background).toHaveCSS("background-size", "cover");
+    await expect(page.locator(".page-surface")).toHaveCSS(
+      "background-image",
+      "none",
+    );
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 844 });
+      await expect
+        .poll(async () => {
+          const box = await background.boundingBox();
+          return box && Math.round(box.width);
+        })
+        .toBe(width);
+      for (let i = 0; i < 4; i++)
+        await page
+          .getByRole("button", { name: "Увеличить полотно", exact: true })
+          .click();
+      await page.locator('[data-block-id="bottom"]').scrollIntoViewIfNeeded();
+      const box = (await background.boundingBox())!;
+      expect(box.x).toBe(0);
+      expect(box.y).toBe(0);
+      expect(box.width).toBe(width);
+      expect(box.height).toBe(844);
+      await page
+        .getByRole("button", { name: "По ширине", exact: true })
+        .click();
+    }
+  }
+});

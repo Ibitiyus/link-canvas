@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Canvas } from "../components/Canvas";
+import { PageBackground } from "../components/PageBackground";
 import { BackLink } from "../components/Toolbar";
 import { useProject } from "../state/ProjectContext";
 export function Preview() {
@@ -13,6 +14,7 @@ export function Preview() {
         backgroundColor: project.page.background,
       }}
     >
+      <PageBackground page={project.page} />
       {notice && (
         <div className="preview-notice">
           <span className="preview-mode">[ ПРЕДПРОСМОТР ]</span>

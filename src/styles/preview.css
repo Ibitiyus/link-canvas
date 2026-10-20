@@ -1,5 +1,7 @@
 /* Preview content uses the saved page theme. Only the dismissible notice is app UI. */
 .preview-page {
+  position: relative;
+  isolation: isolate;
   min-height: 100svh;
   background-position: center;
   background-size: cover;
@@ -199,4 +201,19 @@
   overflow-wrap: anywhere;
   padding: 12px;
   border: var(--line);
+}
+
+/* Full-screen backdrop remains stationary while the composition zooms/scrolls. */
+.page-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.preview-content .page-surface {
+  background-color: transparent !important;
+  background-image: none !important;
 }
