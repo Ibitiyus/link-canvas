@@ -242,6 +242,14 @@ for (const route of ["/editor", "/preview", "/u/scaling_test"])
           () => document.documentElement.scrollWidth <= innerWidth + 1,
         ),
       ).toBe(true);
+      if (route !== "/editor") {
+        const cta = page
+          .getByRole("contentinfo")
+          .getByRole("link", { name: "Создать свой зин", exact: true });
+        await expect(cta).toBeVisible();
+        await expect(cta).toHaveAttribute("href", "/");
+        expect((await cta.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      }
       const bottom = page.locator('[data-block-id="bottom"]');
       await bottom.scrollIntoViewIfNeeded();
       await expect(bottom).toBeInViewport();
@@ -267,6 +275,19 @@ for (const route of ["/editor", "/preview", "/u/scaling_test"])
     expect(
       await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), KEY),
     ).toEqual(original);
+    if (route !== "/editor") {
+      await page
+        .getByRole("contentinfo")
+        .getByRole("link", { name: "Создать свой зин", exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/$/);
+      await expect(
+        page.getByRole("link", {
+          name: "Создать своё пространство",
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
   });
 test("zoom scroll extents and fit reset do not modify the project", async ({
   page,

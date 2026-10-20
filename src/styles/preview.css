@@ -217,3 +217,26 @@
   background-color: transparent !important;
   background-image: none !important;
 }
+
+/* Visitor call to action stays outside the scaled composition. */
+.zin-footer {
+  display: flex;
+  justify-content: center;
+  padding: 12px 20px calc(28px + env(safe-area-inset-bottom));
+}
+.zin-footer-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #ff3355;
+  background: #0d0d0f;
+  color: #f2efeb;
+  font: 500 12px/1.5 var(--ui-font);
+}
+.zin-footer-link:hover {
+  background: #ff3355;
+  color: #0d0d0f;
+}

@@ -1,3 +1,4 @@
+import { ZinFooter } from "../components/ZinFooter";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Canvas } from "../components/Canvas";
@@ -84,6 +85,7 @@ export function PublicPage() {
       <main className="preview-content" aria-label={project.page.title}>
         <Canvas project={project} />
       </main>
+      <ZinFooter />
     </div>
   );
 }
