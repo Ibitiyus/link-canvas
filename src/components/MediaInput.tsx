@@ -1,3 +1,4 @@
+import { isCloudRef } from "../cloud/projectAssets";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Upload, LoaderCircle, X } from "lucide-react";
 import { readMediaFile } from "../model/uploads";
@@ -24,7 +25,7 @@ export function MediaInput({
     },
     [],
   );
-  const local = isAssetRef(value),
+  const local = isAssetRef(value) || isCloudRef(value),
     label = kind === "video" ? "Ссылка на видео" : "Ссылка на музыку";
   const upload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -50,7 +51,7 @@ export function MediaInput({
         label={label}
         hint={
           local
-            ? "Файл сохранён в браузере. Экспорт JSON включает файл."
+            ? "Файл выбран. Экспорт JSON включает файл; статус облака показан отдельно."
             : kind === "video"
               ? "YouTube или прямая ссылка на видеофайл"
               : "Прямая HTTP(S) ссылка на аудиофайл или аудиопоток"

@@ -1,3 +1,5 @@
+import { isCloudRef } from "../cloud/projectAssets";
+import { cloudFile } from "../cloud/assets";
 import type { Project } from "./types";
 import { parseProject } from "./storage";
 import { getFile, isAssetRef, storeFiles, type StoredFile } from "./fileStore";
@@ -26,8 +28,8 @@ function blobDataUrl(blob: Blob): Promise<string> {
 }
 export async function exportProject(project: Project): Promise<Blob> {
   const assets: Record<string, { name: string; dataUrl: string }> = {};
-  for (const ref of new Set(sources(project).filter(isAssetRef))) {
-    const file = await getFile(ref);
+  for (const ref of new Set(sources(project).filter(value => isAssetRef(value) || isCloudRef(value)))) {
+    const file = isCloudRef(ref) ? await cloudFile(ref) : await getFile(ref);
     assets[ref] = { name: file.name, dataUrl: await blobDataUrl(file.blob) };
   }
   return new Blob(
@@ -85,7 +87,7 @@ export async function importProject(raw: string): Promise<Project> {
   const input = JSON.parse(raw) as {
     assets?: Record<string, { dataUrl?: unknown; name?: unknown }>;
   };
-  const refs = new Set(sources(project).filter(isAssetRef));
+  const refs = new Set(sources(project).filter(value => isAssetRef(value) || isCloudRef(value)));
   const replacements = new Map<string, string>();
   const files: StoredFile[] = [];
   for (const ref of refs) {

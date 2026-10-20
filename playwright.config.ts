@@ -5,6 +5,7 @@ const executablePath =
   (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined);
 export default defineConfig({
   testDir: "./tests",
+  testIgnore: process.env.ZIN_CLOUD_E2E === "1" ? undefined : "**/cloud-platform.spec.ts",
   fullyParallel: true,
   workers: 2,
   timeout: 30000,

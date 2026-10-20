@@ -1,22 +1,16 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { ProjectProvider } from "./state/ProjectContext";
-import { ProjectFonts } from "./components/ProjectFonts";
-import { Home } from "./pages/Home";
-import { Editor } from "./pages/Editor";
-import { NotFound } from "./pages/NotFound";
-import { Preview } from "./pages/Preview";
+import { AuthProvider } from "./auth/AuthContext";
+import { Workspace } from "./cloud/Workspace";
+import { PublicPage } from "./pages/PublicPage";
 export function App() {
   return (
     <BrowserRouter>
-      <ProjectProvider>
-        <ProjectFonts />
+      <AuthProvider>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/editor" element={<Editor />} />
-          <Route path="/preview" element={<Preview />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/u/:username" element={<PublicPage />} />
+          <Route path="*" element={<Workspace />} />
         </Routes>
-      </ProjectProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

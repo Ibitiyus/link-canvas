@@ -1,3 +1,4 @@
+import { isCloudRef } from "../cloud/projectAssets";
 import { safeUrl } from "./media";
 import { isAssetRef } from "./fileStore";
 export const MAX_CUSTOM_FONTS = 8;
@@ -55,7 +56,7 @@ export function dataUrlMime(
   }
 }
 export function safeImageSource(value: string): string | null {
-  if (isAssetRef(value)) return value;
+  if (isAssetRef(value) || isCloudRef(value)) return value;
   return value.startsWith("data:")
     ? dataUrlMime(value, "image")
       ? value

@@ -1,3 +1,4 @@
+import { isCloudRef } from "../cloud/projectAssets";
 import { isAssetRef } from "./fileStore";
 /** Only http(s) URLs are rendered as links, images or media. */
 export function safeUrl(value: string): string | null {
@@ -10,7 +11,7 @@ export function safeUrl(value: string): string | null {
 }
 export type VideoSource = { kind: "youtube" | "file"; src: string };
 export function videoSource(value: string): VideoSource | null {
-  if (isAssetRef(value)) return { kind: "file", src: value };
+  if (isAssetRef(value) || isCloudRef(value)) return { kind: "file", src: value };
   const safe = safeUrl(value);
   if (!safe) return null;
   const url = new URL(safe);
@@ -45,7 +46,7 @@ export function videoSource(value: string): VideoSource | null {
 
 /** Audio URLs must point to a file/stream, rather than a service's HTML player page. */
 export function audioSource(value: string): string | null {
-  if (isAssetRef(value)) return value;
+  if (isAssetRef(value) || isCloudRef(value)) return value;
   const safe = safeUrl(value);
   if (!safe) return null;
   const host = new URL(safe).hostname;

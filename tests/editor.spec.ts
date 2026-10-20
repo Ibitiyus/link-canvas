@@ -58,7 +58,7 @@ test("home, editor, demo and local preview navigation", async ({ page }) => {
     ),
   ).toHaveCount(0);
   await expect(
-    page.getByText("Локальный предпросмотр", { exact: false }),
+    page.getByText("Предпросмотр черновика", { exact: false }),
   ).toBeVisible();
   expect(errors).toEqual([]);
 });

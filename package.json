@@ -13,17 +13,27 @@
     "preview": "vite preview --host 0.0.0.0 --port 4173 --strictPort",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "capture:design": "node scripts/capture-design.mjs"
+    "capture:design": "node scripts/capture-design.mjs",
+    "cloud:start": "node scripts/supabase.mjs start -x studio,imgproxy,logflare,vector,realtime,supavisor,postgres-meta",
+    "cloud:stop": "node scripts/supabase.mjs stop",
+    "cloud:env": "node scripts/cloud-env.mjs",
+    "cloud:reset": "node scripts/supabase.mjs db reset",
+    "cloud:functions": "node scripts/supabase.mjs functions serve --env-file supabase/functions/.env",
+    "test:cloud": "node scripts/test-cloud.mjs",
+    "test:e2e:cloud": "node scripts/test-cloud-browser.mjs",
+    "cloud:direct": "node scripts/cloud-direct.mjs"
   },
   "dependencies": {
     "@fontsource/archivo-black": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/roboto-condensed": "^5.3.0",
+    "@supabase/supabase-js": "^2.118.0",
     "lucide-react": "^1.59.0",
     "qrcode": "^1.5.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "react-router-dom": "^7.18.4"
+    "react-router-dom": "^7.18.4",
+    "tus-js-client": "^4.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
@@ -32,6 +42,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "jsqr": "^1.4.0",
+    "supabase": "2.121.0",
     "typescript": "7.0.2",
     "vite": "8.3.4",
     "vitest": "^5.0.5"

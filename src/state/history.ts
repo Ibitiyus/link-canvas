@@ -5,10 +5,12 @@ export interface History {
   future: Project[];
 }
 export type HistoryAction =
+  | { type: "replace"; project: Project }
   | { type: "change"; update: Project | ((project: Project) => Project) }
   | { type: "undo" }
   | { type: "redo" };
 export function historyReducer(state: History, action: HistoryAction): History {
+  if (action.type === "replace") return { past: [], present: action.project, future: [] };
   if (action.type === "undo") {
     if (!state.past.length) return state;
     return {
