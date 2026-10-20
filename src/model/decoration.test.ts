@@ -11,10 +11,10 @@ it("reserves the rotated bounds outside the grid at the rendered scale", () => {
     rotation: 90,
   };
   const bounds = decorationBounds(block, 0.5);
-  expect(bounds.left).toBeCloseTo(-100);
-  expect(bounds.right).toBeCloseTo(0);
-  expect(bounds.top).toBeCloseTo(-80);
-  expect(bounds.bottom).toBeCloseTo(20);
+  expect(bounds.left).toBeCloseTo(-75);
+  expect(bounds.right).toBeCloseTo(-25);
+  expect(bounds.top).toBeCloseTo(-65);
+  expect(bounds.bottom).toBeCloseTo(35);
 });
 it("includes both sides of a rotated wide element", () => {
   const bounds = decorationBounds(

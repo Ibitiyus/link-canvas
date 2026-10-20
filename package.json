@@ -21,7 +21,8 @@
     "cloud:functions": "node scripts/supabase.mjs functions serve --env-file supabase/functions/.env",
     "test:cloud": "node scripts/test-cloud.mjs",
     "test:e2e:cloud": "node scripts/test-cloud-browser.mjs",
-    "cloud:direct": "node scripts/cloud-direct.mjs"
+    "cloud:direct": "node scripts/cloud-direct.mjs",
+    "test:canvas": "node scripts/test-canvas.mjs"
   },
   "dependencies": {
     "@fontsource/archivo-black": "^5.3.0",

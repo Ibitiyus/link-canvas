@@ -398,14 +398,20 @@ test("mobile layout and touch dragging are usable without horizontal overflow", 
   await handle.scrollIntoViewIfNeeded();
   const bounds = (await handle.boundingBox())!;
   const cdp = await context.newCDPSession(page);
-  const point = { x: bounds.x + 10, y: bounds.y + 8 };
+  const point = {
+    x: bounds.x + bounds.width / 2,
+    y: bounds.y + bounds.height / 2,
+  };
+  const canvasScale = Number(
+    await page.locator(".canvas-renderer").getAttribute("data-canvas-scale"),
+  );
   await cdp.send("Input.dispatchTouchEvent", {
     type: "touchStart",
     touchPoints: [point],
   });
   await cdp.send("Input.dispatchTouchEvent", {
     type: "touchMove",
-    touchPoints: [{ ...point, y: point.y + 128 }],
+    touchPoints: [{ ...point, y: point.y + 128 * canvasScale }],
   });
   await cdp.send("Input.dispatchTouchEvent", {
     type: "touchEnd",

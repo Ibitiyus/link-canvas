@@ -6,7 +6,6 @@ import { supabase } from "../cloud/config";
 import { usernameError } from "../auth/usernames";
 import { parseProject } from "../model/storage";
 import type { Project } from "../model/types";
-import { safeImageSource } from "../model/assets";
 import { NotFound } from "./NotFound";
 export function PublicPage() {
   const { username = "" } = useParams();
@@ -72,15 +71,11 @@ export function PublicPage() {
         </button>
       </div>
     );
-  const background = safeImageSource(project.page.backgroundImage);
   return (
     <div
       className="preview-page public-page"
       style={{
         backgroundColor: project.page.background,
-        backgroundImage: background
-          ? `url(${JSON.stringify(background)})`
-          : undefined,
       }}
     >
       <FontFaces fonts={project.customFonts} />
