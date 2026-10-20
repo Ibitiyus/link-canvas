@@ -27,13 +27,6 @@ export function QRBlock({
       aria-label={`QR-код для ${code.url}`}
       shapeRendering="crispEdges"
     >
-      <rect
-        x={-4}
-        y={-4}
-        width={code.size + 8}
-        height={code.size + 8}
-        fill={block.background}
-      />
       <path d={code.path} fill={block.color} />
     </svg>
   );

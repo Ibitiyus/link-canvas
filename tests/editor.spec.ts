@@ -129,7 +129,7 @@ test("inspector edits, page settings and reload preserve every property", async 
   await page.getByLabel("Фон блока", { exact: true }).fill("#123456");
   await page.getByLabel("Цвет текста", { exact: true }).fill("#fedcba");
   await page.getByLabel("Скругление", { exact: true }).fill("31");
-  await page.getByLabel("Прозрачность, %", { exact: true }).fill("75");
+  await page.getByLabel("Непрозрачность блока, %", { exact: true }).fill("75");
   await page.getByLabel("Рамка, пкс", { exact: true }).fill("2");
   await page.getByRole("button", { name: "Справа", exact: true }).click();
   await page.getByRole("button", { name: "Страница", exact: true }).click();

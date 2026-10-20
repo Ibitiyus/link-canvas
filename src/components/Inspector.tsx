@@ -1,3 +1,4 @@
+import { BlockBackground } from "./BlockBackground";
 import { POSITION_LIMIT, SIZE_LIMIT } from "../model/decoration";
 import { MediaInput } from "./MediaInput";
 import { useEffect, useState } from "react";
@@ -218,33 +219,15 @@ export function Inspector() {
           </h3>
           <div className="field-pair">
             <ColorField
-              label="Фон блока"
-              value={block.background}
-              onChange={(background) => patch({ background })}
-            />
-            <ColorField
               label={block.type === "qrcode" ? "Цвет QR-кода" : "Цвет текста"}
               value={block.color}
               onChange={(color) => patch({ color })}
             />
           </div>
-          {block.type === "decoration" && (
-            <label className="checkbox-field">
-              <input
-                type="checkbox"
-                checked={
-                  block.background.length === 9 &&
-                  block.background.endsWith("00")
-                }
-                onChange={(event) =>
-                  patch({
-                    background: event.target.checked ? "#00000000" : "#222226",
-                  })
-                }
-              />
-              Прозрачный фон
-            </label>
-          )}
+          <BlockBackground
+            value={block.background}
+            onChange={(background) => patch({ background })}
+          />
           <h3>
             <span>03 /</span> ЭФФЕКТЫ
           </h3>
@@ -256,7 +239,7 @@ export function Inspector() {
               onChange={(radius) => patch({ radius })}
             />
             <NumberField
-              label="Прозрачность, %"
+              label="Непрозрачность блока, %"
               value={Math.round(block.opacity * 100)}
               max={100}
               onChange={(value) => patch({ opacity: value / 100 })}
