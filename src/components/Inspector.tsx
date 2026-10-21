@@ -114,11 +114,6 @@ export function Inspector({
           <h3>
             <span>01 /</span> СОДЕРЖИМОЕ
           </h3>
-          <EffectsInspector
-            id={block.id}
-            effects={block.effects}
-            onChange={(effects) => patch({ effects })}
-          />
           <Field label="Название блока">
             <input
               maxLength={160}
@@ -239,6 +234,11 @@ export function Inspector({
               </select>
             </Field>
           )}
+          <EffectsInspector
+            id={block.id}
+            effects={block.effects}
+            onChange={(effects) => patch({ effects })}
+          />
           <h3>
             <span>02 /</span> ОФОРМЛЕНИЕ
           </h3>

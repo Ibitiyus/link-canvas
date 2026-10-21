@@ -235,3 +235,14 @@
     transform: none !important;
   }
 }
+
+.effect-range > .field {
+  margin: 0;
+}
+.effect-range > .field > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

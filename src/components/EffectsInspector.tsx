@@ -7,7 +7,7 @@ import {
   type Effects,
 } from "../model/effects";
 import { useProject } from "../state/ProjectContext";
-import { Field } from "./Fields";
+import { Field, NumberField } from "./Fields";
 function Range({
   label,
   value,
@@ -25,38 +25,26 @@ function Range({
 }) {
   return (
     <div className="field">
-      <label>
-        {label}
-        <span className="effect-range">
-          <input
-            aria-label={`${label}, ползунок`}
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
-          />
-          <input
-            aria-label={label}
-            type="number"
-            min={min}
-            max={max}
-            step={step}
-            value={value}
-            onChange={(e) => {
-              const n = Number(e.target.value);
-              if (
-                e.target.value !== "" &&
-                Number.isFinite(n) &&
-                n >= min &&
-                n <= max
-              )
-                onChange(n);
-            }}
-          />
-        </span>
-      </label>
+      <span>{label}</span>
+      <div className="effect-range">
+        <input
+          aria-label={`${label}, ползунок`}
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+        />
+        <NumberField
+          label={label}
+          value={value}
+          min={min}
+          max={max}
+          step={step}
+          onChange={onChange}
+        />
+      </div>
     </div>
   );
 }
