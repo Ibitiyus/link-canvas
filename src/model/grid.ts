@@ -1,3 +1,4 @@
+import { isFree } from "./placement";
 import { positionPatch } from "./layers";
 import { clampDecoration } from "./decoration";
 import type { Block, Project } from "./types";
@@ -40,7 +41,7 @@ export function arrange(
   columns: number,
   priorityId?: string,
 ): Block[] {
-  const ordered = [...blocks.filter((b) => b.type !== "decoration")];
+  const ordered = [...blocks.filter((b) => !isFree(b))];
   const index = ordered.findIndex((b) => b.id === priorityId);
   if (index > 0) ordered.unshift(...ordered.splice(index, 1));
   ordered.sort((a, b) => Number(!!b.locked) - Number(!!a.locked));
@@ -71,7 +72,11 @@ export function editBlock(
   return {
     ...project,
     blocks: arrange(
-      blocks.map((block) => clampDecoration(block, project.page.maxWidth)),
+      blocks.map((block) =>
+        isFree(block)
+          ? clampDecoration(block)
+          : clampBlock(block, project.page.columns),
+      ),
       project.page.columns,
       id,
     ),
@@ -81,9 +86,7 @@ export function gridRows(blocks: Block[]): number {
   return (
     Math.max(
       5,
-      ...blocks
-        .filter((b) => b.type !== "decoration")
-        .map((b) => b.row + b.rowSpan),
+      ...blocks.filter((b) => !isFree(b)).map((b) => b.row + b.rowSpan),
     ) + 1
   );
 }

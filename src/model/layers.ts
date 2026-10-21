@@ -19,23 +19,42 @@ export function moveLayer(
   action: "front" | "back" | "up" | "down" | number,
 ): Project {
   const order = orderedLayers(project.blocks),
-    index = order.findIndex((b) => b.id === id);
-  if (index < 0) return project;
+    source = order.find((b) => b.id === id);
+  if (!source) return project;
+  const units: Block[][] = [];
+  const seen = new Set<string>();
+  for (const block of order) {
+    const key = block.groupId ? `group:${block.groupId}` : `block:${block.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    units.push(
+      block.groupId
+        ? order.filter((b) => b.groupId === block.groupId)
+        : [block],
+    );
+  }
+  const index = units.findIndex((unit) => unit.some((b) => b.id === id));
   const target =
     typeof action === "number"
-      ? Math.max(0, Math.min(order.length - 1, action))
+      ? units.findIndex((unit) =>
+          unit.some(
+            (b) =>
+              b.id ===
+              order[Math.max(0, Math.min(order.length - 1, action))]?.id,
+          ),
+        )
       : action === "front"
-        ? order.length - 1
+        ? units.length - 1
         : action === "back"
           ? 0
           : Math.max(
               0,
-              Math.min(order.length - 1, index + (action === "up" ? 1 : -1)),
+              Math.min(units.length - 1, index + (action === "up" ? 1 : -1)),
             );
-  if (index === target) return project;
-  const [block] = order.splice(index, 1);
-  order.splice(target, 0, block);
-  const layers = new Map(order.map((b, i) => [b.id, i]));
+  if (target === index || target < 0) return project;
+  const [unit] = units.splice(index, 1);
+  units.splice(target, 0, unit);
+  const layers = new Map(units.flat().map((b, i) => [b.id, i]));
   return {
     ...project,
     blocks: project.blocks.map((b) => ({ ...b, layer: layers.get(b.id)! })),
@@ -51,6 +70,8 @@ export const GEOMETRY_KEYS = [
   "width",
   "height",
   "rotation",
+  "layout",
+  "keepAspect",
 ] as const;
 export function positionPatch(
   block: Block,

@@ -36,6 +36,9 @@ export interface Block {
   height: number;
   rotation: number;
   zIndex: number;
+  layout?: "grid" | "free";
+  keepAspect?: boolean;
+  groupId?: string;
   locked?: boolean;
   hidden?: boolean;
   layer?: number;
@@ -57,6 +60,7 @@ export interface CustomFont {
 export interface Project {
   version: 1;
   customFonts?: CustomFont[];
+  groups?: { id: string; name: string }[];
   page: PageSettings;
   blocks: Block[];
 }

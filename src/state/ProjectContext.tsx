@@ -1,4 +1,13 @@
-import { moveLayer } from "../model/layers";
+import { isFree } from "../model/placement";
+import {
+  switchLayout,
+  groupBlocks,
+  ungroupBlocks,
+  transformSelection,
+  duplicateSelection,
+  cleanGroups,
+} from "../model/creative";
+import { positionPatch, moveLayer } from "../model/layers";
 import { createId } from "../model/id";
 import {
   createContext,
@@ -35,7 +44,19 @@ interface ProjectStore {
   project: Project;
   replace: (project: Project) => void;
   selectedId: string | null;
-  select: (id: string | null) => void;
+  selectedIds: string[];
+  multiSelect: boolean;
+  setMultiSelect: (value: boolean) => void;
+  select: (id: string | null, additive?: boolean) => void;
+  selectOnly: (id: string) => void;
+  setLayout: (id: string, layout: "grid" | "free") => void;
+  groupSelection: () => void;
+  ungroup: (id: string) => void;
+  renameGroup: (id: string, name: string) => void;
+  patchSelection: (patch: Partial<Block>) => void;
+  transform: (ids: string[], from: Block, to: Block) => void;
+  duplicateSelected: () => void;
+  removeSelected: () => void;
   change: (update: Project | ((project: Project) => Project)) => void;
   add: (type: BlockType) => void;
   updateBlock: (id: string, patch: Partial<Block>) => void;
@@ -72,28 +93,54 @@ export function ProjectProvider({
     present: initial.project,
     future: [],
   } satisfies History);
-  const [selectedId, select] = useState<string | null>(null);
+  const [selection, setSelection] = useState<string[]>([]),
+    [multiSelect, setMultiSelect] = useState(false);
+  const selectedId = selection[0] ?? null;
+  const select = (id: string | null, additive = false) => {
+    if (!id) {
+      setSelection([]);
+      return;
+    }
+    const source = history.present.blocks.find((b) => b.id === id);
+    const ids = source?.groupId
+      ? history.present.blocks
+          .filter((b) => b.groupId === source.groupId)
+          .map((b) => b.id)
+      : [id];
+    setSelection((current) => {
+      if (!additive) return ids;
+      return ids.every((i) => current.includes(i))
+        ? current.filter((i) => !ids.includes(i))
+        : [...new Set([...current, ...ids])];
+    });
+  };
   const [message, notify] = useState(initial.error);
   const [status, setStatus] = useState<"saving" | "saved" | "error">(
     initial.error ? "error" : "saving",
   );
+  const [savedProject,setSavedProject]=useState<Project|null>(null);
   const [edited, setEdited] = useState(false);
   const project = history.present;
   const replace = useCallback((project: Project) => {
     setEdited(true);
     dispatch({ type: "replace", project });
-    select(null);
+    setSelection([]);
   }, []);
   const change = useCallback(
     (update: Project | ((project: Project) => Project)) => {
       setEdited(true);
-      dispatch({ type: "change", update });
+      dispatch({
+        type: "change",
+        update: (p) =>
+          cleanGroups(typeof update === "function" ? update(p) : update),
+      });
     },
     [],
   );
   const saveNow = useCallback(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(project));
+      setSavedProject(project);
       setStatus("saved");
       return true;
     } catch {
@@ -163,7 +210,8 @@ export function ProjectProvider({
       x: source.x + 20,
       y: source.y + 20,
     };
-    if (copy.type === "decoration")
+    delete copy.groupId;
+    if (isFree(copy))
       copy.zIndex =
         Math.max(
           0,
@@ -174,7 +222,7 @@ export function ProjectProvider({
     else
       copy = firstFree(
         copy,
-        project.blocks.filter((b) => b.type !== "decoration"),
+        project.blocks.filter((b) => !isFree(b)),
         project.page.columns,
       );
     change(
@@ -202,7 +250,77 @@ export function ProjectProvider({
         selectedId: project.blocks.some((b) => b.id === selectedId)
           ? selectedId
           : null,
+        selectedIds: selection.filter((id) =>
+          project.blocks.some((b) => b.id === id),
+        ),
+        multiSelect,
+        setMultiSelect,
         select,
+        selectOnly: (id) => setSelection([id]),
+        setLayout: (id, layout) => change((p) => switchLayout(p, id, layout)),
+        groupSelection: () => {
+          if (selection.length < 2) return;
+          if (
+            project.blocks.some((b) => selection.includes(b.id) && b.locked)
+          ) {
+            notify("Сначала разблокируйте выбранные элементы.");
+            return;
+          }
+          const result = groupBlocks(project, selection);
+          if (result === project)
+            notify(
+              "Не удалось создать группу. Допускается не более 100 групп.",
+            );
+          else change(result);
+        },
+        ungroup: (id) => change((p) => ungroupBlocks(p, id)),
+        renameGroup: (id, name) =>
+          change((p) => ({
+            ...p,
+            groups: p.groups?.map((g) =>
+              g.id === id ? { ...g, name: name.slice(0, 160) } : g,
+            ),
+          })),
+        patchSelection: (patch) =>
+          change((p) => ({
+            ...p,
+            blocks: p.blocks.map((b) =>
+              selection.includes(b.id)
+                ? { ...b, ...positionPatch(b, patch), id: b.id, type: b.type }
+                : b,
+            ),
+          })),
+        transform: (ids, from, to) => {
+          const result = transformSelection(project, ids, from, to);
+          if (result === project && !from.locked)
+            notify(
+              "Размер группы выходит за допустимые размеры элементов или шрифта (8–144 пкс).",
+            );
+          else change(result);
+        },
+        duplicateSelected: () => {
+          const result = duplicateSelection(project, selection);
+          if (!result.ids.length) {
+            notify(
+              "Нельзя добавить копию: предел — 200 элементов и 100 групп.",
+            );
+            return;
+          }
+          change(result.project);
+          setSelection(result.ids);
+        },
+        removeSelected: () => {
+          if (
+            project.blocks.some((b) => selection.includes(b.id) && b.locked) &&
+            !confirm("Удалить закреплённые элементы?")
+          )
+            return;
+          change((p) => ({
+            ...p,
+            blocks: p.blocks.filter((b) => !selection.includes(b.id)),
+          }));
+          setSelection([]);
+        },
         change,
         add,
         updateBlock: (id, patch) => change((p) => editBlock(p, id, patch)),
@@ -215,9 +333,7 @@ export function ProjectProvider({
             patch.columns &&
             project.blocks.some(
               (b) =>
-                b.locked &&
-                b.type !== "decoration" &&
-                b.col + b.colSpan > patch.columns!,
+                b.locked && !isFree(b) && b.col + b.colSpan > patch.columns!,
             )
           ) {
             notify(
@@ -247,7 +363,7 @@ export function ProjectProvider({
         canUndo: !!history.past.length,
         canRedo: !!history.future.length,
         saveNow,
-        status,
+        status:status==="error"?"error":savedProject===project?"saved":"saving",
         message,
         notify,
       }}
