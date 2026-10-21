@@ -64,6 +64,33 @@ export function MobileEditorTools({
     measure();
     return () => observer.disconnect();
   }, []);
+  useEffect(() => {
+    if (!tool) return;
+    const close = (event: KeyboardEvent) => {
+      if (
+        event.key !== "Escape" ||
+        !matchMedia("(max-width:1050px)").matches ||
+        document.querySelector("dialog[open]")
+      )
+        return;
+      if (
+        ["dragging", "resizing", "rotating"].includes(
+          document
+            .querySelector(".workspace .canvas")
+            ?.getAttribute("data-interaction-mode") ?? "",
+        )
+      )
+        return;
+      event.preventDefault();
+      event.stopPropagation();
+      onTool(null);
+      document
+        .querySelector<HTMLButtonElement>(`button[data-mobile-tool="${tool}"]`)
+        ?.focus();
+    };
+    document.addEventListener("keydown", close, true);
+    return () => document.removeEventListener("keydown", close, true);
+  }, [tool, onTool]);
   // Always reserve a visible strip of the composition, even with the large sheet.
   const fullHeight = Math.min(
     viewport * 0.74,
@@ -140,6 +167,7 @@ export function MobileEditorTools({
     >
       {tool && (
         <section
+          id="mobile-tool-panel"
           className="mobile-sheet"
           aria-label="Панель инструментов"
           data-sheet-size={size}
@@ -150,6 +178,12 @@ export function MobileEditorTools({
               className="sheet-grip"
               type="button"
               aria-label="Изменить высоту панели"
+              onKeyDown={(event) => {
+                if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                  event.preventDefault();
+                  onSize(event.key === "ArrowUp" ? "full" : "medium");
+                }
+              }}
               onPointerDown={start}
               onClick={() => {
                 if (!swiped.current)
@@ -177,6 +211,14 @@ export function MobileEditorTools({
         {tools.map(([name, title, Icon, label]) => (
           <button
             key={name}
+            data-mobile-tool={name}
+            aria-controls={
+              name === "library" || name === "layers"
+                ? "library-panel"
+                : name === "zoom"
+                  ? "mobile-tool-panel"
+                  : "inspector-panel"
+            }
             aria-label={label}
             aria-expanded={tool === name}
             className={tool === name ? "active" : ""}

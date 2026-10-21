@@ -60,7 +60,7 @@ export function AuthPage({
         if (error) throw error;
         if (!data.session)
           setMessage(
-            "Проверьте почту и подтвердите email. После подтверждения войдите в аккаунт.",
+            "Аккаунт ожидает подтверждения email. Проверьте входящие и спам. Если письма нет, обратитесь к владельцу ZIN: доставка зависит от настройки почтового провайдера.",
           );
       } else if (mode === "login") {
         const { error } = await client.auth.signInWithPassword({
@@ -75,7 +75,7 @@ export function AuthPage({
         });
         if (error) throw error;
         setMessage(
-          "Если этот email зарегистрирован, на него придёт письмо со ссылкой для смены пароля.",
+          "Если этот email зарегистрирован и почтовый провайдер настроен, будет отправлена ссылка для смены пароля. Проверьте входящие и спам.",
         );
       } else {
         const { error } = await client.auth.updateUser({ password });

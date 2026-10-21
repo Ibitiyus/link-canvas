@@ -64,6 +64,8 @@ test("a render failure shows recovery actions instead of a black page", async ({
     .getByRole("button", { name: "Сохранить резервную копию", exact: true })
     .click();
   const download = await downloading;
-  expect(download.suggestedFilename()).toBe("zin-recovery.json");
+  expect(download.suggestedFilename()).toBe("zin-recovery-original.json");
+  await expect(page.locator("body")).not.toContainText("Forced render failure");
+  await expect(page.locator(".error-details")).toHaveCount(0);
   expect(await project(page)).toEqual(saved);
 });

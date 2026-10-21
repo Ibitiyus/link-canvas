@@ -210,3 +210,47 @@
     padding: 7px;
   }
 }
+.local-conflict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: #281722;
+  color: #f4f0e8;
+  border-bottom: 1px solid #ff3970;
+}
+.local-conflict button,
+.recovery-entries button {
+  padding: 8px;
+  color: inherit;
+  background: #17141c;
+  border: 1px solid #ff3970;
+}
+.recovery-entries {
+  max-height: 50dvh;
+  overflow: auto;
+}
+.recovery-entries section {
+  display: grid;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #64515d;
+}
+.recovery-entries small {
+  display: block;
+}
+/* Recovery/errors must not cover save/export buttons or canvas hit targets. */
+.editor-shell > .notification {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  max-height: 120px;
+  overflow: auto;
+  flex-shrink: 0;
+  box-shadow: none;
+}

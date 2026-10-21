@@ -78,14 +78,15 @@ export function Dashboard() {
         {cloud.status === "loading" && (
           <p role="status">Загружаем облачный проект…</p>
         )}
-        {cloud.status === "error" && !cloud.ready && (
-          <button
-            className="secondary-button"
-            onClick={() => void run(cloud.reconnect)}
-          >
-            Повторить подключение
-          </button>
-        )}
+        {(cloud.status === "error" || cloud.status === "offline") &&
+          !cloud.ready && (
+            <button
+              className="secondary-button"
+              onClick={() => void run(cloud.reconnect)}
+            >
+              Повторить подключение
+            </button>
+          )}
         {cloud.status === "conflict" && (
           <section className="account-card">
             <h2>Выберите версию</h2>
@@ -311,9 +312,9 @@ export function Dashboard() {
           <h2>Файлы в облаке</h2>
           <p>
             Очистка удаляет приватные файлы старше 7 дней, не используемые
-            черновиком и незавершённой публикацией, и публичные копии старше
-            суток, не используемые текущей публикацией. Текущие файлы публикации
-            сохраняются.
+            черновиком и незавершённой публикацией. Публичные копии
+            автоматически не удаляются: на их URL могут ссылаться другие
+            страницы.
           </p>
           <p>
             Перед очисткой скачайте JSON-копию: файлы из очень старых отменённых

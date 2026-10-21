@@ -4,11 +4,12 @@ import { useAuth } from "../auth/AuthContext";
 import { useCloud } from "../cloud/CloudContext";
 import { useProject } from "../state/ProjectContext";
 export function CloudBar() {
-  const { session } = useAuth(),
+  const { session, error: authError } = useAuth(),
     cloud = useCloud(),
     { saveNow, notify } = useProject(),
     navigate = useNavigate();
   const labels = {
+    offline: "Нет сети · изменения в этом браузере",
     loading: "Подключение к облаку…",
     local: "Локальная копия",
     saved: "Облако: сохранено",
@@ -25,6 +26,7 @@ export function CloudBar() {
           ? labels[cloud.status]
           : "Локальный проект · сохраняется в браузере"}
       </span>
+      {authError && <span role="alert">{authError}</span>}
       <div>
         <button
           disabled={

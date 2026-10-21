@@ -17,4 +17,11 @@ export interface PublishedPage {
   published_at: string;
 }
 export type SyncStatus =
-  "loading" | "local" | "saved" | "saving" | "pending" | "error" | "conflict";
+  | "offline"
+  | "loading"
+  | "local"
+  | "saved"
+  | "saving"
+  | "pending"
+  | "error"
+  | "conflict";

@@ -1,3 +1,4 @@
+import { recoveryState } from "./session";
 import {
   createContext,
   useContext,
@@ -25,19 +26,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return;
     let active = true,
       eventSeen = false;
+    const watchdog = window.setTimeout(() => {
+      if (active && !eventSeen) {
+        setError(
+          "Проверка сессии задерживается. Локальный редактор доступен; для облачной версии проверьте подключение и войдите снова.",
+        );
+        setLoading(false);
+      }
+    }, 10000);
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, next) => {
       eventSeen = true;
+      clearTimeout(watchdog);
       if (active) {
         setSession(next);
         setLoading(false);
-        setRecovery(event === "PASSWORD_RECOVERY");
+        setRecovery((previous) => recoveryState(previous, event));
+        setError("");
       }
     });
     supabase.auth
       .getSession()
       .then(({ data, error }) => {
+        clearTimeout(watchdog);
         if (active && !eventSeen) {
           setSession(data.session);
           setError(error ? cloudError(error) : "");
@@ -45,13 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch((error) => {
-        if (active) {
+        clearTimeout(watchdog);
+        if (active && !eventSeen) {
           setError(cloudError(error));
           setLoading(false);
         }
       });
     return () => {
       active = false;
+      clearTimeout(watchdog);
       subscription.unsubscribe();
     };
   }, []);
