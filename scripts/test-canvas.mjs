@@ -14,6 +14,7 @@ for (const args of [
     "test",
     "tests/canvas-scaling.spec.ts",
     "tests/editor-controls.spec.ts",
+    "tests/creative-tools.spec.ts",
     ...process.argv.slice(2),
   ],
 ]) {
