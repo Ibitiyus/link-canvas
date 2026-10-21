@@ -213,6 +213,10 @@ for (const count of [100, 200])
   test(`performance: ${count} mixed blocks remain editable and offscreen effects pause`, async ({
     page,
   }, testInfo) => {
+    test.skip(
+      process.env.TEST_PRODUCTION !== "1",
+      "Performance budgets require a production build, not Vite development transforms.",
+    );
     test.setTimeout(60000);
     const cdp = await page.context().newCDPSession(page);
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
