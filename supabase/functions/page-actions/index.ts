@@ -202,6 +202,22 @@ Deno.serve(async (request) => {
       });
       publicationToken = job.token;
       const replacements = new Map<string, string>();
+      const copies = await rpc(
+        "public_asset_copies",
+        {
+          who: user.id,
+          source_paths: [...new Set(sources(job.project))]
+            .filter((source) => source.startsWith("cloud:"))
+            .map((source) => source.slice(6)),
+        },
+        true,
+      );
+      const cached = new Map<string, string>(
+        copies.map((copy: { source: string; target: string }) => [
+          copy.source,
+          copy.target,
+        ]),
+      );
       for (const source of new Set(sources(job.project))) {
         if (!source.startsWith("cloud:")) continue;
         const path = source.slice(6);
@@ -210,17 +226,19 @@ Deno.serve(async (request) => {
         );
         if (assets[0]?.state !== "ready" || !path.startsWith(`${user.id}/`))
           throw new Error("ASSET_NOT_READY");
-        const target = `${user.id}/${job.token}/${path.split("/").pop()}`;
-        await api("/storage/v1/object/copy", {
-          method: "POST",
-          body: {
-            bucketId: "zin-drafts",
-            sourceKey: path,
-            destinationBucket: "zin-public",
-            destinationKey: target,
-          },
-          admin: true,
-        });
+        const target =
+          cached.get(path) ?? `${user.id}/assets/${path.split("/").pop()}`;
+        if (!cached.has(path))
+          await api("/storage/v1/object/copy", {
+            method: "POST",
+            body: {
+              bucketId: "zin-drafts",
+              sourceKey: path,
+              destinationBucket: "zin-public",
+              destinationKey: target,
+            },
+            admin: true,
+          });
         const publicUrl = (
           Deno.env.get("ZIN_PUBLIC_SUPABASE_URL") ?? url
         ).replace(/\/$/, "");

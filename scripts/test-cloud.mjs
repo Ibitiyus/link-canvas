@@ -462,14 +462,12 @@ try {
   ).reduce((total, asset) => total + Number(asset.size), 0);
   const quotaPath = `${uid}/${randomUUID()}.gif`;
   ok(
-    await admin
-      .from("assets")
-      .insert({
-        path: quotaPath,
-        owner_id: uid,
-        mime: "image/gif",
-        size: 536870912 - used - 1,
-      }),
+    await admin.from("assets").insert({
+      path: quotaPath,
+      owner_id: uid,
+      mime: "image/gif",
+      size: 536870912 - used - 1,
+    }),
     "seed test-only quota reservation",
   );
   const reserved = await Promise.all(
@@ -498,14 +496,12 @@ try {
         "remove quota test reservation",
       );
   ok(
-    await admin
-      .from("operation_limits")
-      .upsert({
-        owner_id: uid,
-        operation: "edge:complete-upload",
-        count: 600,
-        window_start: new Date().toISOString(),
-      }),
+    await admin.from("operation_limits").upsert({
+      owner_id: uid,
+      operation: "edge:complete-upload",
+      count: 600,
+      window_start: new Date().toISOString(),
+    }),
     "seed test-only request budget",
   );
   let throttled = false;
@@ -595,6 +591,33 @@ try {
     repeated.published_at === published.published_at &&
       isDeepStrictEqual(repeated.project, published.project),
     "repeating an unchanged publication reuses the snapshot and media",
+  );
+  check(
+    !!(
+      await b.rpc("public_asset_copies", {
+        who: uid,
+        source_paths: [imagePath],
+      })
+    ).error,
+    "public-copy lookup is not exposed to unprivileged clients",
+  );
+  draft = ok(
+    await a.rpc("save_draft", {
+      value: draft.project,
+      expected_revision: draft.revision,
+    }),
+    "new revision with unchanged media",
+  );
+  const reused = (
+    await action(a, { action: "publish", revision: draft.revision })
+  ).page;
+  check(
+    reused.source_revision === draft.revision &&
+      reused.project.page.backgroundImage ===
+        published.project.page.backgroundImage &&
+      reused.project.customFonts[0].dataUrl ===
+        published.project.customFonts[0].dataUrl,
+    "a new draft revision reuses immutable public images and fonts without extra copies",
   );
   const publicPage = ok(
     await anon
