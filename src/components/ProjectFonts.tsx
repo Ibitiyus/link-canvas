@@ -1,3 +1,4 @@
+import { usePageLoading } from "./PagePreloader";
 import { useEffect, useRef } from "react";
 import type { CustomFont } from "../model/types";
 import { isCloudRef } from "../cloud/projectAssets";
@@ -23,9 +24,13 @@ export function FontFaces({
   fonts?: CustomFont[];
   onError?: (message: string) => void;
 }) {
+  const begin = usePageLoading();
   const entries = useRef(new Map<string, Entry>());
   useEffect(() => {
     let active = true;
+    const finish = begin?.();
+    const pending: Promise<unknown>[] = [];
+    let failed = false;
     const currentFonts = fonts ?? [];
     for (const [id, entry] of entries.current) {
       if (
@@ -52,24 +57,31 @@ export function FontFaces({
         entries.current.set(font.id, entry);
       }
       const current = entry;
-      current.promise
-        .then((face) => {
-          if (active) {
-            current.face = face;
-            document.fonts.add(face);
-          }
-        })
-        .catch(() => {
-          if (active)
-            onError?.(
-              `Не удалось восстановить шрифт «${font.name}». Выберите другой шрифт или установите файл заново.`,
-            );
-        });
+      pending.push(
+        current.promise
+          .then((face) => {
+            if (active) {
+              current.face = face;
+              document.fonts.add(face);
+            }
+          })
+          .catch(() => {
+            failed = true;
+            if (active)
+              onError?.(
+                `Не удалось восстановить шрифт «${font.name}». Выберите другой шрифт или установите файл заново.`,
+              );
+          }),
+      );
     }
+    Promise.all(pending).then(() => {
+      if (active) finish?.(failed);
+    });
     return () => {
       active = false;
+      finish?.();
     };
-  }, [fonts, onError]);
+  }, [fonts, onError, begin]);
   useEffect(
     () => () => {
       for (const entry of entries.current.values())

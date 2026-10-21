@@ -1,3 +1,4 @@
+import { PagePreloader } from "../components/PagePreloader";
 import { ZinFooter } from "../components/ZinFooter";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -74,18 +75,20 @@ export function PublicPage() {
       </div>
     );
   return (
-    <div
-      className="preview-page public-page"
-      style={{
-        backgroundColor: project.page.background,
-      }}
-    >
-      <PageBackground page={project.page} />
-      <FontFaces fonts={project.customFonts} />
-      <main className="preview-content" aria-label={project.page.title}>
-        <Canvas project={project} />
-      </main>
-      <ZinFooter />
-    </div>
+    <PagePreloader>
+      <div
+        className="preview-page public-page"
+        style={{
+          backgroundColor: project.page.background,
+        }}
+      >
+        <PageBackground page={project.page} />
+        <FontFaces fonts={project.customFonts} />
+        <main className="preview-content" aria-label={project.page.title}>
+          <Canvas project={project} />
+        </main>
+        <ZinFooter />
+      </div>
+    </PagePreloader>
   );
 }

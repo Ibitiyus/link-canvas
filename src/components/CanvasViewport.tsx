@@ -49,7 +49,7 @@ export function CanvasViewport({
   }, []);
   useLayoutEffect(() => {
     const root = viewport.current;
-    if (!root) return;
+    if (!root || !editing) return;
     const zoom = (event: Event) => {
       const action = (event as CustomEvent<string>).detail,
         scale = Number(root.dataset.canvasScale ?? 1);
@@ -64,7 +64,7 @@ export function CanvasViewport({
     };
     root.addEventListener("zin:zoom", zoom);
     return () => root.removeEventListener("zin:zoom", zoom);
-  }, []);
+  }, [editing]);
   const extent = canvasExtent(
     width,
     Math.max(minHeight, size.height),
@@ -74,7 +74,7 @@ export function CanvasViewport({
       Math.max(1, (size.available || width) - (editing ? 88 : 0)),
       extent.width,
     ),
-    scale = zoom ?? fit;
+    scale = editing ? (zoom ?? fit) : fit;
   return (
     <div
       className={`canvas-renderer ${editing ? "canvas-editing" : ""}`}
@@ -82,36 +82,40 @@ export function CanvasViewport({
       data-canvas-scale={scale}
       style={{ "--canvas-scale": scale } as CSSProperties}
     >
-      <div
-        className="canvas-view-controls"
-        role="group"
-        aria-label="Масштаб полотна"
-      >
-        <button
-          type="button"
-          aria-label="Уменьшить полотно"
-          disabled={scale <= 0.01}
-          onClick={() => setZoom(Math.max(0.01, scale / 1.25))}
+      {editing && (
+        <div
+          className="canvas-view-controls"
+          role="group"
+          aria-label="Масштаб полотна"
         >
-          <Minus size={15} />
-        </button>
-        <output aria-label="Текущий масштаб">{Math.round(scale * 100)}%</output>
-        <button
-          type="button"
-          aria-label="Увеличить полотно"
-          disabled={scale >= 4}
-          onClick={() => setZoom(Math.min(4, scale * 1.25))}
-        >
-          <Plus size={15} />
-        </button>
-        <button
-          type="button"
-          aria-pressed={zoom === null}
-          onClick={() => setZoom(null)}
-        >
-          По ширине
-        </button>
-      </div>
+          <button
+            type="button"
+            aria-label="Уменьшить полотно"
+            disabled={scale <= 0.01}
+            onClick={() => setZoom(Math.max(0.01, scale / 1.25))}
+          >
+            <Minus size={15} />
+          </button>
+          <output aria-label="Текущий масштаб">
+            {Math.round(scale * 100)}%
+          </output>
+          <button
+            type="button"
+            aria-label="Увеличить полотно"
+            disabled={scale >= 4}
+            onClick={() => setZoom(Math.min(4, scale * 1.25))}
+          >
+            <Plus size={15} />
+          </button>
+          <button
+            type="button"
+            aria-pressed={zoom === null}
+            onClick={() => setZoom(null)}
+          >
+            По ширине
+          </button>
+        </div>
+      )}
       <div
         className="canvas-frame"
         tabIndex={0}

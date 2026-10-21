@@ -1,3 +1,4 @@
+import { usePageLoading } from "../components/PagePreloader";
 import { isCloudRef } from "../cloud/projectAssets";
 import { useEffect, useState } from "react";
 import { getFile, isAssetRef } from "../model/fileStore";
@@ -34,13 +35,22 @@ export function useAssetSource(value: string | null) {
     };
   }, [value]);
   const local = !!value && (isAssetRef(value) || isCloudRef(value));
+  const begin = usePageLoading();
+  const loading = local && resolved?.value !== value;
+  const error = local && resolved?.value === value && resolved.error;
+  useEffect(() => {
+    if (!begin || (!loading && !error)) return;
+    const done = begin();
+    if (error) done(true);
+    return () => done();
+  }, [begin, loading, error]);
   return {
     src: local
       ? resolved?.value === value
         ? resolved.src
         : ""
       : (value ?? ""),
-    error: local && resolved?.value === value && resolved.error,
-    loading: local && resolved?.value !== value,
+    error,
+    loading,
   };
 }

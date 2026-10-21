@@ -1,0 +1,79 @@
+.zin-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  background: #101014;
+  color: #f4f0e8;
+  text-align: center;
+  font-family: "IBM Plex Mono", monospace;
+}
+.zin-preloader strong {
+  font:
+    900 72px "Archivo Black",
+    sans-serif;
+  letter-spacing: -6px;
+}
+.zin-preloader strong span {
+  color: #ff3970;
+}
+.zin-preloader p {
+  margin: 0;
+}
+.zin-loading-bar {
+  width: 180px;
+  height: 5px;
+  background: #ff3970;
+  animation: zin-loading 1.4s ease-in-out infinite;
+}
+@keyframes zin-loading {
+  50% {
+    transform: scaleX(0.35);
+    opacity: 0.5;
+  }
+}
+.zin-page-pending {
+  visibility: hidden;
+  pointer-events: none;
+}
+.zin-page-pending .effect-animation {
+  animation-play-state: paused !important;
+}
+.zin-loading-help {
+  display: grid;
+  gap: 12px;
+  max-width: 360px;
+}
+.zin-loading-help button,
+.zin-loading-error button {
+  color: inherit;
+  background: #242029;
+  border: 1px solid #ff3970;
+  padding: 10px;
+  cursor: pointer;
+}
+.zin-loading-error {
+  position: fixed;
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: 0;
+  right: 0;
+  padding: 10px;
+  text-align: center;
+  background: #18151e;
+  color: #f4f0e8;
+  z-index: 1000;
+  font-size: 12px;
+}
+.page-background-preload {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zin-loading-bar {
+    animation: none;
+  }
+}

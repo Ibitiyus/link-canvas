@@ -13,6 +13,7 @@ for (const args of [
     "node_modules/@playwright/test/cli.js",
     "test",
     "tests/canvas-scaling.spec.ts",
+    "tests/page-preloader.spec.ts",
     "tests/editor-controls.spec.ts",
     "tests/creative-tools.spec.ts",
     "tests/animations.spec.ts",
