@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -248,6 +249,7 @@ try {
   const legacy = page();
   delete legacy.groups;
   for (const b of legacy.blocks) {
+    delete b.effects;
     delete b.layout;
     delete b.keepAspect;
     delete b.groupId;
@@ -364,9 +366,7 @@ try {
     "save files",
   );
   check(
-    JSON.stringify(draft.project.blocks[0].effects) ===
-      JSON.stringify(effects) ||
-      draft.project.blocks[0].effects.animation.type === "float",
+    isDeepStrictEqual(draft.project.blocks[0].effects, effects),
     "real cloud draft retains block animations",
   );
   for (const bad of [
@@ -489,8 +489,8 @@ try {
     "publication retains real free geometry and group metadata",
   );
   check(
-    publicPage.project.blocks[0].effects.animation.type === "float" &&
-      publicPage.project.groups[0].effects.hover === "glow",
+    isDeepStrictEqual(publicPage.project.blocks[0].effects, effects) &&
+      isDeepStrictEqual(publicPage.project.groups[0].effects, effects),
     "public snapshot preserves block and group effects",
   );
   const media = await fetch(publicPage.project.page.backgroundImage);
