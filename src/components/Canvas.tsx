@@ -380,7 +380,7 @@ export function Canvas({
               const rendered = new Set<string>();
               return decorBlocks.map((block) => {
                 const group = project.groups?.find(
-                  (g) => g.id === block.groupId && g.effects,
+                  (g) => g.id === block.groupId,
                 );
                 if (!group) return renderFree(block);
                 if (rendered.has(group.id)) return null;

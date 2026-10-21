@@ -50,3 +50,45 @@ test("switching temporary preview targets stops the previous effect without remo
   await expect(first).toHaveCSS("animation-name", "none");
   expect(await content!.evaluate((e) => e.isConnected)).toBe(true);
 });
+test("assigning the first group effect preserves member DOM and media playback nodes", async ({
+  page,
+}) => {
+  const p = {
+    ...emptyProject(),
+    groups: [{ id: "g", name: "Группа" }],
+    blocks: [
+      {
+        ...newBlock("text"),
+        id: "a",
+        layout: "free",
+        groupId: "g",
+        x: 0,
+        y: 0,
+        width: 200,
+        height: 200,
+      },
+      {
+        ...newBlock("text"),
+        id: "b",
+        layout: "free",
+        groupId: "g",
+        x: 220,
+        y: 0,
+        width: 200,
+        height: 200,
+      },
+    ],
+  };
+  await page.addInitScript(
+    (p) => localStorage.setItem("link-canvas.project.v1", JSON.stringify(p)),
+    p,
+  );
+  await page.goto("/editor");
+  const content = await page
+    .locator('[data-block-id="a"] .block-content')
+    .elementHandle();
+  await page.locator('[data-block-id="a"]').click();
+  await page.getByText("Анимация и эффекты", { exact: true }).click();
+  await page.getByLabel("Тип анимации", { exact: true }).selectOption("float");
+  expect(await content!.evaluate((e) => e.isConnected)).toBe(true);
+});
