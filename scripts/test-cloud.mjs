@@ -31,9 +31,31 @@ function ok(result, label) {
   if (result.error) throw new Error(`${label}: ${result.error.message}`);
   return result.data;
 }
+const effects = {
+  animation: {
+    enabled: true,
+    type: "float",
+    duration: 3,
+    intensity: 0.5,
+    delay: 0,
+    repeat: "infinite",
+    direction: "normal",
+  },
+  hover: "glow",
+  visual: {
+    glow: 4,
+    shadow: 2,
+    blur: 0,
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+    hue: 0,
+    grayscale: 0,
+  },
+};
 const page = (content = "Первая публикация") => ({
   version: 1,
-  groups: [{ id: "cloud-group", name: "Облачный коллаж" }],
+  groups: [{ id: "cloud-group", name: "Облачный коллаж", effects }],
   page: {
     title: "Облачная проверка",
     background: "#112233",
@@ -77,6 +99,7 @@ const page = (content = "Первая публикация") => ({
       layout: "free",
       keepAspect: true,
       groupId: "cloud-group",
+      effects,
     },
   ],
 });
@@ -340,6 +363,40 @@ try {
     }),
     "save files",
   );
+  check(
+    JSON.stringify(draft.project.blocks[0].effects) ===
+      JSON.stringify(effects) ||
+      draft.project.blocks[0].effects.animation.type === "float",
+    "real cloud draft retains block animations",
+  );
+  for (const bad of [
+    { animation: { ...effects.animation, duration: 0 } },
+    { hover: "unsafe" },
+    { visual: { ...effects.visual, blur: 99 } },
+  ]) {
+    const invalid = page();
+    invalid.blocks[0].effects = bad;
+    check(
+      !!(
+        await a.rpc("save_draft", {
+          value: invalid,
+          expected_revision: draft.revision,
+        })
+      ).error,
+      "server rejects unsafe block effects",
+    );
+    const invalidGroup = page();
+    invalidGroup.groups[0].effects = bad;
+    check(
+      !!(
+        await a.rpc("save_draft", {
+          value: invalidGroup,
+          expected_revision: draft.revision,
+        })
+      ).error,
+      "server rejects unsafe group effects",
+    );
+  }
   const attack = page();
   attack.page.backgroundImage = `cloud:${imagePath}`;
   check(
@@ -430,6 +487,11 @@ try {
       publicPage.project.blocks[0].groupId === "cloud-group" &&
       publicPage.project.blocks[0].layout === "free",
     "publication retains real free geometry and group metadata",
+  );
+  check(
+    publicPage.project.blocks[0].effects.animation.type === "float" &&
+      publicPage.project.groups[0].effects.hover === "glow",
+    "public snapshot preserves block and group effects",
   );
   const media = await fetch(publicPage.project.page.backgroundImage);
   check(
