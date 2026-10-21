@@ -33,6 +33,16 @@ export function EffectSurface({
   useEffect(() => {
     if (!previewToken) return;
     setTemporary(true);
+    // Replay the CSS timeline without remounting video/audio/iframe children.
+    const frame = requestAnimationFrame(() => {
+      const motion = ref.current?.querySelector<HTMLElement>(
+        ":scope > .effect-animation",
+      );
+      if (!motion) return;
+      motion.style.animationName = "none";
+      void motion.offsetWidth;
+      motion.style.animationName = "";
+    });
     const timer = setTimeout(
       () => setTemporary(false),
       Math.min(
@@ -40,7 +50,10 @@ export function EffectSurface({
         ((a ? animationDuration(a) : 3) + (a?.delay ?? 0)) * 1000,
       ),
     );
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(frame);
+    };
   }, [previewToken]);
   useEffect(() => {
     const node = ref.current;
@@ -80,7 +93,6 @@ export function EffectSurface({
       data-effect-visible={visible && tab}
     >
       <div
-        key={previewToken}
         className={`effect-animation ${animate ? `anim-${a!.type}` : ""}`}
         style={style}
       >
