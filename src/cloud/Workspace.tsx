@@ -1,3 +1,6 @@
+import { lazy, Suspense } from "react";
+const Templates = lazy(() => import("../pages/Templates"));
+const TemplatePreview = lazy(() => import("../pages/TemplatePreview"));
 import { Route, Routes } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { ProjectProvider } from "../state/ProjectContext";
@@ -29,6 +32,22 @@ export function Workspace() {
       <CloudProvider>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route
+            path="/templates"
+            element={
+              <Suspense fallback={<p role="status">Загрузка шаблонов…</p>}>
+                <Templates />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/templates/:id"
+            element={
+              <Suspense fallback={<p role="status">Загрузка композиции…</p>}>
+                <TemplatePreview />
+              </Suspense>
+            }
+          />
           <Route path="/editor" element={<Editor />} />
           <Route path="/preview" element={<Preview />} />
           <Route path="/login" element={<AuthPage mode="login" />} />
