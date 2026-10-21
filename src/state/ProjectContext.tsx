@@ -118,7 +118,7 @@ export function ProjectProvider({
   const [status, setStatus] = useState<"saving" | "saved" | "error">(
     initial.error ? "error" : "saving",
   );
-  const [savedProject,setSavedProject]=useState<Project|null>(null);
+  const [savedProject, setSavedProject] = useState<Project | null>(null);
   const [edited, setEdited] = useState(false);
   const project = history.present;
   const replace = useCallback((project: Project) => {
@@ -271,7 +271,10 @@ export function ProjectProvider({
             notify(
               "Не удалось создать группу. Допускается не более 100 групп.",
             );
-          else change(result);
+          else {
+            change(result);
+            setMultiSelect(false);
+          }
         },
         ungroup: (id) => change((p) => ungroupBlocks(p, id)),
         renameGroup: (id, name) =>
@@ -308,6 +311,7 @@ export function ProjectProvider({
           }
           change(result.project);
           setSelection(result.ids);
+          setMultiSelect(false);
         },
         removeSelected: () => {
           if (
@@ -363,7 +367,12 @@ export function ProjectProvider({
         canUndo: !!history.past.length,
         canRedo: !!history.future.length,
         saveNow,
-        status:status==="error"?"error":savedProject===project?"saved":"saving",
+        status:
+          status === "error"
+            ? "error"
+            : savedProject === project
+              ? "saved"
+              : "saving",
         message,
         notify,
       }}

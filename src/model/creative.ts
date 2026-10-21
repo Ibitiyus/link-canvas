@@ -36,7 +36,7 @@ export function switchLayout(
           ...source,
           layout,
           col: Math.round(source.x / unit),
-          row: Math.round(source.y / (112 + project.page.gap)),
+          row: Math.min(2000, Math.round(source.y / (112 + project.page.gap))),
           colSpan: Math.round((source.width + project.page.gap) / unit),
           rowSpan: Math.round(
             (source.height + project.page.gap) / (112 + project.page.gap),
@@ -75,7 +75,7 @@ export function groupBlocks(
           ...b,
           ...logicalRect(b, project.page),
           layout: "free" as const,
-          rotation:isFree(b)?b.rotation:0,
+          rotation: isFree(b) ? b.rotation : 0,
           groupId: id,
         }
       : b,
@@ -204,7 +204,7 @@ export function duplicateSelection(
     let copy: Block = {
       ...source,
       id,
-      name: `${source.name} — копия`.slice(0,160),
+      name: `${source.name} — копия`.slice(0, 160),
       locked: false,
       x: source.x + 20,
       y: source.y + 20,
@@ -233,4 +233,29 @@ export function duplicateSelection(
   let result = { ...project, blocks, ...(groups.length ? { groups } : {}) };
   for (const id of newIds) result = moveLayer(result, id, "front");
   return { project: result, ids: newIds };
+}
+
+/** Numeric inspector resizing follows the same proportion lock as pointer handles. */
+export function freeSize(
+  block: Block,
+  axis: "width" | "height",
+  value: number,
+): Pick<Block, "width" | "height"> {
+  const safe = Math.max(
+    24,
+    Math.min(SIZE_LIMIT, Number.isFinite(value) ? value : block[axis]),
+  );
+  if (!block.keepAspect)
+    return {
+      width: axis === "width" ? safe : block.width,
+      height: axis === "height" ? safe : block.height,
+    };
+  const factor = Math.max(
+    24 / Math.min(block.width, block.height),
+    Math.min(
+      SIZE_LIMIT / Math.max(block.width, block.height),
+      safe / block[axis],
+    ),
+  );
+  return { width: block.width * factor, height: block.height * factor };
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { emptyProject, newBlock } from "./defaults";
 import {
+  freeSize,
   switchLayout,
   groupBlocks,
   ungroupBlocks,
@@ -229,9 +230,52 @@ describe("hybrid canvas", () => {
   });
 });
 
-it('ignores dormant grid rotation during grouping and separates block/group ID namespaces',()=>{
- const p=fixture();p.blocks[0].rotation=150;
- const g=groupBlocks(p,['text','photo']);expect(g.blocks[0].rotation).toBe(0);
- const groupId=g.groups![0].id;g.blocks.push({...newBlock('decoration'),id:groupId,layer:2});
- const moved=moveLayer(g,'text','front');expect(orderedLayers(moved.blocks).map(b=>b.id)).toEqual([groupId,'text','photo']);
+it("ignores dormant grid rotation during grouping and separates block/group ID namespaces", () => {
+  const p = fixture();
+  p.blocks[0].rotation = 150;
+  const g = groupBlocks(p, ["text", "photo"]);
+  expect(g.blocks[0].rotation).toBe(0);
+  const groupId = g.groups![0].id;
+  g.blocks.push({ ...newBlock("decoration"), id: groupId, layer: 2 });
+  const moved = moveLayer(g, "text", "front");
+  expect(orderedLayers(moved.blocks).map((b) => b.id)).toEqual([
+    groupId,
+    "text",
+    "photo",
+  ]);
+});
+
+it("can move a mixed grid selection freely in one operation", () => {
+  const p = fixture(),
+    box = selectionBox(p, ["text", "photo"])!;
+  const next = transformSelection(p, ["text", "photo"], box, {
+    ...box,
+    x: box.x + 33,
+    y: box.y + 17,
+  });
+  expect(next.blocks.every(isFree)).toBe(true);
+  for (let i = 0; i < 2; i++) {
+    expect(next.blocks[i].x).toBeCloseTo(
+      logicalRect(p.blocks[i], p.page).x + 33,
+    );
+    expect(next.blocks[i].y).toBeCloseTo(
+      logicalRect(p.blocks[i], p.page).y + 17,
+    );
+  }
+});
+
+it("numeric dimensions honor proportion locking and the minimum child dimensions", () => {
+  const b = {
+    ...newBlock("image"),
+    layout: "free" as const,
+    width: 300,
+    height: 150,
+    keepAspect: true,
+  };
+  expect(freeSize(b, "width", 600)).toEqual({ width: 600, height: 300 });
+  expect(freeSize(b, "width", 24)).toEqual({ width: 48, height: 24 });
+  expect(freeSize({ ...b, keepAspect: false }, "height", 200)).toEqual({
+    width: 300,
+    height: 200,
+  });
 });
