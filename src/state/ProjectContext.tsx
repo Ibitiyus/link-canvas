@@ -1,3 +1,4 @@
+import type { Effects } from "../model/effects";
 import { isFree } from "../model/placement";
 import {
   switchLayout,
@@ -52,6 +53,11 @@ interface ProjectStore {
   setLayout: (id: string, layout: "grid" | "free") => void;
   groupSelection: () => void;
   ungroup: (id: string) => void;
+  updateGroupEffects: (id: string, effects: Effects) => void;
+  showAnimations: boolean;
+  setShowAnimations: (value: boolean) => void;
+  previewEffect: { id: string; token: number } | null;
+  playEffect: (id: string) => void;
   renameGroup: (id: string, name: string) => void;
   patchSelection: (patch: Partial<Block>) => void;
   transform: (ids: string[], from: Block, to: Block) => void;
@@ -95,6 +101,11 @@ export function ProjectProvider({
   } satisfies History);
   const [selection, setSelection] = useState<string[]>([]),
     [multiSelect, setMultiSelect] = useState(false);
+  const [showAnimations, setShowAnimations] = useState(false);
+  const [previewEffect, setPreviewEffect] = useState<{
+    id: string;
+    token: number;
+  } | null>(null);
   const selectedId = selection[0] ?? null;
   const select = (id: string | null, additive = false) => {
     if (!id) {
@@ -246,6 +257,15 @@ export function ProjectProvider({
     <Context.Provider
       value={{
         project,
+        showAnimations,
+        setShowAnimations,
+        previewEffect,
+        playEffect: (id) => setPreviewEffect({ id, token: Date.now() }),
+        updateGroupEffects: (id, effects) =>
+          change((p) => ({
+            ...p,
+            groups: p.groups?.map((g) => (g.id === id ? { ...g, effects } : g)),
+          })),
         replace,
         selectedId: project.blocks.some((b) => b.id === selectedId)
           ? selectedId

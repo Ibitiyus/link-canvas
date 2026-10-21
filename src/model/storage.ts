@@ -1,3 +1,4 @@
+import { parseEffects } from "./effects";
 import { isFree } from "./placement";
 import { isCloudRef } from "../cloud/projectAssets";
 import { safeUrl } from "./media";
@@ -104,7 +105,13 @@ export function parseProject(raw: string): Project {
       if (!id || seen.has(id))
         throw new Error("Идентификаторы групп должны быть уникальными.");
       seen.add(id);
-      return { id, name: text(g.name, "Группа", 160) };
+      return {
+        id,
+        name: text(g.name, "Группа", 160),
+        ...(g.effects === undefined
+          ? {}
+          : { effects: parseEffects(g.effects) }),
+      };
     });
   }
   const ids = new Set<string>();
@@ -167,6 +174,8 @@ export function parseProject(raw: string): Project {
         throw new Error("Некорректная группа элемента.");
       block.groupId = source.groupId;
     }
+    if (source.effects !== undefined)
+      block.effects = parseEffects(source.effects);
     // Optional fields preserve exact legacy v1 shapes until the feature is used.
     if (source.locked !== undefined) block.locked = source.locked === true;
     else delete block.locked;

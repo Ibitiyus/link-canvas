@@ -1,3 +1,4 @@
+import type { Effects } from "./effects";
 export type BlockType =
   | "link"
   | "text"
@@ -9,6 +10,7 @@ export type BlockType =
   | "decoration";
 export type Align = "left" | "center" | "right";
 export interface Block {
+  effects?: Effects;
   id: string;
   type: BlockType;
   name: string;
@@ -60,7 +62,7 @@ export interface CustomFont {
 export interface Project {
   version: 1;
   customFonts?: CustomFont[];
-  groups?: { id: string; name: string }[];
+  groups?: { id: string; name: string; effects?: Effects }[];
   page: PageSettings;
   blocks: Block[];
 }

@@ -44,6 +44,8 @@ export function Editor() {
   const {
     project,
     selectedId,
+    showAnimations,
+    previewEffect,
     selectedIds,
     multiSelect,
     transform,
@@ -204,6 +206,8 @@ export function Editor() {
             <Canvas
               project={project}
               editing
+              showAnimations={showAnimations}
+              previewEffect={previewEffect}
               selectedId={selectedId}
               selectedIds={selectedIds}
               multiSelect={multiSelect}

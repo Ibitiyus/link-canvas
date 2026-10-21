@@ -1,3 +1,4 @@
+import { EffectSurface } from "./EffectSurface";
 import { isFree } from "../model/placement";
 import { selectionBox, transformSelection } from "../model/creative";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +14,8 @@ import { CanvasViewport } from "./CanvasViewport";
 import { SelectionHandles } from "./SelectionHandles";
 import { CANVAS_PADDING } from "../model/canvasLayout";
 interface Props {
+  showAnimations?: boolean;
+  previewEffect?: { id: string; token: number } | null;
   project: Project;
   rowHeight?: number;
   editing?: boolean;
@@ -26,6 +29,8 @@ interface Props {
 }
 export function Canvas({
   project,
+  showAnimations = false,
+  previewEffect,
   editing = false,
   rowHeight = ROW_HEIGHT,
   selectedId,
@@ -273,10 +278,19 @@ export function Canvas({
                 tabIndex={editing ? 0 : undefined}
                 aria-label={editing ? `Блок: ${block.name}` : undefined}
               >
-                <BlockContent
-                  block={block}
-                  editing={editing && contentId !== block.id}
-                />
+                <EffectSurface
+                  effects={block.effects}
+                  active={!editing || showAnimations}
+                  suspended={!!gesture}
+                  previewToken={
+                    previewEffect?.id === block.id ? previewEffect.token : 0
+                  }
+                >
+                  <BlockContent
+                    block={block}
+                    editing={editing && contentId !== block.id}
+                  />
+                </EffectSurface>
                 {editing && !block.locked && (
                   <button
                     type="button"
@@ -308,43 +322,113 @@ export function Canvas({
                 </span>
               </div>
             )}
-            {decorBlocks.map((original) => {
-              const block =
-                gesture?.block.id === original.id ? gesture.block : original;
-              return (
-                <div
-                  key={block.id}
-                  data-block-id={block.id}
-                  className={`free-block ${editing ? "editable" : ""} ${(selectedIds.includes(block.id) || selectedId === block.id) && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""}`}
-                  style={{
-                    ...freePlacement(block),
-                    zIndex: stack.get(block.id),
-                    visibility: block.hidden ? "hidden" : undefined,
-                  }}
-                  tabIndex={editing ? 0 : undefined}
-                  aria-label={editing ? `Блок: ${block.name}` : undefined}
-                  onClick={(event) => {
-                    if (editing) {
-                      event.stopPropagation();
-                      if (
-                        !multiSelect &&
-                        !event.shiftKey &&
-                        (block.id !== selectedId || selectedIds.length > 1)
-                      )
-                        onSelect?.(block.id);
-                    }
-                  }}
-                  onPointerDownCapture={(event) => {
-                    if (contentId !== original.id) start(event, original);
-                  }}
-                >
-                  <BlockContent
-                    block={block}
-                    editing={editing && contentId !== block.id}
-                  />
-                </div>
-              );
-            })}
+            {(() => {
+              const renderFree = (
+                original: Block,
+                offsetX = 0,
+                offsetY = 0,
+              ) => {
+                const block =
+                  gesture?.block.id === original.id ? gesture.block : original;
+                return (
+                  <div
+                    key={block.id}
+                    data-block-id={block.id}
+                    className={`free-block ${editing ? "editable" : ""} ${(selectedIds.includes(block.id) || selectedId === block.id) && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""}`}
+                    style={{
+                      ...freePlacement({
+                        ...block,
+                        x: block.x - offsetX,
+                        y: block.y - offsetY,
+                      }),
+                      zIndex: stack.get(block.id),
+                      visibility: block.hidden ? "hidden" : undefined,
+                    }}
+                    tabIndex={editing ? 0 : undefined}
+                    aria-label={editing ? `Блок: ${block.name}` : undefined}
+                    onClick={(event) => {
+                      if (editing) {
+                        event.stopPropagation();
+                        if (
+                          !multiSelect &&
+                          !event.shiftKey &&
+                          (block.id !== selectedId || selectedIds.length > 1)
+                        )
+                          onSelect?.(block.id);
+                      }
+                    }}
+                    onPointerDownCapture={(event) => {
+                      if (contentId !== original.id) start(event, original);
+                    }}
+                  >
+                    <EffectSurface
+                      effects={block.effects}
+                      active={!editing || showAnimations}
+                      suspended={!!gesture}
+                      previewToken={
+                        previewEffect?.id === block.id ? previewEffect.token : 0
+                      }
+                    >
+                      <BlockContent
+                        block={block}
+                        editing={editing && contentId !== block.id}
+                      />
+                    </EffectSurface>
+                  </div>
+                );
+              };
+              const rendered = new Set<string>();
+              return decorBlocks.map((block) => {
+                const group = project.groups?.find(
+                  (g) => g.id === block.groupId && g.effects,
+                );
+                if (!group) return renderFree(block);
+                if (rendered.has(group.id)) return null;
+                rendered.add(group.id);
+                const members = decorBlocks.filter(
+                    (b) => b.groupId === group.id,
+                  ),
+                  bounds = selectionBox(
+                    { ...project, blocks: visualBlocks },
+                    members.map((b) => b.id),
+                  )!;
+                return (
+                  <div
+                    key={`group-${group.id}`}
+                    className="effect-group"
+                    data-effect-group={group.id}
+                    style={{
+                      left: bounds.x,
+                      top: bounds.y,
+                      width: bounds.width,
+                      height: bounds.height,
+                      zIndex: Math.max(
+                        ...members.map((b) => stack.get(b.id) ?? 0),
+                      ),
+                    }}
+                  >
+                    <EffectSurface
+                      effects={group.effects}
+                      active={!editing || showAnimations}
+                      suspended={!!gesture}
+                      previewToken={
+                        previewEffect?.id === group.id ? previewEffect.token : 0
+                      }
+                    >
+                      <div
+                        style={{
+                          position: "relative",
+                          width: "100%",
+                          height: "100%",
+                        }}
+                      >
+                        {members.map((b) => renderFree(b, bounds.x, bounds.y))}
+                      </div>
+                    </EffectSurface>
+                  </div>
+                );
+              });
+            })()}
             {editing && selected && display && (
               <div
                 className={`selection-overlay ${selected.locked ? "selection-locked" : ""}`}
