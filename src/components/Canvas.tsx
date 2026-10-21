@@ -1,3 +1,5 @@
+import { isFree } from "../model/placement";
+import { selectionBox, transformSelection } from "../model/creative";
 import { useEffect, useRef, useState } from "react";
 import { Grip } from "lucide-react";
 import { gridRows } from "../model/grid";
@@ -15,7 +17,11 @@ interface Props {
   rowHeight?: number;
   editing?: boolean;
   selectedId?: string | null;
-  onSelect?: (id: string | null) => void;
+  onSelect?: (id: string | null, additive?: boolean) => void;
+  selectedIds?: string[];
+  multiSelect?: boolean;
+  onUnlockSelection?: () => void;
+  onTransform?: (ids: string[], from: Block, to: Block) => void;
   onUpdate?: (id: string, patch: Partial<Block>) => void;
 }
 export function Canvas({
@@ -24,6 +30,10 @@ export function Canvas({
   rowHeight = ROW_HEIGHT,
   selectedId,
   onSelect,
+  selectedIds = [],
+  multiSelect = false,
+  onTransform,
+  onUnlockSelection,
   onUpdate,
 }: Props) {
   const board = useRef<HTMLDivElement>(null),
@@ -32,22 +42,72 @@ export function Canvas({
   const { page, blocks } = project,
     rows = gridRows(blocks),
     height = rows * rowHeight + (rows - 1) * page.gap;
+  const gestureIds = useRef<string[]>([]),
+    groupOrigin = useRef<Block | null>(null);
+  const multiBox =
+    selectedIds.length > 1 ? selectionBox(project, selectedIds) : null;
   const { gesture, mode, begin, suppressClick } = useCanvasGesture({
     board,
     width: page.maxWidth,
     columns: page.columns,
     gap: page.gap,
     rowHeight,
-    onSelect,
-    onUpdate,
+    onSelect: (id) => {
+      if (id !== "__selection__" && id !== selectedId) onSelect?.(id);
+    },
+    onUpdate: (id, patch) => {
+      if (id === "__selection__" && groupOrigin.current)
+        onTransform?.(gestureIds.current, groupOrigin.current, patch as Block);
+      else onUpdate?.(id, patch);
+    },
     enabled: editing,
     reset: project,
   });
-  const selected = blocks.find((b) => b.id === selectedId),
+  const selected = multiBox ?? blocks.find((b) => b.id === selectedId),
     order = orderedLayers(blocks),
     stack = new Map(order.map((b, i) => [b.id, i + 1]));
-  const gridBlocks = blocks.filter((b) => b.type !== "decoration"),
-    decorBlocks = order.filter((b) => b.type === "decoration");
+  const visualBlocks =
+    gesture?.block.id === "__selection__" && groupOrigin.current
+      ? transformSelection(
+          project,
+          gestureIds.current,
+          groupOrigin.current,
+          gesture.block,
+        ).blocks
+      : blocks;
+  const gridBlocks = visualBlocks.filter((b) => !isFree(b)),
+    decorBlocks = orderedLayers(visualBlocks).filter(isFree);
+  const start = (
+    event: React.PointerEvent,
+    block: Block,
+    edge?: import("../model/gestures").ResizeEdge | "rotate",
+    immediate = false,
+  ) => {
+    if (!editing) return;
+    if (!edge && !immediate && (multiSelect || event.shiftKey)) {
+      event.stopPropagation();
+      onSelect?.(block.id, true);
+      return;
+    }
+    let ids =
+      block.id === "__selection__"
+        ? selectedIds
+        : selectedIds.includes(block.id) && selectedIds.length > 1
+          ? selectedIds
+          : block.groupId &&
+              !(selectedIds.length === 1 && selectedIds[0] === block.id)
+            ? blocks.filter((b) => b.groupId === block.groupId).map((b) => b.id)
+            : [block.id];
+    if (ids.length > 1) {
+      const box = selectionBox(project, ids);
+      if (!box) return;
+      gestureIds.current = ids;
+      groupOrigin.current = box;
+      if (block.id !== "__selection__" && !selectedIds.includes(block.id))
+        onSelect?.(block.id);
+      begin(event, box, edge, immediate);
+    } else begin(event, block, edge, immediate);
+  };
   const placement = (b: Block) => ({
     gridColumn: `${b.col + 1} / span ${b.colSpan}`,
     gridRow: `${b.row + 1} / span ${b.rowSpan}`,
@@ -75,13 +135,15 @@ export function Canvas({
               ? "Взаимодействие с содержимым"
               : mode === "dragging"
                 ? "Перемещение"
-                : mode === "resizing"
-                  ? "Изменение размера"
-                  : mode === "panning"
-                    ? "Прокрутка"
-                    : selected?.locked
-                      ? "Положение закреплено"
-                      : "Нажмите для выбора · удерживайте для перемещения"}
+                : mode === "rotating"
+                  ? "Поворот"
+                  : mode === "resizing"
+                    ? "Изменение размера"
+                    : mode === "panning"
+                      ? "Прокрутка"
+                      : selected?.locked
+                        ? "Положение закреплено"
+                        : "Нажмите для выбора · удерживайте для перемещения"}
           </span>
           {selected &&
             ["audio", "video", "link", "qrcode"].includes(selected.type) && (
@@ -100,9 +162,13 @@ export function Canvas({
         editing={editing}
         width={page.maxWidth}
         minHeight={height + CANVAS_PADDING * 2}
-        decorations={decorBlocks.filter(
-          (b) => !b.hidden || (editing && b.id === selectedId),
-        )}
+        decorations={order
+          .filter(isFree)
+          .filter(
+            (b) =>
+              !b.hidden ||
+              (editing && (selectedIds.includes(b.id) || b.id === selectedId)),
+          )}
       >
         <div
           className={`page-surface ${editing ? "editor-surface" : ""}`}
@@ -168,20 +234,25 @@ export function Canvas({
                 key={block.id}
                 data-testid={`block-${block.id}`}
                 data-block-id={block.id}
-                className={`canvas-block ${editing ? "editable" : ""} ${selectedId === block.id && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""} ${gesture?.block.id === block.id ? "drag-source" : ""}`}
+                className={`canvas-block ${editing ? "editable" : ""} ${(selectedIds.includes(block.id) || selectedId === block.id) && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""} ${gesture?.block.id === block.id ? "drag-source" : ""}`}
                 style={{
                   ...placement(block),
                   zIndex: stack.get(block.id),
                   visibility: block.hidden ? "hidden" : undefined,
                 }}
                 onPointerDownCapture={(event) => {
-                  if (contentId !== block.id) begin(event, block);
+                  if (contentId !== block.id) start(event, block);
                   else onSelect?.(block.id);
                 }}
                 onClick={(event) => {
                   if (editing) {
                     event.stopPropagation();
-                    onSelect?.(block.id);
+                    if (
+                      !multiSelect &&
+                      !event.shiftKey &&
+                      (block.id !== selectedId || selectedIds.length > 1)
+                    )
+                      onSelect?.(block.id);
                   }
                 }}
                 onKeyDown={(event) => {
@@ -191,7 +262,12 @@ export function Canvas({
                     (event.key === "Enter" || event.key === " ")
                   ) {
                     event.preventDefault();
-                    onSelect?.(block.id);
+                    if (
+                      !multiSelect &&
+                      !event.shiftKey &&
+                      (block.id !== selectedId || selectedIds.length > 1)
+                    )
+                      onSelect?.(block.id);
                   }
                 }}
                 tabIndex={editing ? 0 : undefined}
@@ -208,7 +284,7 @@ export function Canvas({
                     aria-label={`Переместить: ${block.name}`}
                     title={`Переместить: ${block.name}`}
                     onPointerDown={(event) =>
-                      begin(event, block, undefined, true)
+                      start(event, block, undefined, true)
                     }
                   >
                     <Grip size={13} />
@@ -217,7 +293,7 @@ export function Canvas({
                 )}
               </div>
             ))}
-            {editing && gesture && gesture.block.type !== "decoration" && (
+            {editing && gesture && !isFree(gesture.block) && (
               <div
                 className="drop-ghost"
                 style={{
@@ -239,7 +315,7 @@ export function Canvas({
                 <div
                   key={block.id}
                   data-block-id={block.id}
-                  className={`free-block ${editing ? "editable" : ""} ${selectedId === block.id && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""}`}
+                  className={`free-block ${editing ? "editable" : ""} ${(selectedIds.includes(block.id) || selectedId === block.id) && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""}`}
                   style={{
                     ...freePlacement(block),
                     zIndex: stack.get(block.id),
@@ -250,12 +326,22 @@ export function Canvas({
                   onClick={(event) => {
                     if (editing) {
                       event.stopPropagation();
-                      onSelect?.(block.id);
+                      if (
+                        !multiSelect &&
+                        !event.shiftKey &&
+                        (block.id !== selectedId || selectedIds.length > 1)
+                      )
+                        onSelect?.(block.id);
                     }
                   }}
-                  onPointerDownCapture={(event) => begin(event, original)}
+                  onPointerDownCapture={(event) => {
+                    if (contentId !== original.id) start(event, original);
+                  }}
                 >
-                  <BlockContent block={block} editing={editing} />
+                  <BlockContent
+                    block={block}
+                    editing={editing && contentId !== block.id}
+                  />
                 </div>
               );
             })}
@@ -264,7 +350,7 @@ export function Canvas({
                 className={`selection-overlay ${selected.locked ? "selection-locked" : ""}`}
                 data-selection-id={selected.id}
                 style={{
-                  ...(selected.type === "decoration"
+                  ...(isFree(selected)
                     ? freePlacement(display)
                     : placement(display)),
                   zIndex: blocks.length + 2,
@@ -274,7 +360,11 @@ export function Canvas({
                   <button
                     type="button"
                     className="selection-unlock"
-                    onClick={() => onUpdate?.(selected.id, { locked: false })}
+                    onClick={() => {
+                      if (selected.id === "__selection__")
+                        onUnlockSelection?.();
+                      else onUpdate?.(selected.id, { locked: false });
+                    }}
                   >
                     Разблокировать
                   </button>
@@ -283,7 +373,7 @@ export function Canvas({
                     <SelectionHandles
                       block={display}
                       onResize={(event, edge) =>
-                        begin(event, selected, edge, true)
+                        start(event, selected, edge, true)
                       }
                     />
                   )

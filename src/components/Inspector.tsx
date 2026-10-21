@@ -1,3 +1,6 @@
+import { freeSize } from "../model/creative";
+import { GroupInspector } from "./GroupInspector";
+import { isFree } from "../model/placement";
 import { BlockBackground } from "./BlockBackground";
 import { POSITION_LIMIT, SIZE_LIMIT } from "../model/decoration";
 import { MediaInput } from "./MediaInput";
@@ -27,8 +30,16 @@ export function Inspector({
 }: {
   requestedTab?: "block" | "page";
 }) {
-  const { project, selectedId, updateBlock, duplicate, remove, moveLayer } =
-    useProject();
+  const {
+    project,
+    selectedId,
+    selectedIds,
+    setLayout,
+    updateBlock,
+    duplicate,
+    remove,
+    moveLayer,
+  } = useProject();
   const [tab, setTab] = useState<"block" | "page">("page");
   useEffect(() => {
     if (requestedTab) setTab(requestedTab);
@@ -67,6 +78,8 @@ export function Inspector({
       </div>
       {tab === "page" ? (
         <PageSettings />
+      ) : selectedIds.length > 1 ? (
+        <GroupInspector />
       ) : !block ? (
         <div className="inspector-empty">
           <MousePointer2 size={32} />
@@ -307,8 +320,20 @@ export function Inspector({
           )}
           <h3>
             <span>04 /</span> РАЗМЕЩЕНИЕ{" "}
-            <small>{block.type === "decoration" ? "Свободно" : "Сетка"}</small>
+            <small>{isFree(block) ? "Свободно" : "Сетка"}</small>
           </h3>
+          <Field label="Режим размещения">
+            <select
+              disabled={!!block.locked}
+              value={isFree(block) ? "free" : "grid"}
+              onChange={(e) =>
+                setLayout(block.id, e.target.value as "grid" | "free")
+              }
+            >
+              <option value="grid">Сетка</option>
+              <option value="free">Свободно</option>
+            </select>
+          </Field>
           <label className="checkbox-field">
             <input
               type="checkbox"
@@ -344,7 +369,7 @@ export function Inspector({
             ))}
           </div>
           <fieldset className="geometry-fields" disabled={!!block.locked}>
-            {block.type === "decoration" ? (
+            {isFree(block) ? (
               <>
                 <div className="field-pair">
                   <NumberField
@@ -368,25 +393,35 @@ export function Inspector({
                     value={Math.round(block.width)}
                     min={24}
                     max={SIZE_LIMIT}
-                    onChange={(width) => patch({ width })}
+                    onChange={(width) => patch(freeSize(block, "width", width))}
                   />
                   <NumberField
                     label="Высота, пкс"
                     value={Math.round(block.height)}
                     min={24}
                     max={SIZE_LIMIT}
-                    onChange={(height) => patch({ height })}
+                    onChange={(height) =>
+                      patch(freeSize(block, "height", height))
+                    }
                   />
                 </div>
                 <div className="field-pair">
                   <NumberField
                     label="Поворот, °"
                     value={block.rotation}
-                    min={-180}
-                    max={180}
+                    min={-360}
+                    max={360}
                     onChange={(rotation) => patch({ rotation })}
                   />
                 </div>
+                <label className="checkbox-field">
+                  <input
+                    type="checkbox"
+                    checked={!!block.keepAspect}
+                    onChange={(e) => patch({ keepAspect: e.target.checked })}
+                  />
+                  Сохранять пропорции
+                </label>
               </>
             ) : (
               <>

@@ -102,6 +102,15 @@ async function migrate(page: Page) {
 async function editText(page: Page, text: string) {
   await page.goto("/editor");
   await page.locator(".type-text").first().click();
+  if (await page.getByLabel("Название группы", { exact: true }).isVisible()) {
+    await page.getByRole("button", { name: /^Слои/ }).click();
+    await page
+      .getByRole("button", {
+        name: "Редактировать отдельно: Текст",
+        exact: true,
+      })
+      .click();
+  }
   await page.getByLabel("Текст", { exact: true }).fill(text);
 }
 test.afterEach(async () => {
@@ -198,6 +207,20 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
   await expect(
     page.getByRole("button", { name: "Сохранено", exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: /^Слои/ }).click();
+  await page.keyboard.press("Escape");
+  await page
+    .getByLabel("Выбрать дополнительно: Текст", { exact: true })
+    .check();
+  await page
+    .getByLabel("Выбрать дополнительно: Изображение", { exact: true })
+    .check();
+  await page
+    .getByRole("button", { name: "Сгруппировать", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Сохранено", exact: true }),
+  ).toBeVisible();
   const guest = await page.evaluate((key) => localStorage.getItem(key), KEY);
   await page
     .getByRole("button", { name: "Сохранить в облако", exact: true })
@@ -211,6 +234,12 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
     .eq("owner_id", user.id)
     .single();
   expect(cloudDraft.error).toBeNull();
+  expect(cloudDraft.data!.project.groups).toHaveLength(1);
+  expect(
+    cloudDraft
+      .data!.project.blocks.filter((b: { groupId?: string }) => b.groupId)
+      .every((b: { layout: string }) => b.layout === "free"),
+  ).toBe(true);
   expect(
     cloudDraft.data!.project.blocks.find(
       (b: { type: string }) => b.type === "decoration",
@@ -230,7 +259,9 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
   try {
     await visitor.goto(address!);
     await expect(visitor.locator("[data-block-id]")).toHaveCount(8);
-    await expect(visitor.locator(".free-block")).toHaveCSS("z-index", "1");
+    await expect(
+      visitor.locator(".free-block:has(.type-decoration)"),
+    ).toHaveCSS("z-index", "1");
     await expect(
       visitor.locator(
         ".grid-cell,.drag-handle,.resize-handle,.editor-toolbar,.cloud-bar",
@@ -356,7 +387,9 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
     ).toBeVisible();
     await visitor.goto(`/u/${renamed}`);
     await expect(visitor.locator("[data-block-id]")).toHaveCount(8);
-    await expect(visitor.locator(".free-block")).toHaveCSS("z-index", "1");
+    await expect(
+      visitor.locator(".free-block:has(.type-decoration)"),
+    ).toHaveCSS("z-index", "1");
     await page
       .getByRole("button", { name: "Снять с публикации", exact: true })
       .click();

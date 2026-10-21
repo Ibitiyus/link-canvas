@@ -1,3 +1,4 @@
+import { isFree } from "./placement";
 import { createId } from "./id";
 import { firstFree } from "./grid";
 import { LABELS, type Block, type BlockType, type Project } from "./types";
@@ -129,7 +130,7 @@ export function addBlock(
       ? raw
       : firstFree(
           raw,
-          project.blocks.filter((b) => b.type !== "decoration"),
+          project.blocks.filter((b) => !isFree(b)),
           project.page.columns,
         );
   return {

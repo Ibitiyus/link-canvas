@@ -33,6 +33,7 @@ function ok(result, label) {
 }
 const page = (content = "Первая публикация") => ({
   version: 1,
+  groups: [{ id: "cloud-group", name: "Облачный коллаж" }],
   page: {
     title: "Облачная проверка",
     background: "#112233",
@@ -73,6 +74,9 @@ const page = (content = "Первая публикация") => ({
       locked: true,
       hidden: false,
       layer: 0,
+      layout: "free",
+      keepAspect: true,
+      groupId: "cloud-group",
     },
   ],
 });
@@ -188,6 +192,53 @@ try {
       `server rejects invalid editor field ${field}=${value}`,
     );
   }
+  check(
+    draft.project.groups?.[0]?.id === "cloud-group" &&
+      draft.project.blocks[0].layout === "free" &&
+      draft.project.blocks[0].groupId === "cloud-group",
+    "PostgreSQL round-trips free canvas and group metadata",
+  );
+  for (const [field, value] of [
+    ["layout", "absolute"],
+    ["layout", "grid"],
+    ["keepAspect", "yes"],
+    ["groupId", "missing"],
+    ["width", 0],
+    ["rotation", 361],
+  ]) {
+    const invalid = page();
+    invalid.blocks[0][field] = value;
+    check(
+      !!(await a.rpc("save_draft", { value: invalid, expected_revision: 1 }))
+        .error,
+      `server rejects invalid creative field ${field}=${value}`,
+    );
+  }
+  const invalidGroups = page();
+  invalidGroups.groups.push({ ...invalidGroups.groups[0] });
+  check(
+    !!(
+      await a.rpc("save_draft", { value: invalidGroups, expected_revision: 1 })
+    ).error,
+    "server rejects duplicate group identifiers",
+  );
+  const legacy = page();
+  delete legacy.groups;
+  for (const b of legacy.blocks) {
+    delete b.layout;
+    delete b.keepAspect;
+    delete b.groupId;
+  }
+  check(
+    !(
+      await admin.rpc("validate_project", {
+        value: legacy,
+        who: uid,
+        published: false,
+      })
+    ).error,
+    "server still accepts legacy grid projects",
+  );
   const missingColumns = page();
   delete missingColumns.page.columns;
   check(
@@ -373,6 +424,12 @@ try {
   check(
     !JSON.stringify(publicPage.project).includes("cloud:"),
     "published snapshots contain no private file references",
+  );
+  check(
+    publicPage.project.groups?.[0]?.id === "cloud-group" &&
+      publicPage.project.blocks[0].groupId === "cloud-group" &&
+      publicPage.project.blocks[0].layout === "free",
+    "publication retains real free geometry and group metadata",
   );
   const media = await fetch(publicPage.project.page.backgroundImage);
   check(

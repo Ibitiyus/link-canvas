@@ -1,3 +1,4 @@
+import { isFree } from "./placement";
 import { isCloudRef } from "../cloud/projectAssets";
 import { safeUrl } from "./media";
 import { dataUrlMime, MAX_CUSTOM_FONTS, parseImageSource } from "./assets";
@@ -92,6 +93,20 @@ export function parseProject(raw: string): Project {
       dataUrl: font.dataUrl,
     };
   });
+  let groups: Project["groups"];
+  if (input.groups !== undefined) {
+    if (!Array.isArray(input.groups) || input.groups.length > 100)
+      throw new Error("Некорректный список групп.");
+    const seen = new Set<string>();
+    groups = input.groups.map((value) => {
+      const g = object(value),
+        id = text(g.id, "", 100);
+      if (!id || seen.has(id))
+        throw new Error("Идентификаторы групп должны быть уникальными.");
+      seen.add(id);
+      return { id, name: text(g.name, "Группа", 160) };
+    });
+  }
   const ids = new Set<string>();
   const blocks = input.blocks.map((value) => {
     const source = object(value);
@@ -133,9 +148,25 @@ export function parseProject(raw: string): Project {
       y: number(source.y, 24, -POSITION_LIMIT, POSITION_LIMIT),
       width: number(source.width, 100, 24, SIZE_LIMIT),
       height: number(source.height, 100, 24, SIZE_LIMIT),
-      rotation: number(source.rotation, 0, -180, 180),
+      rotation: number(source.rotation, 0, -360, 360),
       zIndex: Math.round(number(source.zIndex, 1, 1, 1_000_000)),
     };
+    if (source.layout !== undefined) {
+      if (source.layout !== "grid" && source.layout !== "free")
+        throw new Error("Неизвестный режим размещения.");
+      block.layout = source.layout;
+    }
+    if (source.keepAspect !== undefined)
+      block.keepAspect = source.keepAspect === true;
+    if (source.groupId !== undefined) {
+      if (
+        typeof source.groupId !== "string" ||
+        !groups?.some((g) => g.id === source.groupId) ||
+        !isFree(block)
+      )
+        throw new Error("Некорректная группа элемента.");
+      block.groupId = source.groupId;
+    }
     // Optional fields preserve exact legacy v1 shapes until the feature is used.
     if (source.locked !== undefined) block.locked = source.locked === true;
     else delete block.locked;
@@ -149,13 +180,14 @@ export function parseProject(raw: string): Project {
       block.fontFamily = source.fontFamily;
     }
     return clampDecoration(
-      block.type === "decoration" ? block : clampBlock(block, settings.columns),
+      isFree(block) ? block : clampBlock(block, settings.columns),
       settings.maxWidth,
     );
   });
   return {
     version: 1,
     ...(fontInput === undefined ? {} : { customFonts }),
+    ...(groups === undefined ? {} : { groups }),
     page: settings,
     blocks: arrange(blocks, settings.columns),
   };

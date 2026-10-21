@@ -1,3 +1,4 @@
+import { isFree } from "./placement";
 import { clampDecoration, SIZE_LIMIT } from "./decoration";
 import { clampBlock } from "./grid";
 import type { Block } from "./types";
@@ -22,7 +23,7 @@ export function gestureBlock(
   edge?: ResizeEdge,
 ): Block {
   if (block.locked) return block;
-  if (block.type === "decoration") {
+  if (isFree(block)) {
     if (!edge)
       return clampDecoration({ ...block, x: block.x + dx, y: block.y + dy });
     const angle = (block.rotation * Math.PI) / 180,
@@ -30,20 +31,37 @@ export function gestureBlock(
       s = Math.sin(angle),
       u = dx * c + dy * s,
       v = -dx * s + dy * c;
-    const width = Math.max(
+    let width = Math.max(
       24,
       Math.min(
         SIZE_LIMIT,
         block.width + (edge.includes("e") ? u : edge.includes("w") ? -u : 0),
       ),
     );
-    const height = Math.max(
+    let height = Math.max(
       24,
       Math.min(
         SIZE_LIMIT,
         block.height + (edge.includes("s") ? v : edge.includes("n") ? -v : 0),
       ),
     );
+    if (block.keepAspect) {
+      let factor =
+        edge.includes("e") || edge.includes("w")
+          ? width / block.width
+          : height / block.height;
+      if (
+        edge.length === 2 &&
+        Math.abs(height / block.height - 1) > Math.abs(width / block.width - 1)
+      )
+        factor = height / block.height;
+      factor = Math.max(
+        24 / Math.min(block.width, block.height),
+        Math.min(SIZE_LIMIT / Math.max(block.width, block.height), factor),
+      );
+      width = block.width * factor;
+      height = block.height * factor;
+    }
     const shiftX =
       ((width - block.width) / 2) *
       (edge.includes("w") ? -1 : edge.includes("e") ? 1 : 0);

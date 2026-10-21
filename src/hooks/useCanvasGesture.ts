@@ -1,3 +1,4 @@
+import { normalizeAngle } from "../model/placement";
 import {
   useEffect,
   useRef,
@@ -9,7 +10,13 @@ import type { Block } from "../model/types";
 import { gestureBlock, type ResizeEdge } from "../model/gestures";
 import { CANVAS_PADDING } from "../model/canvasLayout";
 export type InteractionMode =
-  "idle" | "selected" | "dragging" | "resizing" | "panning" | "editing-content";
+  | "idle"
+  | "selected"
+  | "dragging"
+  | "resizing"
+  | "rotating"
+  | "panning"
+  | "editing-content";
 interface Options {
   board: RefObject<HTMLDivElement | null>;
   width: number;
@@ -24,7 +31,7 @@ interface Options {
 export function useCanvasGesture(options: Options) {
   const [gesture, setGesture] = useState<{
       block: Block;
-      edge?: ResizeEdge;
+      edge?: ResizeEdge | "rotate";
     } | null>(null),
     [mode, setMode] = useState<InteractionMode>("idle");
   const cleanup = useRef<(() => void) | null>(null),
@@ -38,7 +45,7 @@ export function useCanvasGesture(options: Options) {
   const begin = (
     event: ReactPointerEvent,
     block: Block,
-    edge?: ResizeEdge,
+    edge?: ResizeEdge | "rotate",
     immediate = false,
   ) => {
     if (!options.enabled || event.button !== 0 || !options.board.current)
@@ -74,6 +81,11 @@ export function useCanvasGesture(options: Options) {
     const unitX =
         (options.width - CANVAS_PADDING * 2 + options.gap) / options.columns,
       unitY = options.rowHeight + options.gap;
+    const rect = options.board.current.getBoundingClientRect(),
+      centerX = rect.left + (block.x + block.width / 2) * scale,
+      centerY = rect.top + (block.y + block.height / 2) * scale;
+    const startAngle =
+      (Math.atan2(startY - centerY, startX - centerX) * 180) / Math.PI;
     let candidate = block,
       active = false,
       moved = false,
@@ -81,7 +93,7 @@ export function useCanvasGesture(options: Options) {
     const activate = () => {
       if (panning) return;
       active = true;
-      setMode(edge ? "resizing" : "dragging");
+      setMode(edge === "rotate" ? "rotating" : edge ? "resizing" : "dragging");
       setGesture({ block, edge });
       try {
         element.setPointerCapture(pointer);
@@ -114,15 +126,27 @@ export function useCanvasGesture(options: Options) {
       if (panning) return;
       moved ||= distance > 2;
       document.body.style.userSelect = "none";
-      candidate = gestureBlock(
-        block,
-        dx / scale,
-        dy / scale,
-        options.columns,
-        unitX,
-        unitY,
-        edge,
-      );
+      if (edge === "rotate")
+        candidate = {
+          ...block,
+          rotation: normalizeAngle(
+            block.rotation +
+              (Math.atan2(next.clientY - centerY, next.clientX - centerX) *
+                180) /
+                Math.PI -
+              startAngle,
+          ),
+        };
+      else
+        candidate = gestureBlock(
+          block,
+          dx / scale,
+          dy / scale,
+          options.columns,
+          unitX,
+          unitY,
+          edge,
+        );
       setGesture({ block: candidate, edge });
     };
     const finish = (next: PointerEvent) => {

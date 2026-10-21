@@ -1,3 +1,4 @@
+import { isFree } from "../model/placement";
 import type { PointerEvent } from "react";
 import type { Block } from "../model/types";
 import { RESIZE_EDGES, type ResizeEdge } from "../model/gestures";
@@ -6,7 +7,7 @@ export function SelectionHandles({
   onResize,
 }: {
   block: Block;
-  onResize: (event: PointerEvent, edge: ResizeEdge) => void;
+  onResize: (event: PointerEvent, edge: ResizeEdge | "rotate") => void;
 }) {
   const labels = {
     n: "верхний край",
@@ -35,8 +36,18 @@ export function SelectionHandles({
           onPointerDown={(event) => onResize(event, edge)}
         />
       ))}
+      {isFree(block) && (
+        <button
+          type="button"
+          className="rotation-handle"
+          aria-label={`Повернуть: ${block.name}`}
+          onPointerDown={(event) => onResize(event, "rotate")}
+        >
+          ↻<span>{Math.round(block.rotation)}°</span>
+        </button>
+      )}
       <span className="size-badge">
-        {block.type === "decoration"
+        {isFree(block)
           ? `${Math.round(block.width)} × ${Math.round(block.height)}`
           : `${block.colSpan} × ${block.rowSpan}`}
       </span>

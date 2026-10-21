@@ -1,9 +1,10 @@
+import { isFree } from "./placement";
 import type { Block } from "./types";
 export const POSITION_LIMIT = 1_000_000;
 export const SIZE_LIMIT = 100_000;
 /** Coordinates are relative to the grid origin, and may extend in every direction. */
 export function clampDecoration(block: Block, _pageWidth?: number): Block {
-  if (block.type !== "decoration") return block;
+  if (!isFree(block)) return block;
   return {
     ...block,
     width: Math.min(SIZE_LIMIT, Math.max(24, block.width)),

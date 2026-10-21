@@ -1,3 +1,4 @@
+import { SelectionTools } from "../components/SelectionTools";
 import {
   MobileEditorTools,
   type MobileTool,
@@ -43,6 +44,12 @@ export function Editor() {
   const {
     project,
     selectedId,
+    selectedIds,
+    multiSelect,
+    transform,
+    patchSelection,
+    duplicateSelected,
+    removeSelected,
     select,
     updateBlock,
     undo,
@@ -69,14 +76,14 @@ export function Editor() {
         redo();
       } else if (command && event.key.toLowerCase() === "d" && selectedId) {
         event.preventDefault();
-        duplicate(selectedId);
+        selectedIds.length > 1 ? duplicateSelected() : duplicate(selectedId);
       } else if (
         (event.key === "Delete" || event.key === "Backspace") &&
         selectedId
       ) {
         event.preventDefault();
-        if (!project.blocks.find((b) => b.id === selectedId)?.locked)
-          remove(selectedId);
+        if (!project.blocks.some((b) => selectedIds.includes(b.id) && b.locked))
+          selectedIds.length > 1 ? removeSelected() : remove(selectedId);
       } else if (event.key === "Escape") select(null);
     };
     window.addEventListener("keydown", key);
@@ -87,14 +94,21 @@ export function Editor() {
       if (!selectedId || !matchMedia("(max-width:1050px)").matches) return;
       const canvas = document.querySelector(".workspace .canvas");
       if (
-        ["dragging", "resizing"].includes(
+        ["dragging", "resizing", "rotating"].includes(
           canvas?.getAttribute("data-interaction-mode") ?? "",
         )
       )
         return;
-      const block = document.querySelector<HTMLElement>(
-          `[data-block-id="${CSS.escape(selectedId)}"]`,
-        ),
+      const block =
+          document.querySelector<HTMLElement>(
+            `[data-selection-id="__selection__"]`,
+          ) ??
+          document.querySelector<HTMLElement>(
+            `[data-selection-id="${CSS.escape(selectedId)}"]`,
+          ) ??
+          document.querySelector<HTMLElement>(
+            `[data-block-id="${CSS.escape(selectedId)}"]`,
+          ),
         scroll = document.querySelector<HTMLElement>(".canvas-scroll");
       if (!block || !scroll) return;
       const r = block.getBoundingClientRect(),
@@ -103,8 +117,15 @@ export function Editor() {
           .querySelector(".mobile-sheet")
           ?.getBoundingClientRect();
       const bottom = Math.min(area.bottom, sheet?.top ?? area.bottom) - 24;
-      const target = area.top + Math.max(24, (bottom - area.top) / 2);
-      scroll.scrollTop += r.top + r.height / 2 - target;
+      const rotation = block
+        .querySelector(".rotation-handle")
+        ?.getBoundingClientRect();
+      const top = Math.min(r.top, rotation?.top ?? r.top),
+        end = Math.max(r.bottom, rotation?.bottom ?? r.bottom),
+        start = area.top + 12;
+      if (top >= start && end <= bottom) return;
+      scroll.scrollTop +=
+        top < start || end - top > bottom - start ? top - start : end - bottom;
     }, 450);
     return () => clearTimeout(timer);
   }, [selectedId, tool, sheetSize, visual.height]);
@@ -163,6 +184,7 @@ export function Editor() {
               {project.page.columns === 5 ? "колонок" : "колонки"}
             </span>
           </div>
+          <SelectionTools />
           <div className="canvas-scroll">
             <div
               className="canvas-ruler"
@@ -183,6 +205,10 @@ export function Editor() {
               project={project}
               editing
               selectedId={selectedId}
+              selectedIds={selectedIds}
+              multiSelect={multiSelect}
+              onTransform={transform}
+              onUnlockSelection={() => patchSelection({ locked: false })}
               onSelect={select}
               onUpdate={updateBlock}
             />
