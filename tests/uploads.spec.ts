@@ -162,13 +162,25 @@ test("device images persist in image/GIF/link/decor/video cover and page backgro
   await page.reload();
   expect(await project(page)).toEqual(saved);
   await page.getByRole("button", { name: "Предпросмотр", exact: true }).click();
-  await expect(page.locator(".block-content img")).toHaveCount(4);
+  await expect(
+    page.locator(".block-content img:not(.page-background-preload)"),
+  ).toHaveCount(4);
   await expect
     .poll(() =>
       page
-        .locator(".block-content img")
+        .locator(".block-content img:not(.page-background-preload)")
         .evaluateAll((nodes) =>
           nodes.every((el) => (el as HTMLImageElement).naturalWidth > 0),
+        ),
+    )
+    .toBe(true);
+  await expect(page.locator(".zin-preloader")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page
+        .locator(".type-video .page-background-preload")
+        .evaluate(
+          (img: HTMLImageElement) => img.complete && img.naturalWidth > 0,
         ),
     )
     .toBe(true);
