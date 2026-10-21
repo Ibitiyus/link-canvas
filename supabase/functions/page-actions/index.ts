@@ -1,3 +1,4 @@
+import { actionBody, publicError, readBytes } from "./safety.ts";
 // Native fetch keeps the worker self-contained: no CDN/runtime package downloads.
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -141,26 +142,10 @@ Deno.serve(async (request) => {
       body: { prefixes: paths },
       admin: true,
     });
-  const list = async (bucket: string, prefix: string) => {
-    const files: any[] = [];
-    for (let offset = 0; ; offset += 1000) {
-      const batch = await api(`/storage/v1/object/list/${bucket}`, {
-        method: "POST",
-        body: {
-          prefix,
-          limit: 1000,
-          offset,
-          sortBy: { column: "name", order: "asc" },
-        },
-        admin: true,
-      });
-      files.push(...batch);
-      if (batch.length < 1000) return files;
-    }
-  };
   let publicationToken: string | undefined;
   try {
-    const body = await request.json();
+    const body = await actionBody(request);
+    await rpc("authorize_edge_action", { action: body.action });
     if (body.action === "complete-upload") {
       if (typeof body.path !== "string" || !body.path.startsWith(`${user.id}/`))
         throw new Error("ASSET_NOT_FOUND");
@@ -181,7 +166,7 @@ Deno.serve(async (request) => {
         },
       );
       if (!response.ok) throw new Error("FILE_NOT_UPLOADED");
-      const bytes = new Uint8Array(await response.arrayBuffer());
+      const bytes = await readBytes(response, 64);
       const total = Number(
         response.headers.get("Content-Range")?.split("/")[1] ??
           response.headers.get("Content-Length"),
@@ -201,6 +186,17 @@ Deno.serve(async (request) => {
       return json({ ready: true });
     }
     if (body.action === "publish") {
+      const existing = await api(
+        `/rest/v1/published_pages?owner_id=eq.${user.id}&source_revision=eq.${body.revision}&select=*`,
+      );
+      if (existing[0]) {
+        const drafts = await api(
+          `/rest/v1/drafts?owner_id=eq.${user.id}&select=revision`,
+        );
+        if (drafts[0]?.revision !== body.revision)
+          throw new Error("REVISION_CONFLICT");
+        return json({ page: existing[0] });
+      }
       const job = await rpc("begin_publication", {
         expected_revision: body.revision,
       });
@@ -256,30 +252,8 @@ Deno.serve(async (request) => {
         );
         removed++;
       }
-      const pages = await api(
-        `/rest/v1/published_pages?owner_id=eq.${user.id}&select=project`,
-        { admin: true },
-      );
-      const live = pages[0] ? sources(pages[0].project) : [];
-      const folders = await list("zin-public", user.id);
-      for (const folder of folders) {
-        if (folder.id) continue;
-        const prefix = `${user.id}/${folder.name}`,
-          files = await list("zin-public", prefix);
-        const paths = files
-          .filter(
-            (file: any) =>
-              Date.parse(file.created_at) < Date.now() - 86400000 &&
-              !live.some((source) =>
-                source.includes(`/zin-public/${prefix}/${file.name}`),
-              ),
-          )
-          .map((file: any) => `${prefix}/${file.name}`);
-        if (paths.length) {
-          await remove("zin-public", paths);
-          removed += paths.length;
-        }
-      }
+      // Public URLs can be referenced by other drafts/pages. Do not delete them
+      // without a transactionally maintained public reference registry.
       return json({ removed });
     }
     throw new Error("UNKNOWN_ACTION");
@@ -289,10 +263,16 @@ Deno.serve(async (request) => {
         `/rest/v1/publication_jobs?owner_id=eq.${user.id}&token=eq.${publicationToken}`,
         { method: "DELETE", admin: true },
       ).catch(() => {});
-    const message = error instanceof Error ? error.message : "REQUEST_FAILED";
+    const message = publicError(error);
     return json(
       { error: message },
-      message.includes("REVISION_CONFLICT") ? 409 : 400,
+      message === "REVISION_CONFLICT"
+        ? 409
+        : message === "REQUEST_FAILED"
+          ? 503
+          : message === "REQUEST_TOO_LARGE"
+            ? 413
+            : 400,
     );
   }
 });

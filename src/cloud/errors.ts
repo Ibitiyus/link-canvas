@@ -14,6 +14,10 @@ export function cloudError(error: unknown): string {
     return "Черновик изменён на другом устройстве. Выберите версию в личном кабинете.";
   if (/Invalid login credentials/i.test(message))
     return "Неверный email или пароль.";
+  if (/smtp|error sending.*email/i.test(message))
+    return "Не удалось отправить письмо. Повторите позже или обратитесь к владельцу ZIN для проверки почтового провайдера.";
+  if (/otp_expired|expired.*(link|token)|invalid.*(link|token)/i.test(message))
+    return "Ссылка устарела или недействительна. Запросите новое письмо для восстановления доступа.";
   if (/Email not confirmed/i.test(message))
     return "Подтвердите email по ссылке из письма.";
   if (
@@ -34,6 +38,10 @@ export function cloudError(error: unknown): string {
     return "Один из файлов ещё не загружен или больше недоступен. Загрузите его заново.";
   if (/FILE_TOO_LARGE|exceeded.*size|413/i.test(message))
     return "Файл превышает ограничение облачного хранилища. Проверьте настройки лимита.";
+  if (/STORAGE_QUOTA/i.test(message))
+    return "Достигнут лимит файлов аккаунта. Сохраните JSON-копию и обратитесь к владельцу сервиса для увеличения квоты.";
+  if (/INVALID_REQUEST|REQUEST_TOO_LARGE/i.test(message))
+    return "Некорректный запрос. Обновите страницу и повторите действие.";
   if (/PUBLICATION_BUSY/i.test(message))
     return "Публикация уже выполняется. Подождите её завершения.";
   if (/PUBLICATION_CANCELLED/i.test(message))
@@ -43,7 +51,7 @@ export function cloudError(error: unknown): string {
   if (/fetch|network|offline|Failed to send/i.test(message))
     return "Нет связи с облаком. Изменения остаются в этом браузере; повторите сохранение после подключения.";
   // Our actionable Russian errors can be shown directly; server internals stay out of UI.
-  return /[А-Яа-яЁё]/.test(message)
+  return error instanceof Error && /[А-Яа-яЁё]/.test(message)
     ? message
-    : "Не удалось выполнить запрос к облаку. Повторите попытку; если ошибка сохраняется, проверьте настройку Supabase.";
+    : "Не удалось выполнить запрос. Повторите попытку позже. Несохранённую страницу можно экспортировать в JSON.";
 }

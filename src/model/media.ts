@@ -4,14 +4,19 @@ import { isAssetRef } from "./fileStore";
 export function safeUrl(value: string): string | null {
   try {
     const url = new URL(value);
-    return ["https:", "http:"].includes(url.protocol) ? url.href : null;
+    return ["https:", "http:"].includes(url.protocol) &&
+      !url.username &&
+      !url.password
+      ? url.href
+      : null;
   } catch {
     return null;
   }
 }
 export type VideoSource = { kind: "youtube" | "file"; src: string };
 export function videoSource(value: string): VideoSource | null {
-  if (isAssetRef(value) || isCloudRef(value)) return { kind: "file", src: value };
+  if (isAssetRef(value) || isCloudRef(value))
+    return { kind: "file", src: value };
   const safe = safeUrl(value);
   if (!safe) return null;
   const url = new URL(safe);

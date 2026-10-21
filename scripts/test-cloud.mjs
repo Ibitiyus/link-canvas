@@ -404,12 +404,134 @@ try {
       .error,
     "server rejects references to another owner's assets",
   );
+  for (const helper of ["reserve_asset_v1", "begin_publication_v1"]) {
+    const args =
+      helper === "reserve_asset_v1"
+        ? {
+            file_id: randomUUID(),
+            extension: "png",
+            content_type: "image/png",
+            bytes: 1,
+          }
+        : { expected_revision: draft.revision };
+    check(
+      !!(await b.rpc(helper, args)).error,
+      `unprivileged API cannot call ${helper}`,
+    );
+  }
+  const mismatch = ok(
+    await a.rpc("reserve_asset", {
+      file_id: randomUUID(),
+      extension: "png",
+      content_type: "image/png",
+      bytes: 1,
+    }),
+    "reserve byte mismatch",
+  );
+  check(
+    !!(
+      await a.storage
+        .from("zin-drafts")
+        .upload(mismatch, readFileSync("public/templates/v1/chrome.webp"), {
+          contentType: "image/png",
+        })
+    ).error,
+    "Storage commit rejects actual bytes exceeding the reservation",
+  );
+  check(
+    !!(
+      await a.rpc("reserve_asset", {
+        file_id: randomUUID(),
+        extension: "png",
+        content_type: "audio/wav",
+        bytes: 12,
+      })
+    ).error,
+    "server rejects mismatched extension and MIME",
+  );
+  const malformedAction = await a.functions.invoke("page-actions", {
+    body: { action: "publish", revision: "1" },
+  });
+  check(
+    !!malformedAction.error,
+    "Edge rejects malformed publication revisions",
+  );
+  const used = ok(
+    await admin.from("assets").select("size").eq("owner_id", uid),
+    "quota usage",
+  ).reduce((total, asset) => total + Number(asset.size), 0);
+  const quotaPath = `${uid}/${randomUUID()}.gif`;
+  ok(
+    await admin
+      .from("assets")
+      .insert({
+        path: quotaPath,
+        owner_id: uid,
+        mime: "image/gif",
+        size: 536870912 - used - 1,
+      }),
+    "seed test-only quota reservation",
+  );
+  const reserved = await Promise.all(
+    [1, 2].map(() =>
+      a.rpc("reserve_asset", {
+        file_id: randomUUID(),
+        extension: "gif",
+        content_type: "image/gif",
+        bytes: 1,
+      }),
+    ),
+  );
+  check(
+    reserved.filter((result) => !result.error).length === 1 &&
+      reserved.some((result) => result.error?.message === "STORAGE_QUOTA"),
+    "concurrent reservations cannot exceed the per-owner byte budget",
+  );
+  ok(
+    await admin.from("assets").delete().eq("path", quotaPath),
+    "remove test-only quota reservation",
+  );
+  for (const result of reserved)
+    if (result.data)
+      ok(
+        await admin.from("assets").delete().eq("path", result.data),
+        "remove quota test reservation",
+      );
+  ok(
+    await admin
+      .from("operation_limits")
+      .upsert({
+        owner_id: uid,
+        operation: "edge:complete-upload",
+        count: 600,
+        window_start: new Date().toISOString(),
+      }),
+    "seed test-only request budget",
+  );
+  let throttled = false;
+  try {
+    await action(a, { action: "complete-upload", path: imagePath });
+  } catch (error) {
+    throttled = String(error).includes("RATE_LIMIT");
+  }
+  check(
+    throttled,
+    "Edge budget applies even to repeated ready-upload requests",
+  );
+  ok(
+    await admin
+      .from("operation_limits")
+      .delete()
+      .eq("owner_id", uid)
+      .eq("operation", "edge:complete-upload"),
+    "reset test-only request budget",
+  );
   const badPath = ok(
     await a.rpc("reserve_asset", {
       file_id: randomUUID(),
       extension: "png",
       content_type: "image/png",
-      bytes: 23,
+      bytes: Buffer.byteLength("<html>not-image!!</html>"),
     }),
     "reserve invalid file",
   );
@@ -466,6 +588,14 @@ try {
   const published = (
     await action(a, { action: "publish", revision: draft.revision })
   ).page;
+  const repeated = (
+    await action(a, { action: "publish", revision: draft.revision })
+  ).page;
+  check(
+    repeated.published_at === published.published_at &&
+      isDeepStrictEqual(repeated.project, published.project),
+    "repeating an unchanged publication reuses the snapshot and media",
+  );
   const publicPage = ok(
     await anon
       .from("published_pages")
