@@ -246,3 +246,8 @@
   overflow: hidden;
   clip-path: inset(50%);
 }
+/* Paint beyond the static composition must not make visitor scrollbars oscillate.
+   Editor overflow remains visible for 44px handles outside the selection. */
+.canvas-renderer:not(.canvas-editing) .canvas-extent {
+  overflow: clip;
+}

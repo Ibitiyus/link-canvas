@@ -31,7 +31,10 @@ export function EffectSurface({
   const a = effects?.animation,
     v = effects?.visual ?? DEFAULT_VISUAL;
   useEffect(() => {
-    if (!previewToken) return;
+    if (!previewToken) {
+      setTemporary(false);
+      return;
+    }
     setTemporary(true);
     // Replay the CSS timeline without remounting video/audio/iframe children.
     const frame = requestAnimationFrame(() => {
