@@ -115,6 +115,8 @@ test("local templates copy files, rename, reuse, export/import and delete indepe
   await expect(
     page.getByRole("heading", { name: "Мой релиз", exact: true }),
   ).toBeVisible();
+  await expect(page.locator(".template-live")).toHaveAttribute("inert", "");
+  await expect(page.locator(".template-card a a")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Переименовать", exact: true })
     .click();
@@ -267,7 +269,10 @@ test("an old gallery tab cannot overwrite a newer draft from another tab", async
   await saved(editor);
   await page
     .locator('[data-template-id="blank-canvas"]')
-    .getByRole("button", { name: "Использовать", exact: true })
+    .getByRole("link", { name: "Предпросмотр", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Использовать шаблон", exact: true })
     .click();
   await page
     .getByRole("button", { name: "Заменить страницу", exact: true })
@@ -321,4 +326,45 @@ test("the home page exposes the gallery on a small phone without requiring regis
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+});
+test("a grouped free collage preserves logical geometry on desktop tablet and phones", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await setup(page);
+  await page.goto("/templates/punk-zine");
+  await expect(page.locator(".effect-group")).toHaveCount(1);
+  const geometry = () =>
+    page.locator(".canvas-renderer").evaluate((root) => {
+      const scale = Number(root.getAttribute("data-canvas-scale")),
+        origin = root.querySelector(".canvas")!.getBoundingClientRect();
+      return [...root.querySelectorAll("[data-block-id]")].map((e) => {
+        const r = e.getBoundingClientRect();
+        return {
+          id: e.getAttribute("data-block-id"),
+          x: (r.x - origin.x) / scale,
+          y: (r.y - origin.y) / scale,
+          w: r.width / scale,
+          h: r.height / scale,
+        };
+      });
+    });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const original = await geometry();
+  for (const width of [768, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const current = await geometry();
+    expect(current.map((b) => b.id)).toEqual(original.map((b) => b.id));
+    for (let i = 0; i < current.length; i++)
+      for (const key of ["x", "y", "w", "h"] as const)
+        expect(Math.abs(current[i][key] - original[i][key])).toBeLessThan(0.3);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+  expect(
+    await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), KEY),
+  ).toEqual(initial);
 });

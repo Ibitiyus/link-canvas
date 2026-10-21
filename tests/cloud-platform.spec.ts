@@ -601,3 +601,107 @@ test("email password recovery opens the reset form and accepts the new password"
     page.getByRole("heading", { name: `@${user.username}`, exact: true }),
   ).toBeVisible();
 });
+
+test("a starter with owned media becomes a real cloud draft and published page", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(120000);
+  await page.goto("/templates");
+  await page
+    .locator('[data-template-id="music-artist"]')
+    .getByRole("button", { name: "Использовать", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Заменить страницу", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/editor$/);
+  await expect(
+    page.getByRole("button", { name: "Сохранено", exact: true }),
+  ).toBeVisible();
+  const guest = await page.evaluate(
+    (key) => JSON.parse(localStorage.getItem(key)!),
+    KEY,
+  );
+  expect(
+    guest.blocks.some(
+      (b: { type: string; url: string }) =>
+        b.type === "audio" && b.url.startsWith("asset:"),
+    ),
+  ).toBe(true);
+  const user = await register(page);
+  await migrate(page);
+  const draft = await admin
+    .from("drafts")
+    .select("project")
+    .eq("owner_id", user.id)
+    .single();
+  expect(draft.error).toBeNull();
+  expect(draft.data!.project.page.title).toBe("NO SIGNAL / NEW SOUND");
+  expect(
+    draft.data!.project.blocks.find((b: { type: string }) => b.type === "audio")
+      .url,
+  ).toMatch(/^cloud:/);
+  await page.getByRole("button", { name: "Опубликовать", exact: true }).click();
+  await expect(
+    page.getByText("Страница опубликована.", { exact: true }),
+  ).toBeVisible({ timeout: 60000 });
+  const context = await browser.newContext(),
+    visitor = await context.newPage();
+  try {
+    await visitor.goto(`/u/${user.username}`);
+    await expect(visitor.locator("[data-block-id]")).toHaveCount(
+      guest.blocks.length,
+    );
+    await expect(visitor.locator(".anim-float")).toHaveCount(1);
+    await expect(visitor.locator("img").first()).toBeVisible();
+    await visitor
+      .getByRole("button", { name: "Воспроизвести музыку", exact: true })
+      .click();
+    await expect
+      .poll(() =>
+        visitor
+          .locator("audio")
+          .evaluate((e: HTMLAudioElement) => e.currentTime),
+      )
+      .toBeGreaterThan(0);
+    await visitor.locator("video").evaluate((e: HTMLVideoElement) => e.play());
+    await expect
+      .poll(() =>
+        visitor
+          .locator("video")
+          .evaluate((e: HTMLVideoElement) => e.currentTime),
+      )
+      .toBeGreaterThan(0);
+    const pub = await admin
+      .from("published_pages")
+      .select("project")
+      .eq("username", user.username)
+      .single();
+    expect(pub.error).toBeNull();
+    const sources = pub
+      .data!.project.blocks.flatMap((b: { url: string; imageUrl: string }) => [
+        b.url,
+        b.imageUrl,
+      ])
+      .filter((s: string) => s.includes("/storage/"));
+    expect(sources.length).toBeGreaterThan(2);
+    for (const src of sources) expect((await fetch(src)).ok).toBe(true);
+    // Cancelling a replacement after sign-in must preserve both the active and server draft.
+    await page.goto("/templates");
+    await page
+      .locator('[data-template-id="blank-canvas"]')
+      .getByRole("button", { name: "Использовать", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toContainText("облачный черновик");
+    await page.getByRole("button", { name: "Отмена", exact: true }).click();
+    const unchanged = await admin
+      .from("drafts")
+      .select("project")
+      .eq("owner_id", user.id)
+      .single();
+    expect(unchanged.data!.project.page.title).toBe("NO SIGNAL / NEW SOUND");
+  } finally {
+    await context.close();
+  }
+});
