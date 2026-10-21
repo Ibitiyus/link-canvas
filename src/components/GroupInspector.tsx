@@ -1,3 +1,4 @@
+import { EffectsInspector } from "./EffectsInspector";
 import { useProject } from "../state/ProjectContext";
 import { selectionBox } from "../model/creative";
 import { Field, NumberField } from "./Fields";
@@ -6,6 +7,7 @@ export function GroupInspector() {
     project,
     selectedIds,
     renameGroup,
+    updateGroupEffects,
     transform,
     patchSelection,
     selectOnly,
@@ -33,6 +35,13 @@ export function GroupInspector() {
             onChange={(e) => renameGroup(group.id, e.target.value)}
           />
         </Field>
+      )}
+      {group && (
+        <EffectsInspector
+          id={group.id}
+          effects={group.effects}
+          onChange={(effects) => updateGroupEffects(group.id, effects)}
+        />
       )}
       <p className="muted caption">
         Группы масштабируются пропорционально. Геометрия участников сохраняется

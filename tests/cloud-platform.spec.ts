@@ -221,6 +221,11 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
   await expect(
     page.getByRole("button", { name: "Сохранено", exact: true }),
   ).toBeVisible();
+  await page.getByText("Анимация и эффекты", { exact: true }).click();
+  await page.getByLabel("Тип анимации", { exact: true }).selectOption("float");
+  await expect(
+    page.getByRole("button", { name: "Сохранено", exact: true }),
+  ).toBeVisible();
   const guest = await page.evaluate((key) => localStorage.getItem(key), KEY);
   await page
     .getByRole("button", { name: "Сохранить в облако", exact: true })
@@ -235,6 +240,9 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
     .single();
   expect(cloudDraft.error).toBeNull();
   expect(cloudDraft.data!.project.groups).toHaveLength(1);
+  expect(cloudDraft.data!.project.groups[0].effects.animation.type).toBe(
+    "float",
+  );
   expect(
     cloudDraft
       .data!.project.blocks.filter((b: { groupId?: string }) => b.groupId)
@@ -259,6 +267,9 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
   try {
     await visitor.goto(address!);
     await expect(visitor.locator("[data-block-id]")).toHaveCount(8);
+    await expect(
+      visitor.locator(".effect-group > .effect-root > .effect-animation"),
+    ).toHaveCSS("animation-name", "zin-float");
     await expect(
       visitor.locator(".free-block:has(.type-decoration)"),
     ).toHaveCSS("z-index", "1");

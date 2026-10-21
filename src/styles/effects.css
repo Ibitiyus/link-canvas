@@ -1,0 +1,253 @@
+/* Canvas geometry and author rotation live outside these three independent layers. */
+.effect-root,
+.effect-animation,
+.effect-hover,
+.effect-visual {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.effect-animation {
+  transform-origin: center;
+  animation-duration: var(--effect-duration);
+  animation-delay: var(--effect-delay);
+  animation-iteration-count: var(--effect-repeat);
+  animation-direction: var(--effect-direction);
+  animation-fill-mode: both;
+  animation-timing-function: ease-in-out;
+}
+.anim-spin {
+  animation-name: zin-spin;
+  animation-timing-function: linear;
+}
+.anim-sway {
+  animation-name: zin-sway;
+}
+.anim-float {
+  animation-name: zin-float;
+}
+.anim-pulse {
+  animation-name: zin-pulse;
+}
+.anim-flicker {
+  animation-name: zin-flicker;
+}
+.anim-glitch {
+  animation-name: zin-glitch;
+}
+.anim-fade {
+  animation-name: zin-fade;
+}
+.anim-slide {
+  animation-name: zin-slide;
+}
+.anim-zoom {
+  animation-name: zin-zoom;
+}
+@keyframes zin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes zin-sway {
+  0%,
+  100% {
+    transform: rotate(calc(-1 * var(--effect-angle)));
+  }
+  50% {
+    transform: rotate(var(--effect-angle));
+  }
+}
+@keyframes zin-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(calc(-1 * var(--effect-distance)));
+  }
+}
+@keyframes zin-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(var(--effect-scale));
+  }
+}
+@keyframes zin-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: var(--effect-alpha);
+  }
+}
+@keyframes zin-glitch {
+  0%,
+  35%,
+  65%,
+  100% {
+    transform: translateX(0);
+  }
+  45% {
+    transform: translateX(calc(var(--effect-distance) * 0.15));
+  }
+  55% {
+    transform: translateX(calc(var(--effect-distance) * -0.15));
+  }
+}
+@keyframes zin-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes zin-slide {
+  from {
+    opacity: 0;
+    transform: translateY(var(--effect-distance));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes zin-zoom {
+  from {
+    opacity: 0;
+    transform: scale(var(--effect-start-scale));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.effect-hover {
+  transition:
+    transform 0.25s ease,
+    filter 0.25s ease,
+    opacity 0.25s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .effect-hover[data-hover-enabled="true"].hover-scale:hover {
+    transform: scale(1.06);
+  }
+  .effect-hover[data-hover-enabled="true"].hover-tilt:hover {
+    transform: rotate(3deg);
+  }
+  .effect-hover[data-hover-enabled="true"].hover-glow:hover {
+    filter: drop-shadow(0 0 8px #ff3970);
+  }
+  .effect-hover[data-hover-enabled="true"].hover-opacity:hover {
+    opacity: 0.78;
+  }
+  .effect-hover[data-hover-enabled="true"].hover-bounce:hover {
+    transform: translateY(-8px);
+  }
+}
+.effect-group {
+  position: absolute;
+  pointer-events: none;
+}
+.effect-group .free-block {
+  pointer-events: auto;
+}
+.effect-controls {
+  border-top: 1px solid #454047;
+  padding: 12px 0;
+  margin-top: 12px;
+}
+.effect-controls summary {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 8px 0;
+}
+.effect-demo {
+  display: block;
+  width: 30px;
+  height: 20px;
+  background: #ff3970;
+  pointer-events: none;
+}
+.effect-samples {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin: 10px 0;
+}
+.effect-samples button {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 12px 4px;
+  font-size: 10px;
+  border: 1px solid #454047;
+  background: #19171c;
+  color: inherit;
+}
+.effect-samples button[aria-pressed="true"] {
+  border-color: #ff3970;
+}
+.effect-samples .effect-animation {
+  width: 30px;
+  height: 20px;
+  animation-duration: 3s;
+  animation-iteration-count: 1;
+  --effect-distance: 8px;
+  --effect-angle: 8deg;
+  --effect-scale: 1.1;
+  --effect-start-scale: 0.8;
+  --effect-alpha: 0.85;
+}
+.effect-range {
+  display: grid;
+  grid-template-columns: 1fr 72px;
+  gap: 8px;
+  align-items: center;
+}
+.effect-range input {
+  min-width: 0;
+  width: 100%;
+}
+.effect-preview-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .effect-animation {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .effect-hover {
+    transition: none !important;
+    transform: none !important;
+  }
+  .effect-hover:hover {
+    transform: none !important;
+  }
+}
+
+.effect-range > .field {
+  margin: 0;
+}
+.effect-range > .field > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+/* Paint beyond the static composition must not make visitor scrollbars oscillate.
+   Editor overflow remains visible for 44px handles outside the selection. */
+.canvas-renderer:not(.canvas-editing) .canvas-extent {
+  overflow: clip;
+}
