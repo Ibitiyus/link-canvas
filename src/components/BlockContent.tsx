@@ -1,3 +1,4 @@
+import { usePageLoading } from "./PagePreloader";
 import { useEffect, useState, type CSSProperties } from "react";
 import { ArrowUpRight, ImageIcon, Play, TriangleAlert } from "lucide-react";
 import { safeUrl, videoSource } from "../model/media";
@@ -48,6 +49,7 @@ export function RemoteImage({
   );
 }
 function Video({ block }: { block: Block }) {
+  const loading = usePageLoading();
   const source = videoSource(block.url);
   const file = useAssetSource(source?.kind === "file" ? source.src : null);
   const poster = useAssetSource(safeImageSource(block.imageUrl));
@@ -73,6 +75,9 @@ function Video({ block }: { block: Block }) {
   if (source.kind === "youtube")
     return (
       <iframe
+        onLoad={(event) => {
+          event.currentTarget.dataset.zinLoaded = "true";
+        }}
         title={block.name || "YouTube-видео"}
         src={source.src}
         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
@@ -82,15 +87,25 @@ function Video({ block }: { block: Block }) {
       />
     );
   return (
-    <video
-      src={file.src}
-      poster={poster.src || undefined}
-      controls
-      preload="metadata"
-      playsInline
-      style={{ objectFit: block.fit }}
-      onError={() => setFailed(true)}
-    />
+    <>
+      {poster.src && (
+        <img
+          className="page-background-preload"
+          src={poster.src}
+          alt=""
+          aria-hidden="true"
+        />
+      )}
+      <video
+        src={file.src}
+        poster={poster.src || undefined}
+        controls
+        preload={loading ? "auto" : "metadata"}
+        playsInline
+        style={{ objectFit: block.fit }}
+        onError={() => setFailed(true)}
+      />
+    </>
   );
 }
 export function blockStyle(block: Block): CSSProperties {

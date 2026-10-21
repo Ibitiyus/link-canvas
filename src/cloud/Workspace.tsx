@@ -30,7 +30,7 @@ export function Workspace() {
       storageKey={id ? accountProjectKey(id) : undefined}
       fallbackProject={id ? emptyProject() : undefined}
     >
-      <ProjectFonts />
+      {location.pathname !== "/preview" && <ProjectFonts />}
       <CloudProvider>
         <Routes>
           <Route path="/" element={<Home />} />

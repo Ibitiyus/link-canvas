@@ -289,12 +289,12 @@ for (const route of ["/editor", "/preview", "/u/scaling_test"])
       ).toBeVisible();
     }
   });
-test("zoom scroll extents and fit reset do not modify the project", async ({
+test("editor zoom scroll extents and fit reset do not modify the project", async ({
   page,
 }) => {
   await prepare(page);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/preview");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/editor");
   await expect(page.locator("[data-block-id]")).toHaveCount(10);
   const original = await page.evaluate((key) => localStorage.getItem(key), KEY),
     fit = (await geometry(page)).scale;
@@ -416,7 +416,7 @@ test("scaled editor converts both pointer axes to logical coordinates and refres
     .click();
 });
 
-test("preview and public backgrounds fill the viewport independently of canvas zoom", async ({
+test("preview and public backgrounds fill the viewport without visitor zoom controls", async ({
   page,
 }) => {
   test.skip(
@@ -455,19 +455,15 @@ test("preview and public backgrounds fill the viewport independently of canvas z
           return box && Math.round(box.width);
         })
         .toBe(width);
-      for (let i = 0; i < 4; i++)
-        await page
-          .getByRole("button", { name: "Увеличить полотно", exact: true })
-          .click();
+      await expect(
+        page.getByRole("group", { name: "Масштаб полотна" }),
+      ).toHaveCount(0);
       await page.locator('[data-block-id="bottom"]').scrollIntoViewIfNeeded();
       const box = (await background.boundingBox())!;
       expect(box.x).toBe(0);
       expect(box.y).toBe(0);
       expect(box.width).toBe(width);
       expect(box.height).toBe(844);
-      await page
-        .getByRole("button", { name: "По ширине", exact: true })
-        .click();
     }
   }
 });
