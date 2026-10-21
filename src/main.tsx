@@ -11,6 +11,7 @@ import "@fontsource/ibm-plex-mono/cyrillic-400.css";
 import "@fontsource/ibm-plex-mono/cyrillic-500.css";
 import "./style.css";
 import "./styles/effects.css";
+import "./styles/templates.css";
 import "./styles/accounts.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -54,6 +54,9 @@ export function Home() {
           <br />
           <b>С 2026 ГОДА — ДЛЯ ВАС</b>
         </span>
+        <Link className="nav-anchor" to="/templates">
+          Шаблоны ↗
+        </Link>
         <a className="nav-anchor" href="#playground">
           Песочница <ArrowDownRight size={13} />
         </a>
@@ -64,7 +67,9 @@ export function Home() {
         >
           ОТКРЫТЬ РЕДАКТОР <ArrowUpRight size={17} />
         </Link>
-        <Link className="home-account" to="/dashboard">{session?"Мой аккаунт":"Войти"}</Link>
+        <Link className="home-account" to="/dashboard">
+          {session ? "Мой аккаунт" : "Войти"}
+        </Link>
       </nav>
       <main id="home-main">
         <section className="hero">
@@ -97,11 +102,11 @@ export function Home() {
               <span>
                 ЛИЧНОЕ ПРОСТРАНСТВО
                 <br />
-                БЕЗ ШАБЛОНОВ.
+                БЕЗ ОГРАНИЧЕНИЙ.
               </span>
             </div>
             <p>
-              Хватит помещать себя в чужие шаблоны.
+              Начните с идеи или готовой композиции.
               <br />
               Соберите свой уголок интернета из ссылок,
               <br />
@@ -114,6 +119,12 @@ export function Home() {
                 aria-label="Создать своё пространство"
               >
                 СОЗДАТЬ СВОЁ ПРОСТРАНСТВО <ArrowUpRight size={27} />
+              </Link>
+              <Link
+                className="secondary-button template-home-link"
+                to="/templates"
+              >
+                Начать с шаблона ↗
               </Link>
               <span>
                 <Check size={12} /> Без регистрации. Сохраняется у вас.
@@ -298,6 +309,14 @@ export function Home() {
             <span>ВАШИ ССЫЛКИ. ВАШ МИР. ВАШЕ ПОЛОТНО.</span>
             <span aria-hidden="true">+++++</span>
           </div>
+        </section>
+        <section className="home-templates">
+          <span className="eyebrow">ГОТОВАЯ ОСНОВА / ВАШЕ ПРОДОЛЖЕНИЕ</span>
+          <h2>ВЫБЕРИТЕ СВОЙ СТАРТ.</h2>
+          <p>Восемь композиций — от киберколлажа до чистого полотна.</p>
+          <Link className="primary-button" to="/templates">
+            Выбрать шаблон ↗
+          </Link>
         </section>
       </main>
       <footer className="home-footer">

@@ -88,10 +88,12 @@ export function ProjectProvider({
   children,
   storageKey = STORAGE_KEY,
   fallbackProject,
+  autosave = true,
 }: {
   children: ReactNode;
   storageKey?: string;
   fallbackProject?: Project;
+  autosave?: boolean;
 }) {
   const [initial] = useState(() => load(storageKey, fallbackProject));
   const [history, dispatch] = useReducer(historyReducer, {
@@ -163,7 +165,7 @@ export function ProjectProvider({
     }
   }, [project, storageKey]);
   useEffect(() => {
-    if (initial.error && !edited) return;
+    if (!autosave || (initial.error && !edited)) return;
     setStatus("saving");
     const timer = window.setTimeout(saveNow, 350);
     // Flush this exact version before the next change, navigation or unmount.
@@ -180,7 +182,7 @@ export function ProjectProvider({
       window.removeEventListener("pagehide", flush);
       flush();
     };
-  }, [project, saveNow, initial.error, edited, storageKey]);
+  }, [project, saveNow, initial.error, edited, storageKey, autosave]);
   const add = (type: BlockType) => {
     if (project.blocks.length >= 200) {
       notify("Максимум 200 блоков на странице.");

@@ -1,3 +1,4 @@
+import { TemplateEntry } from "./TemplateEntry";
 import { LayerList } from "./LayerList";
 import { useEffect, useState } from "react";
 import { Layers, MousePointer2, Plus } from "lucide-react";
@@ -44,6 +45,7 @@ export function Library({
         title="БИБЛИОТЕКА БЛОКОВ"
         subtitle="ДОБАВЬТЕ НЕМНОГО СЕБЯ"
       />
+      <TemplateEntry />
       <div className="panel-tabs">
         <button
           aria-label="Блоки"
