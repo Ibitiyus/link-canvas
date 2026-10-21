@@ -1,5 +1,5 @@
 import { usePageLoading } from "./PagePreloader";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, memo, type CSSProperties } from "react";
 import { ArrowUpRight, ImageIcon, Play, TriangleAlert } from "lucide-react";
 import { safeUrl, videoSource } from "../model/media";
 import { safeImageSource } from "../model/assets";
@@ -122,7 +122,7 @@ export function blockStyle(block: Block): CSSProperties {
     fontWeight: block.bold ? 700 : 400,
   };
 }
-export function BlockContent({
+export const BlockContent = memo(function BlockContent({
   block,
   editing = false,
 }: {
@@ -196,4 +196,4 @@ export function BlockContent({
       {content}
     </div>
   );
-}
+});

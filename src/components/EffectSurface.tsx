@@ -60,7 +60,8 @@ export function EffectSurface({
   }, [previewToken]);
   useEffect(() => {
     const node = ref.current;
-    if (!node) return;
+    if (!node || !effects?.animation?.enabled || (!active && !previewToken))
+      return;
     const observer = new IntersectionObserver(
       ([entry]) => setVisible(entry.isIntersecting),
       { rootMargin: "80px" },
@@ -72,7 +73,7 @@ export function EffectSurface({
       observer.disconnect();
       document.removeEventListener("visibilitychange", update);
     };
-  }, []);
+  }, [effects?.animation?.enabled, active, previewToken]);
   const animate =
     !!a?.enabled && a.type !== "none" && (active || temporary) && !suspended;
   const style = {
