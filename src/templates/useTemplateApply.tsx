@@ -9,6 +9,8 @@ import { useCloud } from "../cloud/CloudContext";
 import { downloadBackup, exportProject } from "../model/backup";
 import type { Project } from "../model/types";
 import { saveTemplate } from "./storage";
+// Keep the baseline across gallery -> preview navigation for the same in-memory draft.
+const draftBaselines = new WeakMap<Project, string | null>();
 export function useTemplateApply() {
   const { project, change, select, notify } = useProject(),
     { session } = useAuth(),
@@ -30,13 +32,18 @@ export function useTemplateApply() {
   const baseline = useRef<string | null>(null);
   useEffect(() => {
     try {
-      baseline.current = localStorage.getItem(
-        session?.user.id ? accountProjectKey(session.user.id) : STORAGE_KEY,
-      );
+      if (!draftBaselines.has(project))
+        draftBaselines.set(
+          project,
+          localStorage.getItem(
+            session?.user.id ? accountProjectKey(session.user.id) : STORAGE_KEY,
+          ),
+        );
+      baseline.current = draftBaselines.get(project)!;
     } catch {
       /* Applying reports unavailable storage. */
     }
-  }, [session?.user.id]);
+  }, [project, session?.user.id]);
   const dialog = useRef<HTMLDialogElement>(null),
     current = useRef(project),
     owner = useRef(session?.user.id);

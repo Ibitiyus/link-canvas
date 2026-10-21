@@ -28,6 +28,7 @@ function SavedCardPreview({ project }: { project: SavedTemplate["project"] }) {
   }, []);
   return (
     <div
+      inert
       className="template-thumbnail template-live"
       ref={ref}
       aria-hidden="true"
@@ -170,12 +171,14 @@ export default function Templates() {
                   key={t.id}
                   data-template-id={t.id}
                 >
-                  <Link
-                    to={`/templates/${t.id}`}
-                    aria-label={`Предпросмотр: ${t.name}`}
-                  >
+                  <div className="template-card-preview">
                     <SavedCardPreview project={t.project} />
-                  </Link>
+                    <Link
+                      className="template-preview-cover"
+                      to={`/templates/${t.id}`}
+                      aria-label={`Предпросмотр: ${t.name}`}
+                    />
+                  </div>
                   <div className="template-card-body">
                     <small>Мои / только этот браузер</small>
                     <h2>{t.name}</h2>

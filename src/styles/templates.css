@@ -257,3 +257,15 @@
     display: none;
   }
 }
+
+.template-card-preview {
+  position: relative;
+}
+.template-preview-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.template-card h2 {
+  overflow-wrap: anywhere;
+}
