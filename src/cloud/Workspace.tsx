@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 const Templates = lazy(() => import("../pages/Templates"));
 const TemplatePreview = lazy(() => import("../pages/TemplatePreview"));
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { ProjectProvider } from "../state/ProjectContext";
 import { ProjectFonts } from "../components/ProjectFonts";
@@ -15,6 +15,7 @@ import { AuthPage } from "../pages/AuthPage";
 import { NotFound } from "../pages/NotFound";
 export function Workspace() {
   const { session, loading } = useAuth();
+  const location = useLocation();
   if (loading)
     return (
       <div className="public-loading" role="status">
@@ -25,6 +26,7 @@ export function Workspace() {
   return (
     <ProjectProvider
       key={id ?? "guest"}
+      autosave={!location.pathname.startsWith("/templates")}
       storageKey={id ? accountProjectKey(id) : undefined}
       fallbackProject={id ? emptyProject() : undefined}
     >

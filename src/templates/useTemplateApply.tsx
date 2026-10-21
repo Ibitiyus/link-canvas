@@ -1,3 +1,6 @@
+import { projectSnapshot } from "../cloud/snapshot";
+import { accountProjectKey } from "../cloud/CloudContext";
+import { parseProject, STORAGE_KEY } from "../model/storage";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
@@ -24,6 +27,16 @@ export function useTemplateApply() {
       mounted.current = false;
     };
   }, []);
+  const baseline = useRef<string | null>(null);
+  useEffect(() => {
+    try {
+      baseline.current = localStorage.getItem(
+        session?.user.id ? accountProjectKey(session.user.id) : STORAGE_KEY,
+      );
+    } catch {
+      /* Applying reports unavailable storage. */
+    }
+  }, [session?.user.id]);
   const dialog = useRef<HTMLDialogElement>(null),
     current = useRef(project),
     owner = useRef(session?.user.id);
@@ -39,6 +52,22 @@ export function useTemplateApply() {
     setBusy(true);
     setError("");
     try {
+      const checkStored = () => {
+        const raw = localStorage.getItem(
+          identity ? accountProjectKey(identity) : STORAGE_KEY,
+        );
+        // Validate even unchanged raw data: a damaged draft must never be backed up as the demo fallback.
+        const stored = raw ? parseProject(raw) : null;
+        if (
+          raw !== baseline.current &&
+          stored &&
+          projectSnapshot(stored) !== projectSnapshot(original)
+        )
+          throw new Error(
+            "Черновик изменён в другой вкладке. Обновите страницу перед заменой.",
+          );
+      };
+      checkStored();
       if (identity && !ready)
         throw new Error(
           "Дождитесь загрузки облачного черновика или разрешите конфликт в личном кабинете.",
@@ -52,6 +81,7 @@ export function useTemplateApply() {
         throw new Error(
           "Страница или аккаунт изменились. Повторите выбор шаблона.",
         );
+      checkStored();
       await saveTemplate(original, "До замены шаблоном", true);
       if (
         !mounted.current ||
@@ -61,6 +91,7 @@ export function useTemplateApply() {
         throw new Error(
           "Текущая страница или аккаунт изменились. Повторите выбор шаблона.",
         );
+      checkStored();
       change(next);
       select(null);
       setPending(null);

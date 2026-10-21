@@ -106,7 +106,7 @@ export function Home() {
               </span>
             </div>
             <p>
-              Хватит помещать себя в чужие шаблоны.
+              Начните с идеи или готовой композиции.
               <br />
               Соберите свой уголок интернета из ссылок,
               <br />
@@ -119,6 +119,12 @@ export function Home() {
                 aria-label="Создать своё пространство"
               >
                 СОЗДАТЬ СВОЁ ПРОСТРАНСТВО <ArrowUpRight size={27} />
+              </Link>
+              <Link
+                className="secondary-button template-home-link"
+                to="/templates"
+              >
+                Начать с шаблона ↗
               </Link>
               <span>
                 <Check size={12} /> Без регистрации. Сохраняется у вас.
