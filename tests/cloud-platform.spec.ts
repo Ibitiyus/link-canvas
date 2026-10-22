@@ -66,9 +66,9 @@ async function serverText(id: string) {
     .from("drafts")
     .select("project")
     .eq("owner_id", id)
-    .single();
+    .maybeSingle();
   if (error) throw error;
-  return data.project.blocks.find((b: { type: string }) => b.type === "text")
+  return data?.project.blocks.find((b: { type: string }) => b.type === "text")
     ?.content;
 }
 async function reset(page: Page) {
@@ -493,20 +493,31 @@ test("conflicts require a choice, offline changes recover, and accounts stay iso
     await editText(second, "Перед отключением");
     await expect.poll(() => serverText(user.id)).toBe("Перед отключением");
     await secondContext.setOffline(true);
+    await expect(second.locator(".cloud-bar")).toContainText("Нет сети");
+    await secondContext.setOffline(false);
+    await expect(second.locator(".cloud-bar")).toContainText(
+      "Облако: сохранено",
+    );
+    await secondContext.setOffline(true);
     await second
       .getByLabel("Текст", { exact: true })
       .fill("Работа без интернета");
-    await expect(second.locator(".cloud-bar")).toContainText("не сохранено", {
-      timeout: 15000,
-    });
-    expect(
-      await second.evaluate(
-        (id) =>
-          JSON.parse(localStorage.getItem(`zin.account-project.${id}`)!)
-            .blocks[0].content,
-        user.id,
-      ),
-    ).toBe("Работа без интернета");
+    await expect(second.locator(".cloud-bar")).toContainText(
+      /Нет сети|не сохранено/,
+      {
+        timeout: 15000,
+      },
+    );
+    await expect
+      .poll(() =>
+        second.evaluate(
+          (id) =>
+            JSON.parse(localStorage.getItem(`zin.account-project.${id}`)!)
+              .blocks[0].content,
+          user.id,
+        ),
+      )
+      .toBe("Работа без интернета");
     expect(await serverText(user.id)).toBe("Перед отключением");
     await secondContext.setOffline(false);
     await expect.poll(() => serverText(user.id)).toBe("Работа без интернета");
@@ -552,7 +563,7 @@ test("email password recovery opens the reset form and accepts the new password"
     .click();
   await expect(
     page.getByText(
-      "Если этот email зарегистрирован, на него придёт письмо со ссылкой для смены пароля.",
+      "Если этот email зарегистрирован и почтовый провайдер настроен, будет отправлена ссылка для смены пароля. Проверьте входящие и спам.",
       { exact: true },
     ),
   ).toBeVisible();
@@ -704,4 +715,93 @@ test("a starter with owned media becomes a real cloud draft and published page",
   } finally {
     await context.close();
   }
+});
+
+test("an edit during delayed initial cloud load survives and requires a version choice", async ({
+  page,
+}) => {
+  test.setTimeout(60000);
+  const user = await register(page);
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let started = false;
+  await page.route("**/rest/v1/drafts*", async (route) => {
+    if (route.request().method() === "GET") {
+      started = true;
+      await gate;
+    }
+    await route.continue();
+  });
+  await page.goto("/editor");
+  await expect.poll(() => started).toBe(true);
+  await add(page, "Текст");
+  await page
+    .getByLabel("Текст", { exact: true })
+    .fill("Изменено во время подключения");
+  const previous = await page.evaluate((id) => {
+    const key = `zin.account-project.${id}`,
+      raw = localStorage.getItem(key);
+    localStorage.removeItem(key);
+    return raw;
+  }, user.id);
+  release();
+  await expect(page.locator(".cloud-bar")).toContainText("выберите версию");
+  await expect(page.locator(".text-content")).toHaveText(
+    "Изменено во время подключения",
+  );
+  if (previous)
+    await page.evaluate(
+      ({ id, raw }) => localStorage.setItem(`zin.account-project.${id}`, raw),
+      { id: user.id, raw: previous },
+    );
+  await page.getByRole("link", { name: "Личный кабинет", exact: true }).click();
+  page.on("dialog", (dialog) => dialog.accept());
+  await page
+    .getByRole("button", { name: "Заменить облачный черновик", exact: true })
+    .click();
+  await expect
+    .poll(() => serverText(user.id))
+    .toBe("Изменено во время подключения");
+});
+
+test("a failed Supabase save keeps local work and succeeds after retry", async ({
+  page,
+}) => {
+  const user = await register(page);
+  await page.goto("/editor");
+  await expect(page.locator(".cloud-bar")).not.toContainText("Подключение");
+  await page.route("**/rest/v1/rpc/save_draft", (route) =>
+    route.fulfill({
+      status: 503,
+      json: { message: "internal database detail must stay hidden" },
+    }),
+  );
+  await add(page, "Текст");
+  await page
+    .getByLabel("Текст", { exact: true })
+    .fill("Сохраняем несмотря на сбой");
+  await expect(page.locator(".cloud-bar")).toContainText("не сохранено", {
+    timeout: 15000,
+  });
+  expect(
+    await page.evaluate(
+      (id) =>
+        JSON.parse(localStorage.getItem(`zin.account-project.${id}`)!).blocks[0]
+          .content,
+      user.id,
+    ),
+  ).toBe("Сохраняем несмотря на сбой");
+  await expect(page.locator("body")).not.toContainText(
+    "internal database detail",
+  );
+  await page.unroute("**/rest/v1/rpc/save_draft");
+  await page
+    .getByRole("button", { name: "Сохранить в облако", exact: true })
+    .click();
+  await expect
+    .poll(() => serverText(user.id))
+    .toBe("Сохраняем несмотря на сбой");
+  await expect(page.locator(".cloud-bar")).toContainText("Облако: сохранено");
 });

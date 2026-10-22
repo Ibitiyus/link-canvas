@@ -1,3 +1,4 @@
+import { LocalConflict, LocalPersistence } from "../model/localPersistence";
 import type { Effects } from "../model/effects";
 import { isFree } from "../model/placement";
 import {
@@ -16,6 +17,7 @@ import {
   useContext,
   useEffect,
   useReducer,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -27,21 +29,26 @@ import type { Block, BlockType, PageSettings, Project } from "../model/types";
 import { historyReducer, type History } from "./history";
 
 function load(storageKey: string, fallbackProject?: Project) {
+  let raw: string | null = null;
   try {
+    raw = localStorage.getItem(storageKey);
     return {
-      project: localStorage.getItem(storageKey)
-        ? parseProject(localStorage.getItem(storageKey)!)
-        : (fallbackProject ?? demoProject()),
+      raw,
+      project: raw ? parseProject(raw) : (fallbackProject ?? demoProject()),
       error: "",
     };
   } catch (error) {
     return {
-      project: demoProject(),
-      error: `Не удалось восстановить проект: ${error instanceof Error ? error.message : "хранилище недоступно"}. Исходные данные не перезаписаны до первого изменения.`,
+      raw,
+      project: fallbackProject ?? demoProject(),
+      error: `Не удалось восстановить проект: ${error instanceof Error ? error.message : "хранилище недоступно"}. Исходные данные защищены от перезаписи. Откройте восстановление или явно выберите версию.`,
     };
   }
 }
 interface ProjectStore {
+  storageKey: string;
+  localConflict: boolean;
+  resolveLocal: (choice: "current" | "stored") => void;
   project: Project;
   replace: (project: Project) => void;
   selectedId: string | null;
@@ -96,6 +103,20 @@ export function ProjectProvider({
   autosave?: boolean;
 }) {
   const [initial] = useState(() => load(storageKey, fallbackProject));
+  const [persistence] = useState(
+    () =>
+      new LocalPersistence(
+        {
+          getItem: (key) => localStorage.getItem(key),
+          setItem: (key, value) => localStorage.setItem(key, value),
+        },
+        storageKey,
+        initial.raw,
+        createId(),
+        !!initial.error,
+      ),
+  );
+  const [localConflict, setLocalConflict] = useState(!!initial.error);
   const [history, dispatch] = useReducer(historyReducer, {
     past: [],
     present: initial.project,
@@ -134,6 +155,12 @@ export function ProjectProvider({
   const [savedProject, setSavedProject] = useState<Project | null>(null);
   const [edited, setEdited] = useState(false);
   const project = history.present;
+  const latest = useRef(project),
+    canAutosave = useRef(autosave),
+    hasEdits = useRef(edited);
+  latest.current = project;
+  canAutosave.current = autosave;
+  hasEdits.current = edited;
   const replace = useCallback((project: Project) => {
     setEdited(true);
     dispatch({ type: "replace", project });
@@ -152,37 +179,109 @@ export function ProjectProvider({
   );
   const saveNow = useCallback(() => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify(project));
-      setSavedProject(project);
+      persistence.write(latest.current);
+      setSavedProject(latest.current);
+      setLocalConflict(false);
       setStatus("saved");
       return true;
-    } catch {
+    } catch (error) {
       setStatus("error");
-      notify(
-        "Не удалось сохранить: хранилище браузера недоступно или переполнено. Экспортируйте проект в JSON.",
-      );
+      if (error instanceof LocalConflict) {
+        setLocalConflict(true);
+        notify(error.message);
+      } else
+        notify(
+          "Не удалось сохранить: хранилище браузера недоступно или переполнено. Экспортируйте проект в JSON.",
+        );
       return false;
     }
-  }, [project, storageKey]);
+  }, [persistence]);
   useEffect(() => {
     if (!autosave || (initial.error && !edited)) return;
     setStatus("saving");
     const timer = window.setTimeout(saveNow, 350);
-    // Flush this exact version before the next change, navigation or unmount.
+    return () => clearTimeout(timer);
+  }, [project, saveNow, initial.error, edited, autosave]);
+  useEffect(() => {
     const flush = () => {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(project));
-      } catch {
-        /* saveNow reports errors */
+      if (canAutosave.current && (!initial.error || hasEdits.current))
+        return saveNow();
+      return true;
+    };
+    const hidden = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    const unload = (event: BeforeUnloadEvent) => {
+      if (!flush() && hasEdits.current) {
+        event.preventDefault();
+        event.returnValue = "";
       }
     };
+    const changed = (event: StorageEvent) => {
+      if (
+        event.storageArea !== localStorage ||
+        (event.key !== storageKey && event.key !== null)
+      )
+        return;
+      try {
+        if (!persistence.changed()) return;
+      } catch {
+        /* report below */
+      }
+      setLocalConflict(true);
+      setStatus("error");
+      notify(new LocalConflict().message);
+    };
     window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", unload);
+    document.addEventListener("visibilitychange", hidden);
+    window.addEventListener("storage", changed);
     return () => {
-      clearTimeout(timer);
       window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", unload);
+      document.removeEventListener("visibilitychange", hidden);
+      window.removeEventListener("storage", changed);
       flush();
     };
-  }, [project, saveNow, initial.error, edited, storageKey, autosave]);
+  }, [saveNow, persistence, storageKey, initial.error]);
+  const resolveLocal = (choice: "current" | "stored") => {
+    if (
+      !confirm(
+        choice === "current"
+          ? "Сохранить текущую версию вместо версии другой вкладки? Предыдущая версия останется в восстановлении. Рекомендуем также экспортировать JSON."
+          : "Открыть версию из хранилища? Текущая композиция останется в восстановлении.",
+      )
+    )
+      return;
+    try {
+      if (choice === "current") {
+        persistence.write(project, true);
+        setSavedProject(project);
+      } else {
+        try {
+          persistence.write(project);
+        } catch (error) {
+          if (!(error instanceof LocalConflict)) throw error;
+        }
+        const raw = persistence.current();
+        if (!raw)
+          throw new Error(
+            "В хранилище нет проекта. Сохраните текущую версию или импортируйте JSON.",
+          );
+        const stored = parseProject(raw);
+        persistence.adopt(raw);
+        replace(stored);
+      }
+      setLocalConflict(false);
+      setStatus("saved");
+      notify("Версия выбрана. Резервные копии доступны через восстановление.");
+    } catch {
+      setStatus("error");
+      notify(
+        "Не удалось выбрать версию. Скачайте JSON или исходные данные через восстановление и освободите место в браузере.",
+      );
+    }
+  };
   const add = (type: BlockType) => {
     if (project.blocks.length >= 200) {
       notify("Максимум 200 блоков на странице.");
@@ -259,6 +358,9 @@ export function ProjectProvider({
     <Context.Provider
       value={{
         project,
+        storageKey,
+        localConflict,
+        resolveLocal,
         showAnimations,
         setShowAnimations,
         previewEffect,

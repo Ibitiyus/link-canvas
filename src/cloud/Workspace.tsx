@@ -8,7 +8,9 @@ import { ProjectFonts } from "../components/ProjectFonts";
 import { CloudProvider, accountProjectKey } from "./CloudContext";
 import { emptyProject } from "../model/defaults";
 import { Home } from "../pages/Home";
-import { Editor } from "../pages/Editor";
+const Editor = lazy(() =>
+  import("../pages/Editor").then((module) => ({ default: module.Editor })),
+);
 import { Preview } from "../pages/Preview";
 import { Dashboard } from "../pages/Dashboard";
 import { AuthPage } from "../pages/AuthPage";
@@ -50,7 +52,14 @@ export function Workspace() {
               </Suspense>
             }
           />
-          <Route path="/editor" element={<Editor />} />
+          <Route
+            path="/editor"
+            element={
+              <Suspense fallback={<p role="status">Загружаем редактор…</p>}>
+                <Editor />
+              </Suspense>
+            }
+          />
           <Route path="/preview" element={<Preview />} />
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/register" element={<AuthPage mode="register" />} />

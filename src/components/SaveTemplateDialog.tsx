@@ -16,6 +16,7 @@ export default function SaveTemplateDialog({
   }, []);
   return (
     <dialog
+      aria-labelledby="save-template-title"
       ref={ref}
       className="template-dialog"
       onCancel={(e) => {
@@ -40,7 +41,7 @@ export default function SaveTemplateDialog({
           }
         }}
       >
-        <h2>Сохранить как шаблон</h2>
+        <h2 id="save-template-title">Сохранить как шаблон</h2>
         <p>
           Локальная копия композиции и её файлов. Доступна на этом устройстве,
           независимо от публикации.

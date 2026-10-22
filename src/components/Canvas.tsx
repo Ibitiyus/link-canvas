@@ -1,7 +1,7 @@
 import { EffectSurface } from "./EffectSurface";
 import { isFree } from "../model/placement";
 import { selectionBox, transformSelection } from "../model/creative";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Grip } from "lucide-react";
 import { gridRows } from "../model/grid";
 import { orderedLayers } from "../model/layers";
@@ -82,6 +82,15 @@ export function Canvas({
       : blocks;
   const gridBlocks = visualBlocks.filter((b) => !isFree(b)),
     decorBlocks = orderedLayers(visualBlocks).filter(isFree);
+  const occupiedCells = useMemo(() => {
+    const cells = new Set<number>();
+    if (!editing) return cells;
+    for (const b of blocks.filter((b) => !isFree(b)))
+      for (let row = b.row; row < b.row + b.rowSpan; row++)
+        for (let col = b.col; col < b.col + b.colSpan; col++)
+          cells.add(row * page.columns + col);
+    return cells;
+  }, [blocks, page.columns, editing]);
   const start = (
     event: React.PointerEvent,
     block: Block,
@@ -216,13 +225,7 @@ export function Canvas({
               Array.from({ length: rows * page.columns }, (_, index) => {
                 const col = index % page.columns,
                   row = Math.floor(index / page.columns),
-                  occupied = gridBlocks.some(
-                    (b) =>
-                      col >= b.col &&
-                      col < b.col + b.colSpan &&
-                      row >= b.row &&
-                      row < b.row + b.rowSpan,
-                  );
+                  occupied = occupiedCells.has(index);
                 return (
                   <div
                     key={`cell-${index}`}

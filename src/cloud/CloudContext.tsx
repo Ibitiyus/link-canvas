@@ -57,7 +57,7 @@ const Context = createContext<Store | null>(null);
 export function CloudProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth(),
     owner = session?.user.id;
-  const { project, replace, saveNow } = useProject();
+  const { project, replace, saveNow, localConflict } = useProject();
   const latest = useRef(project);
   latest.current = project;
   const [profile, setProfile] = useState<Profile | null>(null),
@@ -88,7 +88,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         typeof error === "object" &&
         "message" in error &&
         /REVISION_CONFLICT/.test(String(error.message)));
-    setStatus(conflict ? "conflict" : "error");
+    setStatus(conflict ? "conflict" : !navigator.onLine ? "offline" : "error");
     setDetail(cloudError(error));
     if (conflict) setReady(false);
   }, []);
@@ -141,6 +141,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       if (!owner || !cloudConfigured) return;
       engine.current?.stop();
       const current = ++generation.current;
+      const openedSnapshot = projectSnapshot(latest.current);
       setStatus("loading");
       setReady(false);
       try {
@@ -173,15 +174,18 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         const meta = cached<SyncMeta>(metaKey(owner));
         const cacheExists = !!localStorage.getItem(accountProjectKey(owner));
         const local = latest.current;
+        const editedDuringLoad = projectSnapshot(local) !== openedSnapshot;
         const dirty =
-          cacheExists &&
+          (cacheExists || editedDuringLoad) &&
           (meta
             ? projectSnapshot(local) !== meta.snapshot
             : projectSnapshot(local) !== projectSnapshot(emptyProject()));
         if (
           !forceCloud &&
           dirty &&
-          (!meta || meta.revision !== (remote?.revision ?? 0))
+          (editedDuringLoad ||
+            !meta ||
+            meta.revision !== (remote?.revision ?? 0))
         ) {
           setStatus("conflict");
           setDetail(
@@ -228,6 +232,10 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [owner, load]);
   const save = useCallback(async () => {
     if (!owner) throw new Error("Для облачного сохранения войдите в аккаунт.");
+    if (localConflict)
+      throw new Error(
+        "Сначала выберите локальную версию проекта или экспортируйте её в JSON.",
+      );
     if (!ready || !engine.current)
       throw new Error("Сначала выберите версию проекта в личном кабинете.");
     const writer = engine.current;
@@ -245,23 +253,46 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         markError(error);
       throw error;
     }
-  }, [owner, ready, saveNow, markError]);
+  }, [owner, ready, saveNow, markError, localConflict]);
   useEffect(() => {
-    if (!owner || !ready || !engine.current?.dirty) return;
+    if (!owner || !ready || localConflict || !engine.current?.dirty) return;
+    if (!navigator.onLine) {
+      setStatus("offline");
+      setDetail(
+        "Нет сети. Изменения сохраняются в браузере; облачное сохранение повторится при подключении.",
+      );
+      return;
+    }
     setStatus("pending");
     const timer = window.setTimeout(() => {
       void save().catch(() => {});
     }, 1000);
     return () => clearTimeout(timer);
-  }, [project, owner, ready, save]);
+  }, [project, owner, ready, save, localConflict]);
   useEffect(() => {
     const retry = () => {
       if (owner && !ready) void load();
       else if (owner && ready && engine.current?.dirty)
         void save().catch(() => {});
+      else if (owner && ready) {
+        setStatus(engine.current?.revision ? "saved" : "local");
+        setDetail("");
+      }
     };
+    const offline = () => {
+      if (owner) {
+        setStatus("offline");
+        setDetail(
+          "Нет сети. Изменения сохраняются в браузере; облачное сохранение повторится при подключении.",
+        );
+      }
+    };
+    window.addEventListener("offline", offline);
     window.addEventListener("online", retry);
-    return () => window.removeEventListener("online", retry);
+    return () => {
+      window.removeEventListener("online", retry);
+      window.removeEventListener("offline", offline);
+    };
   }, [owner, ready, save, load]);
   const importLocal = async () => {
     if (!owner || !localProject) throw new Error("Локальный проект не найден.");
@@ -402,10 +433,14 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         return;
       try {
         localStorage.setItem(
-          `zin.recovery.${owner}`,
+          `${accountProjectKey(owner!)}.recovery.cloud-${Date.now()}`,
           JSON.stringify(latest.current),
         );
-      } catch {}
+      } catch {
+        throw new Error(
+          "Не удалось сохранить резервную копию. Экспортируйте JSON и освободите место перед открытием облачной версии.",
+        );
+      }
     }
     await load(true);
   };

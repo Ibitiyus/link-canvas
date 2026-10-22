@@ -119,6 +119,7 @@ export function useTemplateApply() {
     },
     dialog: pending && (
       <dialog
+        aria-labelledby="template-replacement-title"
         ref={dialog}
         className="template-dialog"
         onCancel={(e) => {
@@ -126,7 +127,7 @@ export function useTemplateApply() {
           else setPending(null);
         }}
       >
-        <h2>Использовать «{pending.name}»?</h2>
+        <h2 id="template-replacement-title">Использовать «{pending.name}»?</h2>
         <p>
           Текущая страница будет заменена. Сначала сохраним её резервную копию в
           этом браузере. Изменение можно отменить в редакторе.

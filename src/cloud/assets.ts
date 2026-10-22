@@ -137,7 +137,10 @@ async function uploadFile(
       uploadDataDuringCreation: true,
       removeFingerprintOnSuccess: true,
       retryDelays: [0, 1000, 3000, 5000],
-      onError: reject,
+      onError: (error) => {
+        signal.removeEventListener("abort", abort);
+        reject(error);
+      },
       onProgress: (sent, total) => progress(Math.round((sent / total) * 100)),
       onSuccess: () => {
         signal.removeEventListener("abort", abort);
@@ -153,7 +156,12 @@ async function uploadFile(
       abort();
       return;
     }
-    upload.start();
+    try {
+      upload.start();
+    } catch (error) {
+      signal.removeEventListener("abort", abort);
+      reject(error);
+    }
   });
   if (signal.aborted) throw new Error("SESSION_CHANGED");
   await pageAction(owner, { action: "complete-upload", path });

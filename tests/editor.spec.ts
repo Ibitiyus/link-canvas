@@ -16,6 +16,7 @@ async function reset(page: Page) {
   await expect(page.locator("[data-block-id]")).toHaveCount(0);
 }
 async function add(page: Page, type: string) {
+  await expect(page.locator(".editor-toolbar")).toBeVisible();
   if (
     !(await page
       .getByRole("button", { name: `Добавить: ${type}`, exact: true })
@@ -343,12 +344,12 @@ test("media URLs render images/GIF, safe YouTube embed, direct video and real li
   await expect(popup.getByRole("heading")).toHaveText("Destination");
   await popup.close();
 });
-test("corrupted storage is reported and preserved until an explicit change", async ({
+test("corrupted storage is protected until an explicit version choice", async ({
   page,
 }) => {
   await page.addInitScript((key) => localStorage.setItem(key, "{broken"), KEY);
   await page.goto("/editor");
-  await expect(page.getByRole("alert")).toContainText(
+  await expect(page.locator(".notification")).toContainText(
     "Не удалось восстановить",
   );
   await page.waitForTimeout(500);
@@ -356,6 +357,16 @@ test("corrupted storage is reported and preserved until an explicit change", asy
     "{broken",
   );
   await add(page, "Текст");
+  await page
+    .getByRole("button", { name: "Ошибка сохранения", exact: true })
+    .click();
+  expect(await page.evaluate((key) => localStorage.getItem(key), KEY)).toBe(
+    "{broken",
+  );
+  page.once("dialog", (dialog) => dialog.accept());
+  await page
+    .getByRole("button", { name: "Оставить текущую версию", exact: true })
+    .click();
   expect((await saved(page)).blocks).toHaveLength(5);
 });
 test("storage quota failure is visible and JSON export remains available", async ({

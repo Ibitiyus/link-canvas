@@ -1,6 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { exportProject, downloadBackup } from "../model/backup";
-import { STORAGE_KEY } from "../model/storage";
+import { parseProject, STORAGE_KEY } from "../model/storage";
 export class AppErrorBoundary extends Component<
   { children: ReactNode },
   { error: Error | null; message: string }
@@ -18,7 +18,21 @@ export class AppErrorBoundary extends Component<
         });
         return;
       }
-      downloadBackup(await exportProject(JSON.parse(raw)), "zin-recovery.json");
+      try {
+        downloadBackup(
+          await exportProject(parseProject(raw)),
+          "zin-recovery.json",
+        );
+      } catch {
+        downloadBackup(
+          new Blob([raw], { type: "application/json" }),
+          "zin-recovery-original.json",
+        );
+        this.setState({
+          message:
+            "Скачаны исходные данные. Файлы по ссылкам не вложены; сохранение браузера не изменено.",
+        });
+      }
     } catch {
       this.setState({ message: "Не удалось прочитать сохранение браузера." });
     }
@@ -47,10 +61,12 @@ export class AppErrorBoundary extends Component<
             </button>
           </div>
           {this.state.message && <p role="alert">{this.state.message}</p>}
-          <details className="error-details">
-            <summary>Технические сведения</summary>
-            <pre>{this.state.error.message}</pre>
-          </details>
+          {import.meta.env.DEV && (
+            <details className="error-details">
+              <summary>Технические сведения</summary>
+              <pre>{this.state.error.message}</pre>
+            </details>
+          )}
         </main>
       </div>
     );

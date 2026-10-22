@@ -212,6 +212,7 @@ export default function Templates() {
       {dialog}
       {rename && (
         <dialog
+          aria-labelledby="rename-template-title"
           className="template-dialog"
           ref={renameDialog}
           onCancel={() => setRename(null)}
@@ -228,7 +229,7 @@ export default function Templates() {
               }
             }}
           >
-            <h2>Переименовать шаблон</h2>
+            <h2 id="rename-template-title">Переименовать шаблон</h2>
             {error && <p role="alert">{error}</p>}
             <label>
               Новое название
@@ -251,11 +252,12 @@ export default function Templates() {
       )}
       {removing && (
         <dialog
+          aria-labelledby="delete-template-title"
           className="template-dialog"
           ref={deleteDialog}
           onCancel={() => setRemoving(null)}
         >
-          <h2>Удалить «{removing.name}»?</h2>
+          <h2 id="delete-template-title">Удалить «{removing.name}»?</h2>
           {error && <p role="alert">{error}</p>}
           <p>
             Текущая страница и публикация сохранятся. Удаляется только запись в

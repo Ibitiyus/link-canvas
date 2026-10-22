@@ -1,3 +1,4 @@
+import { actionBody, publicError, readBytes } from "./safety.ts";
 // Native fetch keeps the worker self-contained: no CDN/runtime package downloads.
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -141,26 +142,10 @@ Deno.serve(async (request) => {
       body: { prefixes: paths },
       admin: true,
     });
-  const list = async (bucket: string, prefix: string) => {
-    const files: any[] = [];
-    for (let offset = 0; ; offset += 1000) {
-      const batch = await api(`/storage/v1/object/list/${bucket}`, {
-        method: "POST",
-        body: {
-          prefix,
-          limit: 1000,
-          offset,
-          sortBy: { column: "name", order: "asc" },
-        },
-        admin: true,
-      });
-      files.push(...batch);
-      if (batch.length < 1000) return files;
-    }
-  };
   let publicationToken: string | undefined;
   try {
-    const body = await request.json();
+    const body = await actionBody(request);
+    await rpc("authorize_edge_action", { action: body.action });
     if (body.action === "complete-upload") {
       if (typeof body.path !== "string" || !body.path.startsWith(`${user.id}/`))
         throw new Error("ASSET_NOT_FOUND");
@@ -181,7 +166,7 @@ Deno.serve(async (request) => {
         },
       );
       if (!response.ok) throw new Error("FILE_NOT_UPLOADED");
-      const bytes = new Uint8Array(await response.arrayBuffer());
+      const bytes = await readBytes(response, 64);
       const total = Number(
         response.headers.get("Content-Range")?.split("/")[1] ??
           response.headers.get("Content-Length"),
@@ -201,11 +186,38 @@ Deno.serve(async (request) => {
       return json({ ready: true });
     }
     if (body.action === "publish") {
+      const existing = await api(
+        `/rest/v1/published_pages?owner_id=eq.${user.id}&source_revision=eq.${body.revision}&select=*`,
+      );
+      if (existing[0]) {
+        const drafts = await api(
+          `/rest/v1/drafts?owner_id=eq.${user.id}&select=revision`,
+        );
+        if (drafts[0]?.revision !== body.revision)
+          throw new Error("REVISION_CONFLICT");
+        return json({ page: existing[0] });
+      }
       const job = await rpc("begin_publication", {
         expected_revision: body.revision,
       });
       publicationToken = job.token;
       const replacements = new Map<string, string>();
+      const copies = await rpc(
+        "public_asset_copies",
+        {
+          who: user.id,
+          source_paths: [...new Set(sources(job.project))]
+            .filter((source) => source.startsWith("cloud:"))
+            .map((source) => source.slice(6)),
+        },
+        true,
+      );
+      const cached = new Map<string, string>(
+        copies.map((copy: { source: string; target: string }) => [
+          copy.source,
+          copy.target,
+        ]),
+      );
       for (const source of new Set(sources(job.project))) {
         if (!source.startsWith("cloud:")) continue;
         const path = source.slice(6);
@@ -214,17 +226,19 @@ Deno.serve(async (request) => {
         );
         if (assets[0]?.state !== "ready" || !path.startsWith(`${user.id}/`))
           throw new Error("ASSET_NOT_READY");
-        const target = `${user.id}/${job.token}/${path.split("/").pop()}`;
-        await api("/storage/v1/object/copy", {
-          method: "POST",
-          body: {
-            bucketId: "zin-drafts",
-            sourceKey: path,
-            destinationBucket: "zin-public",
-            destinationKey: target,
-          },
-          admin: true,
-        });
+        const target =
+          cached.get(path) ?? `${user.id}/assets/${path.split("/").pop()}`;
+        if (!cached.has(path))
+          await api("/storage/v1/object/copy", {
+            method: "POST",
+            body: {
+              bucketId: "zin-drafts",
+              sourceKey: path,
+              destinationBucket: "zin-public",
+              destinationKey: target,
+            },
+            admin: true,
+          });
         const publicUrl = (
           Deno.env.get("ZIN_PUBLIC_SUPABASE_URL") ?? url
         ).replace(/\/$/, "");
@@ -256,30 +270,8 @@ Deno.serve(async (request) => {
         );
         removed++;
       }
-      const pages = await api(
-        `/rest/v1/published_pages?owner_id=eq.${user.id}&select=project`,
-        { admin: true },
-      );
-      const live = pages[0] ? sources(pages[0].project) : [];
-      const folders = await list("zin-public", user.id);
-      for (const folder of folders) {
-        if (folder.id) continue;
-        const prefix = `${user.id}/${folder.name}`,
-          files = await list("zin-public", prefix);
-        const paths = files
-          .filter(
-            (file: any) =>
-              Date.parse(file.created_at) < Date.now() - 86400000 &&
-              !live.some((source) =>
-                source.includes(`/zin-public/${prefix}/${file.name}`),
-              ),
-          )
-          .map((file: any) => `${prefix}/${file.name}`);
-        if (paths.length) {
-          await remove("zin-public", paths);
-          removed += paths.length;
-        }
-      }
+      // Public URLs can be referenced by other drafts/pages. Do not delete them
+      // without a transactionally maintained public reference registry.
       return json({ removed });
     }
     throw new Error("UNKNOWN_ACTION");
@@ -289,10 +281,16 @@ Deno.serve(async (request) => {
         `/rest/v1/publication_jobs?owner_id=eq.${user.id}&token=eq.${publicationToken}`,
         { method: "DELETE", admin: true },
       ).catch(() => {});
-    const message = error instanceof Error ? error.message : "REQUEST_FAILED";
+    const message = publicError(error);
     return json(
       { error: message },
-      message.includes("REVISION_CONFLICT") ? 409 : 400,
+      message === "REVISION_CONFLICT"
+        ? 409
+        : message === "REQUEST_FAILED"
+          ? 503
+          : message === "REQUEST_TOO_LARGE"
+            ? 413
+            : 400,
     );
   }
 });
