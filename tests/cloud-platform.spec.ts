@@ -805,3 +805,114 @@ test("a failed Supabase save keeps local work and succeeds after retry", async (
     .toBe("Сохраняем несмотря на сбой");
   await expect(page.locator(".cloud-bar")).toContainText("Облако: сохранено");
 });
+
+test("Explore real cloud: voluntary listing, cover, metadata snapshot, rename, hide and unpublish", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(90000);
+  const user = await register(page);
+  const panel = page.getByRole("region", { name: "Публикация в галерее" });
+  await expect(
+    panel.getByRole("checkbox", { name: "Показывать мой ZIN в галерее" }),
+  ).not.toBeChecked();
+  await panel
+    .getByLabel("Название ZIN", { exact: true })
+    .fill("Творческий мир в галерее");
+  await panel
+    .getByLabel("Краткое описание")
+    .fill("Фото, музыка и свободные коллажи");
+  await panel
+    .getByLabel("Категория", { exact: true })
+    .selectOption("Photography");
+  await panel
+    .getByLabel("Обложка для галереи")
+    .setInputFiles("tests/fixtures/explore-cover.jpg");
+  await expect(panel.getByAltText("Выбранная обложка")).toBeVisible();
+  await panel
+    .getByRole("button", { name: "Сохранить до публикации", exact: true })
+    .click();
+  await expect(panel.getByRole("status")).toContainText("Настройки сохранены");
+  await panel.getByRole("checkbox").check();
+  await expect(panel.getByRole("status")).toContainText("Участие включено");
+  const visitor = await browser.newContext();
+  const publicPage = await visitor.newPage();
+  try {
+    await publicPage.goto(`/explore?q=${user.username}`);
+    await expect(
+      publicPage.getByRole("heading", { name: "Ничего не найдено" }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Опубликовать", exact: true })
+      .click();
+    await expect(page.locator(".publication-badge")).toHaveText("Опубликована");
+    await publicPage.reload();
+    const card = publicPage.locator(`[data-username="${user.username}"]`);
+    await expect(card).toContainText("Творческий мир в галерее");
+    await expect(card.locator("img")).toHaveAttribute(
+      "src",
+      /^data:image\/jpeg;base64,/,
+    );
+    await panel
+      .getByLabel("Название ZIN", { exact: true })
+      .fill("Неопубликованное новое название");
+    await panel
+      .getByRole("button", { name: "Сохранить до публикации", exact: true })
+      .click();
+    await expect(panel.getByRole("status")).toContainText(
+      "Настройки сохранены",
+    );
+    await publicPage.reload();
+    await expect(card).toContainText("Творческий мир в галерее");
+    await expect(card).not.toContainText("Неопубликованное");
+    await panel
+      .getByRole("button", { name: "Опубликовать представление", exact: true })
+      .click();
+    await expect(panel.getByRole("status")).toContainText(
+      "Представление опубликовано",
+    );
+    await publicPage.reload();
+    await expect(card).toContainText("Неопубликованное новое название");
+    await panel.getByRole("checkbox").uncheck();
+    await expect(panel.getByRole("status")).toContainText("Участие выключено");
+    await publicPage.reload();
+    await expect(publicPage.locator(".explore-card")).toHaveCount(0);
+    await publicPage.goto(`/u/${user.username}`);
+    await expect(publicPage.locator(".public-page")).toBeVisible();
+    await panel.getByRole("checkbox").check();
+    await expect(panel.getByRole("status")).toContainText("Участие включено");
+    await admin.rpc("moderate_explore", {
+      page_username: user.username,
+      hide: true,
+      moderation_reason: "Browser test",
+    });
+    await publicPage.goto(`/explore?q=${user.username}`);
+    await expect(publicPage.locator(".explore-card")).toHaveCount(0);
+    await panel.getByRole("checkbox").uncheck();
+    await expect(panel.getByRole("status")).toContainText("Участие выключено");
+    await panel.getByRole("checkbox").check();
+    await expect(panel.getByRole("status")).toContainText("Участие включено");
+    await publicPage.reload();
+    await expect(publicPage.locator(".explore-card")).toHaveCount(0);
+    await admin.rpc("moderate_explore", {
+      page_username: user.username,
+      hide: false,
+    });
+    page.once("dialog", (dialog) => dialog.accept());
+    await page
+      .getByRole("button", { name: "Снять с публикации", exact: true })
+      .click();
+    await expect(page.locator(".publication-badge")).toHaveText(
+      "Не опубликована",
+    );
+    await publicPage.reload();
+    await expect(publicPage.locator(".explore-card")).toHaveCount(0);
+    await page.reload();
+    await expect(panel.getByRole("checkbox")).toBeChecked();
+    await expect(panel.getByLabel("Название ZIN", { exact: true })).toHaveValue(
+      "Неопубликованное новое название",
+    );
+  } finally {
+    await visitor.close();
+  }
+});
