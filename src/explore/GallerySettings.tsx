@@ -67,8 +67,11 @@ export function GallerySettings({
     setNotice("Есть несохранённые настройки представления.");
   };
   async function visibility(visible: boolean) {
+    const previous = listed;
+    setListed(visible);
     setBusy(true);
     setError("");
+    setNotice("Сохраняем настройку участия…");
     try {
       const { error } = await ownerClient(owner).rpc("set_explore_visibility", {
         visible,
@@ -81,6 +84,8 @@ export function GallerySettings({
           : "Участие выключено. Прямая публичная ссылка продолжает работать.",
       );
     } catch (error) {
+      setListed(previous);
+      setNotice("");
       setError(cloudError(error));
     } finally {
       setBusy(false);
@@ -170,6 +175,7 @@ export function GallerySettings({
             <label>
               Название ZIN
               <input
+                disabled={busy}
                 required
                 maxLength={80}
                 value={value.title}
@@ -179,6 +185,7 @@ export function GallerySettings({
             <label>
               Краткое описание
               <textarea
+                disabled={busy}
                 rows={3}
                 maxLength={280}
                 value={value.description}

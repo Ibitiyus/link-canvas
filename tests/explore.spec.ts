@@ -73,6 +73,16 @@ test("anonymous gallery: empty, no fabricated people, preserves local draft", as
     "content",
     "http://127.0.0.1:5180/explore",
   );
+  await page.goto("/preview/");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "noindex, nofollow",
+  );
+  await page.goto("/explore");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "index, follow",
+  );
 });
 test("bounded pagination, debounce, categories, sorting and no heavy media requests", async ({
   page,

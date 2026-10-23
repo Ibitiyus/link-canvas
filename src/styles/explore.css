@@ -390,3 +390,17 @@
   white-space: nowrap;
   border: 0;
 }
+
+@media (max-width: 540px) {
+  .account-page > header nav {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .gallery-settings .dashboard-title {
+    flex-wrap: wrap;
+  }
+  .gallery-settings .account-actions {
+    flex-wrap: wrap;
+  }
+}

@@ -14,7 +14,7 @@ export function RouteIndexing() {
       "/register",
       "/forgot-password",
       "/reset-password",
-    ].some((route) => pathname === route)
+    ].some((route) => pathname.replace(/\/+$/, "") === route)
       ? "noindex, nofollow"
       : "index, follow";
     document.head.append(element);

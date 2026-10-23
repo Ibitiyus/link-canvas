@@ -853,6 +853,52 @@ test("Explore real cloud: voluntary listing, cover, metadata snapshot, rename, h
       "src",
       /^data:image\/jpeg;base64,/,
     );
+    await publicPage
+      .getByRole("button", { name: `Сообщить о странице @${user.username}` })
+      .click();
+    await publicPage
+      .getByRole("dialog")
+      .getByRole("link", { name: "Войти", exact: true })
+      .click();
+    await publicPage.getByLabel("Email", { exact: true }).fill(user.email);
+    await publicPage.getByLabel("Пароль", { exact: true }).fill(user.password);
+    await publicPage
+      .getByRole("button", { name: "Войти", exact: true })
+      .click();
+    await expect(publicPage).toHaveURL(/\/explore$/);
+    await publicPage
+      .getByRole("button", { name: `Сообщить о странице @${user.username}` })
+      .click();
+    await publicPage
+      .getByRole("dialog")
+      .getByRole("textbox")
+      .fill("Проверка закрытого механизма жалоб");
+    await publicPage
+      .getByRole("button", { name: "Отправить жалобу", exact: true })
+      .click();
+    await expect(publicPage.getByRole("dialog")).toContainText(
+      "Жалоба принята",
+    );
+    await publicPage
+      .getByRole("button", { name: "Закрыть", exact: true })
+      .click();
+    const report = await admin
+      .from("explore_reports")
+      .select("details")
+      .eq("subject_id", user.id)
+      .single();
+    expect(report.data?.details).toBe("Проверка закрытого механизма жалоб");
+    // Return to a narrow owner dashboard; keyboard form fields must remain reachable.
+    for (const width of [320, 390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+      ).toBe(true);
+      await panel.getByLabel("Краткое описание").focus();
+      await expect(panel.getByLabel("Краткое описание")).toBeFocused();
+    }
     await panel
       .getByLabel("Название ZIN", { exact: true })
       .fill("Неопубликованное новое название");
@@ -898,6 +944,17 @@ test("Explore real cloud: voluntary listing, cover, metadata snapshot, rename, h
       page_username: user.username,
       hide: false,
     });
+    await page.route("**/rest/v1/rpc/set_explore_visibility", (route) =>
+      route.fulfill({
+        status: 503,
+        json: { message: "private server detail" },
+      }),
+    );
+    await panel.getByRole("checkbox").uncheck();
+    await expect(panel.getByRole("alert")).toBeVisible();
+    await expect(panel.getByRole("checkbox")).toBeChecked();
+    await expect(panel).not.toContainText("private server detail");
+    await page.unroute("**/rest/v1/rpc/set_explore_visibility");
     page.once("dialog", (dialog) => dialog.accept());
     await page
       .getByRole("button", { name: "Снять с публикации", exact: true })
