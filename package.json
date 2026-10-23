@@ -22,7 +22,8 @@
     "test:cloud": "node scripts/test-cloud.mjs",
     "test:e2e:cloud": "node scripts/test-cloud-browser.mjs",
     "cloud:direct": "node scripts/cloud-direct.mjs",
-    "test:canvas": "node scripts/test-canvas.mjs"
+    "test:canvas": "node scripts/test-canvas.mjs",
+    "test:explore": "node scripts/test-explore.mjs"
   },
   "dependencies": {
     "@fontsource/archivo-black": "^5.3.0",
