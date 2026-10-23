@@ -195,6 +195,7 @@ Deno.serve(async (request) => {
         );
         if (drafts[0]?.revision !== body.revision)
           throw new Error("REVISION_CONFLICT");
+        await rpc("publish_explore_metadata", { expected_revision: body.revision });
         return json({ page: existing[0] });
       }
       const job = await rpc("begin_publication", {

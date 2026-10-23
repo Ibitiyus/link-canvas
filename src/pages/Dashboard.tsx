@@ -1,3 +1,5 @@
+import { GallerySettings } from "../explore/GallerySettings";
+import "../styles/explore.css";
 import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { Brand } from "../components/ui/Brand";
@@ -50,6 +52,7 @@ export function Dashboard() {
       <header>
         <Brand />
         <nav>
+          <Link to="/explore">Explore ↗</Link>
           <Link to="/editor">Редактор ↗</Link>
           <button onClick={() => void run(auth.signOut)}>Выйти</button>
         </nav>
@@ -207,6 +210,14 @@ export function Dashboard() {
             )}
           </div>
         </section>
+        {cloud.profile && (
+          <GallerySettings
+            key={cloud.profile.id}
+            owner={cloud.profile.id}
+            published={cloud.publication?.published_at ?? null}
+            title={project.page.title}
+          />
+        )}
         {cloud.localProject && (
           <section className="account-card">
             <h2>Локальная страница из этого браузера</h2>

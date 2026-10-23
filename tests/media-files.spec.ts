@@ -359,6 +359,8 @@ test("images larger than 10 MB keep their original bytes and dimensions", async 
   );
   expect(storedSize).toBe(bytes.length);
   await page.reload();
+  // page.load precedes auth/local recovery and the lazy editor mount.
+  await expect(page.locator(".editor-toolbar")).toBeVisible({ timeout: 15000 });
   await expect
     .poll(() =>
       page

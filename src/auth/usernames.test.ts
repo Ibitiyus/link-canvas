@@ -22,3 +22,8 @@ it.each([
 );
 it("returns to the existing project editor after login", () =>
   expect(safeReturnPath("/editor")).toBe("/editor"));
+
+it("returns to Explore after reporting sign-in without allowing arbitrary redirects", () => {
+  expect(safeReturnPath("/explore")).toBe("/explore");
+  expect(safeReturnPath("/explore?next=https://evil.test")).toBe("/dashboard");
+});

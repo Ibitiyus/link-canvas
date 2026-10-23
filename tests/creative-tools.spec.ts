@@ -38,6 +38,8 @@ async function setup(page: Page, project = fixture) {
   await expect(page.locator('[data-block-id="a"]')).toBeVisible();
 }
 async function saved(page: Page): Promise<Project> {
+  // Reload finishes before the auth check and lazy editor have mounted.
+  await expect(page.locator(".editor-toolbar")).toBeVisible({ timeout: 15000 });
   await expect(
     page.getByRole("button", { name: "Сохранено", exact: true }),
   ).toBeVisible();

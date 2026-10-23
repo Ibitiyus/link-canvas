@@ -54,6 +54,9 @@ export function Home() {
           <br />
           <b>С 2026 ГОДА — ДЛЯ ВАС</b>
         </span>
+        <Link className="nav-anchor" to="/explore">
+          Explore ↗
+        </Link>
         <Link className="nav-anchor" to="/templates">
           Шаблоны ↗
         </Link>

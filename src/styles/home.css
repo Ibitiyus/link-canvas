@@ -1173,3 +1173,4 @@
     margin: 0;
   }
 }
+@media(max-width:540px){.home-nav .nav-anchor[href="/explore"]{display:inline-flex;font-size:10px;min-height:40px;align-items:center}}

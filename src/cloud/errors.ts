@@ -10,6 +10,12 @@ export function cloudError(error: unknown): string {
     error && typeof error === "object" && "message" in error
       ? String(error.message)
       : String(error);
+  if (/INVALID_EXPLORE_METADATA/.test(message))
+    return "Проверьте название, описание, категорию и обложку галереи.";
+  if (/PAGE_NOT_PUBLISHED/.test(message))
+    return "Сначала опубликуйте страницу. Настройки представления можно сохранить заранее.";
+  if (/PAGE_NOT_AVAILABLE/.test(message))
+    return "Страница больше недоступна в галерее. Обновите список.";
   if (/REVISION_CONFLICT|40001/.test(message))
     return "Черновик изменён на другом устройстве. Выберите версию в личном кабинете.";
   if (/Invalid login credentials/i.test(message))

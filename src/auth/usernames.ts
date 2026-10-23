@@ -32,7 +32,7 @@ export function usernameError(value: string): string {
   return "";
 }
 export function safeReturnPath(value: string | null) {
-  return ["/editor", "/dashboard", "/preview"].includes(value ?? "")
+  return ["/editor", "/dashboard", "/preview", "/explore"].includes(value ?? "")
     ? value!
     : "/dashboard";
 }
