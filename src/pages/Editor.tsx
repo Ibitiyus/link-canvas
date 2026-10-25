@@ -16,6 +16,7 @@ import { Canvas } from "../components/Canvas";
 export function Editor() {
   const [tool, setTool] = useState<MobileTool>(null),
     [sheetSize, setSheetSize] = useState<SheetSize>("medium");
+  const [moveOnPress, setMoveOnPress] = useState(false);
   const [visual, setVisual] = useState({
     height: window.innerHeight,
     inset: 0,
@@ -61,6 +62,7 @@ export function Editor() {
     message,
     notify,
   } = useProject();
+  useEffect(() => setMoveOnPress(false), [selectedId]);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
@@ -135,6 +137,7 @@ export function Editor() {
     <div
       className="editor-shell"
       data-mobile-tool={tool ?? "none"}
+      data-direct-move={moveOnPress ? "true" : "false"}
       style={
         {
           "--editor-vh": `${visual.height}px`,
@@ -186,6 +189,75 @@ export function Editor() {
               {project.page.columns === 5 ? "колонок" : "колонки"}
             </span>
           </div>
+          <div
+            className="mobile-selection-context"
+            aria-label="Выбранный элемент"
+          >
+            {selectedId ? (
+              <>
+                <button
+                  onClick={() => {
+                    setTool("block");
+                    setSheetSize("medium");
+                  }}
+                >
+                  Изменить
+                </button>
+                <button
+                  disabled={project.blocks.some(
+                    (b) => selectedIds.includes(b.id) && b.locked,
+                  )}
+                  aria-pressed={moveOnPress}
+                  onClick={() => {
+                    setMoveOnPress(!moveOnPress);
+                    setTool(null);
+                  }}
+                >
+                  Двигать
+                </button>
+                <details>
+                  <summary>Ещё</summary>
+                  <div>
+                    <button
+                      onClick={() =>
+                        selectedIds.length > 1
+                          ? duplicateSelected()
+                          : duplicate(selectedId)
+                      }
+                    >
+                      Дублировать
+                    </button>
+                    <button onClick={() => setTool("layers")}>
+                      Открыть слои
+                    </button>
+                    <button
+                      onClick={() =>
+                        patchSelection({
+                          locked: !project.blocks
+                            .filter((b) => selectedIds.includes(b.id))
+                            .every((b) => b.locked),
+                        })
+                      }
+                    >
+                      Закрепить / разблокировать
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm("Удалить выбранные элементы?"))
+                          selectedIds.length > 1
+                            ? removeSelected()
+                            : remove(selectedId);
+                      }}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                </details>
+              </>
+            ) : (
+              <span>Коснитесь блока, чтобы изменить его.</span>
+            )}
+          </div>
           <SelectionTools />
           <div className="canvas-scroll">
             <div
@@ -205,6 +277,7 @@ export function Editor() {
             </div>
             <Canvas
               project={project}
+              moveOnPress={moveOnPress}
               editing
               showAnimations={showAnimations}
               previewEffect={previewEffect}
