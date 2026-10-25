@@ -1,4 +1,5 @@
 {
+  "buildCommand": "ZIN_ASSET_ORIGIN=https://zin-pages.vercel.app npm run build",
   "rewrites": [
     {
       "source": "/(.*)",
