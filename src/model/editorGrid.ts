@@ -13,8 +13,14 @@ export function editorGrid(
           .map((c) => c + c)
           .join("")
       : hex;
-  const rgb = /^[\da-f]{6}$/i.test(normalized)
-    ? [0, 2, 4].map((i) => parseInt(normalized.slice(i, i + 2), 16))
+  const alpha =
+    normalized.length === 8 ? parseInt(normalized.slice(6), 16) / 255 : 1;
+  const rgb = /^[\da-f]{6}([\da-f]{2})?$/i.test(normalized)
+    ? [0, 2, 4].map(
+        (i, channel) =>
+          parseInt(normalized.slice(i, i + 2), 16) * alpha +
+          [7, 7, 10][channel] * (1 - alpha),
+      )
     : [7, 7, 10];
   const light =
     mode === "dark" ||

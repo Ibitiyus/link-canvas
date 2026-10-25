@@ -110,7 +110,9 @@ export function Canvas({
     if (!editing) return;
     immediate ||=
       moveOnPress &&
-      (selectedIds.includes(block.id) || block.id === selectedId);
+      (block.id === "__selection__" ||
+        selectedIds.includes(block.id) ||
+        block.id === selectedId);
     if (!edge && !immediate && (multiSelect || event.shiftKey)) {
       event.stopPropagation();
       onSelect?.(block.id, true);

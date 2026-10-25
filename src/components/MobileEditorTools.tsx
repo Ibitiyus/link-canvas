@@ -7,15 +7,7 @@ import {
   type PointerEvent,
   type CSSProperties,
 } from "react";
-import {
-  Layers,
-  Plus,
-  Settings2,
-  SlidersHorizontal,
-  ZoomIn,
-  X,
-  Send,
-} from "lucide-react";
+import { Layers, Plus, SlidersHorizontal, X, Send } from "lucide-react";
 export type MobileTool =
   | "library"
   | "layers"
@@ -94,7 +86,9 @@ export function MobileEditorTools({
       event.stopPropagation();
       onTool(null);
       document
-        .querySelector<HTMLButtonElement>(`button[data-mobile-tool="${tool}"]`)
+        .querySelector<HTMLButtonElement>(
+          `button[data-mobile-tool="${tool === "page" || tool === "zoom" ? "block" : tool}"]`,
+        )
         ?.focus();
     };
     document.addEventListener("keydown", close, true);
@@ -279,7 +273,8 @@ export function MobileEditorTools({
             aria-controls={
               name === "library" || name === "layers"
                 ? "library-panel"
-                : name === "publication"
+                : name === "publication" ||
+                    (name === "block" && tool === "zoom")
                   ? "mobile-tool-panel"
                   : "inspector-panel"
             }

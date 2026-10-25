@@ -11,3 +11,8 @@ it("manual controls override the background and complex images retain a contrast
   expect(editorGrid("#fff", false, "light").line).toContain("255,225,242");
   expect(editorGrid("#000", false, "dark").line).toContain("32,14,31");
 });
+
+it("handles opaque and transparent alpha backgrounds from existing projects", () => {
+  expect(editorGrid("#ffffffff", false, "auto").line).toContain("32,14,31");
+  expect(editorGrid("#ffffff00", false, "auto").line).toContain("255,225,242");
+});
