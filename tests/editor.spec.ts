@@ -48,7 +48,7 @@ test("home, editor, demo and local preview navigation", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await page.getByRole("link", { name: "Создать своё пространство" }).click();
+  await page.getByRole("link", { name: "Создать ZIN", exact: true }).click();
   await expect(page).toHaveURL(/\/editor$/);
   await expect(page.locator("[data-block-id]")).toHaveCount(4);
   await page.getByRole("button", { name: "Предпросмотр", exact: true }).click();
