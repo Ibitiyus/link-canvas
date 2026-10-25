@@ -315,7 +315,7 @@ test("the home page exposes the gallery on a small phone without requiring regis
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto("/");
   await page
-    .getByRole("link", { name: "Выбрать шаблон ↗", exact: true })
+    .getByRole("link", { name: "Начать с шаблона ↗", exact: true })
     .click();
   await expect(page).toHaveURL(/\/templates$/);
   await expect(

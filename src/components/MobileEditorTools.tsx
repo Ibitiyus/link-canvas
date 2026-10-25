@@ -1,5 +1,3 @@
-import { CloudBar } from "./CloudBar";
-import { Link } from "react-router-dom";
 import {
   useEffect,
   useRef,
@@ -7,15 +5,16 @@ import {
   type PointerEvent,
   type CSSProperties,
 } from "react";
-import { Layers, Plus, SlidersHorizontal, X, Send } from "lucide-react";
+import {
+  Layers,
+  Plus,
+  Settings2,
+  SlidersHorizontal,
+  ZoomIn,
+  X,
+} from "lucide-react";
 export type MobileTool =
-  | "library"
-  | "layers"
-  | "block"
-  | "page"
-  | "zoom"
-  | "publication"
-  | null;
+  "library" | "layers" | "block" | "page" | "zoom" | null;
 export type SheetSize = "medium" | "full";
 export function MobileEditorTools({
   tool,
@@ -86,26 +85,18 @@ export function MobileEditorTools({
       event.stopPropagation();
       onTool(null);
       document
-        .querySelector<HTMLButtonElement>(
-          `button[data-mobile-tool="${tool === "page" || tool === "zoom" ? "block" : tool}"]`,
-        )
+        .querySelector<HTMLButtonElement>(`button[data-mobile-tool="${tool}"]`)
         ?.focus();
     };
     document.addEventListener("keydown", close, true);
     return () => document.removeEventListener("keydown", close, true);
   }, [tool, onTool]);
   // Always reserve a visible strip of the composition, even with the large sheet.
-  const fullHeight =
-    viewport < 700
-      ? Math.max(160, viewport - 150)
-      : Math.min(
-          viewport * 0.74,
-          Math.max(100, viewport - 60 - canvasTop - 72),
-        );
-  const mediumHeight =
-    viewport < 700
-      ? Math.min(fullHeight, viewport * 0.46)
-      : Math.min(viewport * 0.4, fullHeight * 0.75);
+  const fullHeight = Math.min(
+    viewport * 0.74,
+    Math.max(100, viewport - 60 - canvasTop - 72),
+  );
+  const mediumHeight = Math.min(viewport * 0.4, fullHeight * 0.75);
   const height = tool
     ? (dragHeight ?? (size === "full" ? fullHeight : mediumHeight))
     : 0;
@@ -118,14 +109,6 @@ export function MobileEditorTools({
       document.documentElement.style.removeProperty("--mobile-sheet-height");
     };
   }, [height]);
-  useEffect(() => {
-    const focused = document.activeElement as HTMLElement | null;
-    if (!focused?.closest(".inspector,.library")) return;
-    const frame = requestAnimationFrame(() =>
-      focused.scrollIntoView({ block: "nearest", inline: "nearest" }),
-    );
-    return () => cancelAnimationFrame(frame);
-  }, [viewport, tool, size]);
   const start = (event: PointerEvent<HTMLButtonElement>) => {
     if (!tool) return;
     swiped.current = false;
@@ -171,10 +154,11 @@ export function MobileEditorTools({
     root?.dispatchEvent(new CustomEvent("zin:zoom", { detail: action }));
   };
   const tools = [
-    ["library", "Блоки", Plus, "Открыть библиотеку"],
+    ["library", "Добавить", Plus, "Открыть библиотеку"],
     ["layers", "Слои", Layers, "Открыть слои"],
-    ["block", "Свойства", SlidersHorizontal, "Открыть настройки"],
-    ["publication", "Публикация", Send, "Открыть публикацию"],
+    ["block", "Элемент", SlidersHorizontal, "Открыть настройки"],
+    ["page", "Страница", Settings2, "Открыть настройки страницы"],
+    ["zoom", "Масштаб", ZoomIn, "Открыть масштаб"],
   ] as const;
   return (
     <div
@@ -208,53 +192,11 @@ export function MobileEditorTools({
             >
               <span />
             </button>
-            <span>
-              {tools.find((t) => t[0] === tool)?.[1] ??
-                (tool === "page" ? "Страница" : "Масштаб")}
-            </span>
+            <span>{tools.find((t) => t[0] === tool)?.[1]}</span>
             <button aria-label="Свернуть панель" onClick={() => onTool(null)}>
               <X size={18} />
             </button>
           </header>
-          {tool === "publication" && (
-            <div className="mobile-publication">
-              <p>Черновик и опубликованная страница — независимые версии.</p>
-              <CloudBar />
-              <Link className="secondary-button" to="/dashboard">
-                Кабинет и настройки галереи ↗
-              </Link>
-              <Link className="secondary-button" to="/preview">
-                Предпросмотр ↗
-              </Link>
-            </div>
-          )}
-          {tool === "block" && (
-            <div className="sheet-secondary-tools">
-              <button
-                aria-label="Открыть настройки страницы"
-                onClick={() => onTool("page")}
-              >
-                Настройки страницы
-              </button>
-              <button
-                aria-label="Открыть масштаб"
-                onClick={() => onTool("zoom")}
-              >
-                Масштаб
-              </button>
-            </div>
-          )}
-          {tool === "page" && (
-            <div className="sheet-secondary-tools">
-              <button onClick={() => onTool("block")}>Свойства блока</button>
-              <button
-                aria-label="Открыть масштаб"
-                onClick={() => onTool("zoom")}
-              >
-                Масштаб
-              </button>
-            </div>
-          )}
           {tool === "zoom" && (
             <div className="sheet-zoom">
               <p>Масштаб просмотра не меняет сохранённую страницу.</p>
@@ -273,22 +215,13 @@ export function MobileEditorTools({
             aria-controls={
               name === "library" || name === "layers"
                 ? "library-panel"
-                : name === "publication" ||
-                    (name === "block" && tool === "zoom")
+                : name === "zoom"
                   ? "mobile-tool-panel"
                   : "inspector-panel"
             }
             aria-label={label}
-            aria-expanded={
-              tool === name ||
-              (name === "block" && (tool === "page" || tool === "zoom"))
-            }
-            className={
-              tool === name ||
-              (name === "block" && (tool === "page" || tool === "zoom"))
-                ? "active"
-                : ""
-            }
+            aria-expanded={tool === name}
+            className={tool === name ? "active" : ""}
             onClick={() => {
               onTool(tool === name ? null : name);
               onSize("medium");

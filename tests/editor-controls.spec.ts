@@ -319,9 +319,6 @@ for (const width of [320, 390, 768])
     await page.waitForTimeout(200);
     expect((await saved(page)).blocks).toEqual(after.blocks);
     await page
-      .getByRole("button", { name: "Открыть настройки", exact: true })
-      .click();
-    await page
       .getByRole("button", { name: "Открыть масштаб", exact: true })
       .click();
     const before = await scale(page);

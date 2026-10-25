@@ -13,7 +13,6 @@ import "./style.css";
 import "./styles/effects.css";
 import "./styles/templates.css";
 import "./styles/accounts.css";
-import "./styles/raw-signal.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AppErrorBoundary>

@@ -283,7 +283,7 @@ for (const route of ["/editor", "/preview", "/u/scaling_test"])
       await expect(page).toHaveURL(/\/$/);
       await expect(
         page.getByRole("link", {
-          name: "Создать ZIN",
+          name: "Создать своё пространство",
           exact: true,
         }),
       ).toBeVisible();

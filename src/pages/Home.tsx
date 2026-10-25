@@ -1,265 +1,341 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowUpRight, Menu, X, MoveUpRight } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
+import { Link } from "react-router-dom";
+import {
+  ArrowDown,
+  ArrowDownRight,
+  ArrowUpRight,
+  Check,
+  MoveUpRight,
+} from "lucide-react";
+import { Starburst } from "../components/ui/Starburst";
 import { Brand } from "../components/ui/Brand";
 import { Showcase } from "../components/Showcase";
 const features = [
-  [
-    "01",
-    "СЕТКА — НЕ КЛЕТКА.",
-    "Собирайте блоки по сетке. Или отпустите их в свободное положение.",
-  ],
-  [
-    "02",
-    "ВЕСЬ ВАШ ШУМ.",
-    "Текст, фото, музыка, GIF, видео, ссылки, QR и декор. Восемь способов выразиться.",
-  ],
-  [
-    "03",
-    "СЛОЙ ЗА СЛОЕМ.",
-    "Группируйте, вращайте, перекрывайте. Добавляйте движение и эффекты.",
-  ],
-  [
-    "04",
-    "ОДИН ZIN. ВЕЗДЕ.",
-    "Ваша композиция сохраняет пропорции на телефоне и компьютере.",
-  ],
+  {
+    number: "01",
+    title: "РЕДАКТОР\nНА СЕТКЕ",
+    text: "Собирайте страницу из блоков. Перемещайте, меняйте размеры — сетка найдёт каждому место.",
+    tag: "ПОРЯДОК В ХАОСЕ",
+    graphic: "grid",
+  },
+  {
+    number: "02",
+    title: "СВОБОДНОЕ\nРАЗМЕЩЕНИЕ",
+    text: "Выходите за рамки ячеек. Добавляйте декор, вращайте элементы и управляйте слоями.",
+    tag: "ЗА РАМКАМИ СЕТКИ",
+    graphic: "free",
+  },
+  {
+    number: "03",
+    title: "ВАШ СТИЛЬ.\nВАШ ВЫБОР.",
+    text: "Ваши цвета, шрифты, фоны и формы. От чистого минимализма до цифрового коллажа.",
+    tag: "ДОБАВЬТЕ СЕБЯ",
+    graphic: "style",
+  },
+  {
+    number: "04",
+    title: "ВСЕ ВАШИ\nМЕДИА.",
+    text: "Ссылки, изображения, GIF, текст, видео и музыка. Всё, из чего складывается ваш интернет.",
+    tag: "СОЧЕТАЙТЕ. ПРОБУЙТЕ.",
+    graphic: "media",
+  },
 ];
 export function Home() {
   const { session } = useAuth();
-  const [menu, setMenu] = useState(false);
-  useEffect(() => {
-    if (!menu) return;
-    document.querySelector<HTMLAnchorElement>("#home-navigation a")?.focus();
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setMenu(false);
-        document.querySelector<HTMLButtonElement>(".raw-menu-button")?.focus();
-      }
-    };
-    document.addEventListener("keydown", close);
-    return () => document.removeEventListener("keydown", close);
-  }, [menu]);
   return (
-    <div className="raw-home home-page">
+    <div className="home-page">
       <a className="skip-link" href="#home-main">
         К содержимому
       </a>
-      <header className="raw-nav">
+      <nav className="home-nav" aria-label="Основная навигация">
         <Brand />
-        <span className="raw-edition">НЕЗАВИСИМЫЙ ВЕБ / VOL.06</span>
-        <button
-          className="raw-menu-button"
-          aria-label={menu ? "Закрыть меню" : "Открыть меню"}
-          aria-expanded={menu}
-          aria-controls="home-navigation"
-          onClick={() => setMenu(!menu)}
+        <span className="nav-edition">
+          НЕЗАВИСИМЫЙ РЕДАКТОР
+          <br />
+          <b>С 2026 ГОДА — ДЛЯ ВАС</b>
+        </span>
+        <Link className="nav-anchor" to="/explore">
+          Explore ↗
+        </Link>
+        <Link className="nav-anchor" to="/templates">
+          Шаблоны ↗
+        </Link>
+        <a className="nav-anchor" href="#playground">
+          Песочница <ArrowDownRight size={13} />
+        </a>
+        <Link
+          className="secondary-button"
+          to="/editor"
+          aria-label="Открыть редактор"
         >
-          {menu ? <X /> : <Menu />}
-        </button>
-        <nav
-          id="home-navigation"
-          className={menu ? "is-open" : ""}
-          aria-label="Основная навигация"
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setMenu(false);
-              document
-                .querySelector<HTMLButtonElement>(".raw-menu-button")
-                ?.focus();
-            }
-          }}
-        >
-          <Link to="/explore">Смотреть ZIN ↗</Link>
-          <Link to="/templates">Шаблоны ↗</Link>
-          <a href="#playground" onClick={() => setMenu(false)}>
-            Попробовать
-          </a>
-          <Link to="/dashboard">{session ? "Мой аккаунт" : "Войти"}</Link>
-        </nav>
-      </header>
+          ОТКРЫТЬ РЕДАКТОР <ArrowUpRight size={17} />
+        </Link>
+        <Link className="home-account" to="/dashboard">
+          {session ? "Мой аккаунт" : "Войти"}
+        </Link>
+      </nav>
       <main id="home-main">
-        <section className="raw-hero">
-          <div className="raw-hero-label">
-            <span>NO RULES / YOUR PAGE</span>
-            <span aria-hidden="true">/// 001</span>
+        <section className="hero">
+          <div className="hero-meta">
+            <span>
+              <span className="tiny-dot" />
+              ОТКРОЙТЕ СВОЙ ИНТЕРНЕТ
+            </span>
+            <span>БЕЗ АЛГОРИТМОВ. ТОЛЬКО ВЫ. [01—∞]</span>
           </div>
-          <div className="raw-hero-grid">
-            <div className="raw-title">
-              <h1 aria-label="САЙТ НЕ ОБЯЗАН БЫТЬ НОРМАЛЬНЫМ.">
-                <span>САЙТ НЕ</span>
-                <span>ОБЯЗАН</span>
-                <span>БЫТЬ</span>
-                <span className="raw-last-line">НОРМАЛЬНЫМ.</span>
-              </h1>
-            </div>
-            <div className="raw-hero-aside">
-              <div className="raw-signal-mark" aria-hidden="true">
-                <span>×</span>
-                <b>
-                  RAW
-                  <br />
-                  SIGNAL
-                </b>
-                <i>СОБСТВЕННАЯ ЧАСТОТА</i>
-              </div>
-              <p>
-                Личная страница из того, что вам важно. Без одинаковых профилей.
-                С музыкой, фотографиями и вашим характером.
-              </p>
-              <span className="raw-materials">TEXT / PHOTO / MUSIC / GIF</span>
-            </div>
-          </div>
-          <div className="raw-hero-bottom">
-            <p>
-              СОБЕРИ. СЛОМАЙ.
+          <div className="hero-heading">
+            <h1>
+              ВАШ ИНТЕРНЕТ.
               <br />
-              ПЕРЕДЕЛАЙ.
-            </p>
-            <div className="raw-actions">
-              <Link
-                className="primary-button"
-                to="/editor"
-                aria-label="Создать ZIN"
-              >
-                СОЗДАТЬ ZIN <ArrowUpRight />
-              </Link>
-              <Link className="secondary-button" to="/explore">
-                СМОТРЕТЬ ZIN <ArrowUpRight />
-              </Link>
-            </div>
-            <span className="raw-local-note">
-              Начните без регистрации.
+              ВАШИ{" "}
+              <span className="rules-word">
+                ПРАВИЛА<span className="title-period">.</span>
+              </span>
+            </h1>
+            <Starburst className="hero-star" />
+            <span className="hero-sticker" aria-hidden="true">
+              БОЛЬШЕ, ЧЕМ
               <br />
-              Ваш черновик остаётся у вас.
+              <b>ССЫЛКА В ПРОФИЛЕ.</b>
             </span>
           </div>
+          <div className="hero-bottom">
+            <div className="hero-sidenote">
+              <span className="barcode" aria-hidden="true" />
+              <span>
+                ЛИЧНОЕ ПРОСТРАНСТВО
+                <br />
+                БЕЗ ОГРАНИЧЕНИЙ.
+              </span>
+            </div>
+            <p>
+              Начните с идеи или готовой композиции.
+              <br />
+              Соберите свой уголок интернета из ссылок,
+              <br />
+              фотографий, видео и немного хаоса.
+            </p>
+            <div className="hero-action">
+              <Link
+                className="primary-button hero-button"
+                to="/editor"
+                aria-label="Создать своё пространство"
+              >
+                СОЗДАТЬ СВОЁ ПРОСТРАНСТВО <ArrowUpRight size={27} />
+              </Link>
+              <Link
+                className="secondary-button template-home-link"
+                to="/templates"
+              >
+                Начать с шаблона ↗
+              </Link>
+              <span>
+                <Check size={12} /> Без регистрации. Сохраняется у вас.
+              </span>
+            </div>
+          </div>
+          <a className="hero-scroll" href="#playground">
+            УЗНАТЬ БОЛЬШЕ <ArrowDown size={14} />
+          </a>
         </section>
+        <div
+          className="manifesto-strip"
+          aria-label="Интернет — ваше полотно. Создайте своё."
+        >
+          <span>ИНТЕРНЕТ — ВАШЕ ПОЛОТНО.</span>
+          <Starburst className="strip-star" />
+          <span>СОЗДАЙТЕ СВОЁ.</span>
+          <ArrowUpRight size={35} />
+          <span className="strip-extra" aria-hidden="true">
+            ИНТЕРНЕТ — ВАШЕ ПОЛОТНО.
+          </span>
+        </div>
         <section
-          className="raw-playground"
+          className="product-section"
           id="playground"
           aria-labelledby="product-title"
         >
-          <div className="raw-section-heading">
-            <span className="eyebrow">01 / ПОПРОБУЙТЕ РУКАМИ</span>
+          <div className="product-intro">
+            <div className="section-kicker">[ 01 / ПЕСОЧНИЦА ]</div>
             <h2 id="product-title">
-              НЕ СМОТРИ.
+              МЕНЬШЕ РАМОК.
               <br />
-              <em>ДВИГАЙ.</em>
+              БОЛЬШЕ <span>ВАС.</span>
             </h2>
             <p>
-              Это настоящая песочница. Выберите блок, переместите, измените. Ваш
-              сохранённый ZIN не изменится.
+              Это не карточка профиля.
+              <br />
+              Это ваша территория.
+            </p>
+            <div className="product-steps">
+              <div>
+                <span>01</span>
+                <p>
+                  Добавьте то,
+                  <br />
+                  что вам важно.
+                </p>
+              </div>
+              <div>
+                <span>02</span>
+                <p>
+                  Расположите так,
+                  <br />
+                  как нравится вам.
+                </p>
+              </div>
+              <div>
+                <span>03</span>
+                <p>
+                  Сохраните.
+                  <br />
+                  Сделайте по-своему.
+                </p>
+              </div>
+            </div>
+            <div className="product-note">
+              <MoveUpRight size={24} />
+              <p>
+                Это живая песочница.
+                <br />
+                Попробуйте двигать блоки.
+              </p>
+            </div>
+          </div>
+          <div className="product-demo">
+            <div className="demo-caption">
+              <span>ВАША СТРАНИЦА / ВАШИ ПРАВИЛА</span>
+              <span>7 ТИПОВ БЛОКОВ + СВОБОДНЫЙ ДЕКОР</span>
+            </div>
+            <Showcase />
+            <p className="sandbox-note">
+              Изменения в примере не затрагивают вашу страницу.{" "}
+              <Link to="/editor">Открыть свой редактор ↗</Link>
             </p>
           </div>
-          <div className="raw-demo">
-            <span className="raw-demo-caption">
-              ЖИВОЙ ПРИМЕР / 8 ТИПОВ БЛОКОВ
-            </span>
-            <Showcase />
-            <Link to="/editor">
-              Открыть свой редактор <MoveUpRight size={18} />
-            </Link>
-          </div>
         </section>
-        <section className="raw-features" aria-labelledby="features-title">
-          <div className="raw-section-heading">
-            <span className="eyebrow">02 / ИНСТРУМЕНТЫ, НЕ ПРАВИЛА</span>
+        <section
+          className="features-section"
+          id="features"
+          aria-labelledby="features-title"
+        >
+          <div className="section-header">
+            <span className="section-kicker">[ 02 / ИНСТРУМЕНТЫ ]</span>
             <h2 id="features-title">
-              ТВОРЧЕСТВУ
+              ПРОСТОЙ РЕДАКТОР.
               <br />
-              ТЕСНО В ПРОФИЛЕ.
+              <span>БОЛЬШИЕ ВОЗМОЖНОСТИ.</span>
             </h2>
+            <span className="section-cross" aria-hidden="true">
+              +
+            </span>
           </div>
-          <div className="raw-feature-grid">
-            {features.map(([n, title, text]) => (
-              <article key={n}>
-                <span>{n} ///</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
+          <div className="feature-grid">
+            {features.map((feature) => (
+              <article
+                className={`feature feature-kind-${feature.graphic}`}
+                key={feature.number}
+              >
+                <div className="feature-top">
+                  <span>{feature.number}</span>
+                  <span>{feature.tag}</span>
+                </div>
+                <div
+                  className={`feature-art ${feature.graphic}-art`}
+                  aria-hidden="true"
+                >
+                  {feature.graphic === "grid" ? (
+                    <>
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                    </>
+                  ) : feature.graphic === "free" ? (
+                    <>
+                      <i>
+                        <Starburst />
+                      </i>
+                      <span>
+                        ВНЕ
+                        <br />
+                        РАМОК.
+                      </span>
+                      <MoveUpRight size={20} />
+                    </>
+                  ) : feature.graphic === "style" ? (
+                    <>
+                      <i>Аа</i>
+                      <span />
+                      <span />
+                      <span />
+                    </>
+                  ) : (
+                    <>
+                      <i>GIF</i>
+                      <span>▶</span>
+                      <span>↗</span>
+                    </>
+                  )}
+                </div>
+                <h3>{feature.title}</h3>
+                <p>{feature.text}</p>
               </article>
             ))}
           </div>
         </section>
-        <section className="raw-templates">
-          <div>
-            <span className="eyebrow">
-              03 / ГОТОВАЯ ОСНОВА — ВАШЕ ПРОДОЛЖЕНИЕ
-            </span>
-            <h2>
-              ШАБЛОН —<br />
-              <em>ТОЛЬКО НАЧАЛО.</em>
-            </h2>
-            <p>
-              Cybercore, Punk Zine, Old Web и ещё пять композиций. Любой элемент
-              можно изменить. Или начните с пустого полотна.
-            </p>
-            <Link className="secondary-button" to="/templates">
-              Выбрать шаблон ↗
-            </Link>
+        <section className="final-cta">
+          <div className="cta-meta">
+            <span>[ 03 / ВАШ ХОД ]</span>
+            <span>ВАШЕ МЕСТО В ИНТЕРНЕТЕ</span>
           </div>
-          <div className="raw-template-links">
-            <Link to="/templates/cybercore">
-              <span>01 / ХРОМ И ШУМ</span>
-              <strong>
-                CYBER
+          <div className="cta-content">
+            <h2>
+              НЕ ПОДСТРАИВАЙТЕСЬ.
+              <br />
+              <span>СОЗДАВАЙТЕ СВОЁ.</span>
+            </h2>
+            <div>
+              <p>
+                Интернету не нужен ещё один одинаковый профиль.
                 <br />
-                CORE ↗
-              </strong>
-            </Link>
-            <Link to="/templates/punk-zine">
-              <span>02 / ВЫРЕЗАЙ И КЛЕЙ</span>
-              <strong>
-                PUNK
-                <br />
-                ZINE ↗
-              </strong>
-            </Link>
-            <Link to="/templates/blank-canvas">
-              <span>03 / НИЧЕГО ЛИШНЕГО</span>
-              <strong>
-                BLANK
-                <br />
-                CANVAS ↗
-              </strong>
-            </Link>
+                Ему нужен ваш.
+              </p>
+              <Link className="ink-button" to="/editor">
+                СОЗДАТЬ СВОЮ СТРАНИЦУ <ArrowUpRight size={24} />
+              </Link>
+            </div>
+          </div>
+          <div className="cta-bottom">
+            <span>ВАШИ ССЫЛКИ. ВАШ МИР. ВАШЕ ПОЛОТНО.</span>
+            <span aria-hidden="true">+++++</span>
           </div>
         </section>
-        <section className="raw-final">
-          <span className="eyebrow">04 / ВАША ЧАСТОТА</span>
-          <h2>
-            MAKE
-            <br />
-            <span>SOMETHING.</span>
-          </h2>
-          <div>
-            <p>
-              Интернет может быть другим.
-              <br />
-              Начните со своей страницы.
-            </p>
-            <Link className="primary-button" to="/editor">
-              СОЗДАТЬ ZIN <ArrowUpRight />
-            </Link>
-          </div>
+        <section className="home-templates">
+          <span className="eyebrow">ГОТОВАЯ ОСНОВА / ВАШЕ ПРОДОЛЖЕНИЕ</span>
+          <h2>ВЫБЕРИТЕ СВОЙ СТАРТ.</h2>
+          <p>Восемь композиций — от киберколлажа до чистого полотна.</p>
+          <Link className="primary-button" to="/templates">
+            Выбрать шаблон ↗
+          </Link>
         </section>
       </main>
-      <footer className="raw-footer">
+      <footer className="home-footer">
         <Brand />
         <p>
-          НЕЗАВИСИМЫЙ ИНСТРУМЕНТ.
+          Независимый инструмент.
           <br />
-          ДЛЯ ТЕХ, КТО ДЕЛАЕТ ПО-СВОЕМУ.
+          Для тех, кто делает по-своему.
         </p>
-        <nav aria-label="Ссылки в подвале">
-          <Link to="/explore">Галерея</Link>
-          <Link to="/templates">Шаблоны</Link>
-          <Link to="/preview">Мой предпросмотр ↗</Link>
-        </nav>
-        <span>
-          BUILT WITH ZIN
-          <br />© 2026
+        <Link to="/preview">
+          Мой предпросмотр <ArrowUpRight size={14} />
+        </Link>
+        <span className="footer-edition">
+          © 2026 ZIN
+          <br />
+          ХРАНИТСЯ У ВАС. ПРИНАДЛЕЖИТ ВАМ.
         </span>
       </footer>
     </div>

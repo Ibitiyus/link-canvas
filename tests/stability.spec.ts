@@ -192,7 +192,7 @@ for (const width of [320, 390, 768])
     await seed(page);
     await page.goto("/editor");
     const trigger = page.getByRole("button", {
-      name: "Открыть настройки",
+      name: "Открыть настройки страницы",
       exact: true,
     });
     await trigger.focus();
