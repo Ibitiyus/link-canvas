@@ -1,3 +1,5 @@
+import { editorGrid, type GridVisibility } from "../model/editorGrid";
+import type { CSSProperties } from "react";
 import { EffectSurface } from "./EffectSurface";
 import { isFree } from "../model/placement";
 import { selectionBox, transformSelection } from "../model/creative";
@@ -14,6 +16,7 @@ import { CanvasViewport } from "./CanvasViewport";
 import { SelectionHandles } from "./SelectionHandles";
 import { CANVAS_PADDING } from "../model/canvasLayout";
 interface Props {
+  moveOnPress?: boolean;
   showAnimations?: boolean;
   previewEffect?: { id: string; token: number } | null;
   project: Project;
@@ -29,6 +32,7 @@ interface Props {
 }
 export function Canvas({
   project,
+  moveOnPress = false,
   showAnimations = false,
   previewEffect,
   editing = false,
@@ -43,7 +47,13 @@ export function Canvas({
 }: Props) {
   const board = useRef<HTMLDivElement>(null),
     [contentId, setContentId] = useState<string | null>(null);
-  useEffect(() => setContentId(null), [selectedId]);
+  useEffect(() => setContentId(null), [selectedId, moveOnPress]);
+  const [gridMode, setGridMode] = useState<GridVisibility>("auto");
+  const grid = editorGrid(
+    project.page.background,
+    !!project.page.backgroundImage,
+    gridMode,
+  );
   const { page, blocks } = project,
     rows = gridRows(blocks),
     height = rows * rowHeight + (rows - 1) * page.gap;
@@ -98,6 +108,9 @@ export function Canvas({
     immediate = false,
   ) => {
     if (!editing) return;
+    immediate ||=
+      moveOnPress &&
+      (selectedIds.includes(block.id) || block.id === selectedId);
     if (!edge && !immediate && (multiSelect || event.shiftKey)) {
       event.stopPropagation();
       onSelect?.(block.id, true);
@@ -159,6 +172,19 @@ export function Canvas({
                         ? "Положение закреплено"
                         : "Нажмите для выбора · удерживайте для перемещения"}
           </span>
+          <label className="grid-visibility-control">
+            Сетка
+            <select
+              aria-label="Видимость сетки"
+              value={gridMode}
+              onChange={(e) => setGridMode(e.target.value as GridVisibility)}
+            >
+              <option value="auto">Автоконтраст</option>
+              <option value="dark">Тёмные линии</option>
+              <option value="light">Светлые линии</option>
+              <option value="hidden">Скрыть сетку</option>
+            </select>
+          </label>
           {selected &&
             ["audio", "video", "link", "qrcode"].includes(selected.type) && (
               <button
@@ -186,16 +212,26 @@ export function Canvas({
       >
         <div
           className={`page-surface ${editing ? "editor-surface" : ""}`}
-          style={{
-            maxWidth: page.maxWidth,
-            width: page.maxWidth,
-            padding: CANVAS_PADDING,
-            backgroundColor: page.background,
-            backgroundImage: backgroundImage
-              ? `url(${JSON.stringify(backgroundImage)})`
-              : undefined,
-            fontFamily: FONTS[page.font],
-          }}
+          data-grid={editing ? gridMode : undefined}
+          style={
+            {
+              ...(editing
+                ? {
+                    "--grid-line": grid.line,
+                    "--grid-tint": grid.tint,
+                    "--grid-halo": grid.halo,
+                  }
+                : {}),
+              maxWidth: page.maxWidth,
+              width: page.maxWidth,
+              padding: CANVAS_PADDING,
+              backgroundColor: page.background,
+              backgroundImage: backgroundImage
+                ? `url(${JSON.stringify(backgroundImage)})`
+                : undefined,
+              fontFamily: FONTS[page.font],
+            } as CSSProperties
+          }
         >
           <div
             ref={board}

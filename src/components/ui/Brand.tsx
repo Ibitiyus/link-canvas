@@ -9,7 +9,7 @@ export function Brand() {
       <span className="brand-wordmark">
         ZIN
         <span className="brand-asterisk" aria-hidden="true">
-          +
+          _
         </span>
       </span>
     </Link>
