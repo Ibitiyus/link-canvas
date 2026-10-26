@@ -1,3 +1,5 @@
+import { GalleryCover as Cover } from "../explore/GalleryCover";
+import { ServiceArrow } from "../components/ui/ServiceArrow";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowUpRight, Flag, Search, RefreshCw } from "lucide-react";
@@ -13,36 +15,6 @@ import {
 } from "../explore/model";
 import { useExploreMetadata } from "../explore/metadata";
 import "../styles/explore.css";
-function Cover({ card }: { card: GalleryCard }) {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [card.cover]);
-  return (
-    <div
-      className={`explore-cover cover-${CATEGORIES.indexOf(card.category) % 4}`}
-    >
-      {card.cover && !failed ? (
-        <img
-          src={card.cover}
-          alt={`Обложка автора: ${card.title}`}
-          loading="lazy"
-          decoding="async"
-          width={480}
-          height={300}
-          onError={() => setFailed(true)}
-        />
-      ) : (
-        <div className="explore-type-cover" aria-hidden="true">
-          <span>ZIN / {card.category}</span>
-          <strong>{card.title}</strong>
-          <span>@{card.username} ↗</span>
-        </div>
-      )}
-      <span className="explore-cover-label">
-        {card.cover && !failed ? "ОБЛОЖКА АВТОРА" : "БЕЗ ОБЛОЖКИ"}
-      </span>
-    </div>
-  );
-}
 function Report({ username, close }: { username: string; close: () => void }) {
   const { session } = useAuth();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -236,7 +208,9 @@ export default function Explore() {
         <Brand />
         <nav aria-label="Основная навигация">
           <Link to="/templates">Шаблоны</Link>
-          <Link to="/editor">Создать ZIN ↗</Link>
+          <Link to="/editor">
+            Создать ZIN <ServiceArrow />
+          </Link>
           <Link to="/dashboard">{session ? "Мой аккаунт" : "Войти"}</Link>
         </nav>
       </header>
@@ -338,7 +312,7 @@ export default function Explore() {
               </button>
             ) : (
               <Link className="primary-button" to="/editor">
-                Создать свой ZIN ↗
+                Создать свой ZIN <ServiceArrow />
               </Link>
             )}
           </div>
@@ -406,7 +380,9 @@ export default function Explore() {
       </main>
       <footer className="explore-footer">
         <span>ОДИН ZIN. СВОЙ МИР.</span>
-        <Link to="/dashboard">Добавить страницу в галерею ↗</Link>
+        <Link to="/dashboard">
+          Добавить страницу в галерею <ServiceArrow />
+        </Link>
       </footer>
       {report && (
         <Report

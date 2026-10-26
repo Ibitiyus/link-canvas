@@ -1,3 +1,4 @@
+import { ServiceArrow } from "../components/ui/ServiceArrow";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ownerClient } from "../cloud/config";
@@ -126,7 +127,9 @@ export function GallerySettings({
     >
       <div className="dashboard-title">
         <h2 id="gallery-settings-title">Публикация в галерее</h2>
-        <Link to="/explore">Открыть Explore ↗</Link>
+        <Link to="/explore">
+          Открыть Explore <ServiceArrow />
+        </Link>
       </div>
       <p>
         Ваша страница будет доступна другим пользователям через поиск и галерею

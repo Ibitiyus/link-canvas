@@ -136,7 +136,7 @@ test("dark grid and short mobile viewport keep settings accessible", async ({
 });
 
 for (const grouped of [false, true])
-  test(`mobile direct move ${grouped ? "group" : "block"}: touch without long press and undo`, async ({
+  test(`mobile direct move ${grouped ? "member of imported group" : "block"}: touch without long press and undo`, async ({
     browser,
   }) => {
     const context = await browser.newContext({
@@ -180,11 +180,7 @@ for (const grouped of [false, true])
         "true",
       );
       const rect = (await page
-        .locator(
-          grouped
-            ? '[data-selection-id="__selection__"]'
-            : '[data-block-id="free-test"]',
-        )
+        .locator('[data-block-id="free-test"]')
         .boundingBox())!;
       const client = await context.newCDPSession(page),
         x = rect.x + rect.width / 2,
@@ -210,6 +206,13 @@ for (const grouped of [false, true])
           ),
         )
         .toBeGreaterThan(80);
+      if (grouped)
+        expect(
+          await page.evaluate(
+            (key) => JSON.parse(localStorage.getItem(key)!).blocks[1].x,
+            key,
+          ),
+        ).toBe(330);
       await page.getByRole("button", { name: "Отменить", exact: true }).tap();
       await expect
         .poll(() =>

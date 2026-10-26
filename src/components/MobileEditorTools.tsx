@@ -1,3 +1,4 @@
+import { ServiceArrow } from "./ui/ServiceArrow";
 import { CloudBar } from "./CloudBar";
 import { Link } from "react-router-dom";
 import {
@@ -239,10 +240,10 @@ export function MobileEditorTools({
               <p>Черновик и опубликованная страница — независимые версии.</p>
               <CloudBar />
               <Link className="secondary-button" to="/dashboard">
-                Кабинет и настройки галереи ↗
+                Кабинет и настройки галереи <ServiceArrow />
               </Link>
               <Link className="secondary-button" to="/preview">
-                Предпросмотр ↗
+                Предпросмотр <ServiceArrow />
               </Link>
             </div>
           )}

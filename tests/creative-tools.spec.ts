@@ -54,13 +54,6 @@ async function drag(page: Page, selector: string, dx: number, dy: number) {
   });
   await page.mouse.up();
 }
-async function chooseBoth(page: Page) {
-  await page.getByRole("button", { name: /^Слои/ }).click();
-  await page
-    .getByLabel("Выбрать дополнительно: Заголовок", { exact: true })
-    .check();
-  await page.getByLabel("Выбрать дополнительно: Фото", { exact: true }).check();
-}
 async function touch(
   context: BrowserContext,
   page: Page,
@@ -138,90 +131,27 @@ test("Grid to Free preserves the rendered rectangle; free pointer resize/rotatio
   expect((await saved(page)).blocks[0].layout).toBe("grid");
   await expect(page.locator(".rotation-handle")).toHaveCount(0);
 });
-test("mixed group transforms, renames, collapse, lock, individual edits, JSON round trip and ungroup undo", async ({
+test("imported groups retain data but each click and Shift click chooses only one block", async ({
   page,
-}, testInfo) => {
-  await setup(page);
-  await chooseBoth(page);
-  await page
-    .getByRole("button", { name: "Сгруппировать", exact: true })
-    .click();
-  const g = await saved(page);
-  expect(g.groups).toHaveLength(1);
-  expect(g.blocks.every((b) => b.layout === "free")).toBe(true);
-  await page.getByLabel("Название группы", { exact: true }).fill("Коллаж");
-  const before = await saved(page),
-    s = Number(
-      await page.locator(".canvas-renderer").getAttribute("data-canvas-scale"),
-    );
-  await drag(page, '[data-block-id="a"]', 40 * s, 30 * s);
-  const moved = await saved(page);
-  for (let i = 0; i < 2; i++) {
-    expect(moved.blocks[i].x).toBeCloseTo(before.blocks[i].x + 40);
-    expect(moved.blocks[i].y).toBeCloseTo(before.blocks[i].y + 30);
-  }
-  await drag(page, '[data-resize-edge="se"]', 45 * s, 35 * s);
-  const resized = await saved(page);
-  expect(resized.blocks[0].width).toBeGreaterThan(moved.blocks[0].width);
-  expect(resized.blocks[0].width / moved.blocks[0].width).toBeCloseTo(
-    resized.blocks[1].width / moved.blocks[1].width,
-  );
-  await drag(page, ".rotation-handle", 60, 25);
-  expect((await saved(page)).blocks[0].rotation).not.toBe(0);
-  await page
-    .getByRole("button", { name: "Закрепить выделение", exact: true })
-    .click();
-  await expect(page.locator("[data-resize-edge]")).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Разблокировать", exact: true })
-    .click();
-  await expect(page.locator("[data-resize-edge]")).toHaveCount(8);
-  await page.getByRole("button", { name: "Отменить", exact: true }).click();
-  expect((await saved(page)).blocks.every((b) => b.locked)).toBe(true);
-  await page.getByRole("button", { name: "Повторить", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Свернуть группу: Коллаж", exact: true })
-    .click();
-  await expect(page.locator("[data-layer-id]")).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Свернуть группу: Коллаж", exact: true })
-    .click();
-  await page
-    .getByRole("button", {
-      name: "Редактировать отдельно: Заголовок",
-      exact: true,
-    })
-    .click();
-  await page.getByLabel("Текст", { exact: true }).fill("Внутри группы");
-  expect((await saved(page)).groups).toHaveLength(1);
-  const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Экспорт JSON", exact: true }).click();
-  const backup = testInfo.outputPath("collage.json");
-  await (await download).saveAs(backup);
-  const exported = await saved(page);
-  page.once("dialog", (d) => d.accept());
-  await page
-    .getByRole("button", { name: "Сбросить страницу", exact: true })
-    .click();
-  await expect(page.locator("[data-block-id]")).toHaveCount(0);
-  page.once("dialog", (d) => d.accept());
-  await page
-    .getByLabel("Файл проекта JSON", { exact: true })
-    .setInputFiles(backup);
-  await expect(page.locator("[data-block-id]")).toHaveCount(2);
-  expect(await saved(page)).toEqual(exported);
-  await page.reload();
-  expect(await saved(page)).toEqual(exported);
-  await page.getByRole("button", { name: /^Слои/ }).click();
-  await page
-    .getByRole("button", { name: "Разгруппировать", exact: true })
-    .click();
-  expect((await saved(page)).groups).toEqual([]);
-  await page.getByRole("button", { name: "Отменить", exact: true }).click();
-  expect((await saved(page)).groups).toEqual(exported.groups);
+}) => {
+  const imported = groupBlocks(fixture, ["a", "b"]);
+  await setup(page, imported);
+  await page.locator('[data-block-id="a"]').click();
+  await expect(page.locator('[data-selection-id="a"]')).toHaveCount(1);
+  await page.locator('[data-block-id="b"]').click({ modifiers: ["Shift"] });
+  await expect(page.locator("[data-selection-id]")).toHaveCount(1);
+  await expect(page.locator('[data-selection-id="b"]')).toHaveCount(1);
+  await expect(
+    page.getByRole("button", { name: "Сгруппировать", exact: true }),
+  ).toHaveCount(0);
+  await page.locator('[data-block-id="a"]').click();
+  await page.getByLabel("Текст", { exact: true }).fill("Один блок");
+  const result = await saved(page);
+  expect(result.groups).toEqual(imported.groups);
+  expect(result.blocks[1]).toEqual(imported.blocks[1]);
 });
 for (const width of [320, 390, 768])
-  test(`touch ${width}: free hold drag, rotation, resize and grouping`, async ({
+  test(`touch ${width}: free hold drag, rotation, resize and single-block duplicate`, async ({
     browser,
   }) => {
     const context = await browser.newContext({
@@ -230,20 +160,8 @@ for (const width of [320, 390, 768])
         isMobile: true,
       }),
       page = await context.newPage();
-    await setup(page);
-    await page.getByRole("button", { name: "Открыть слои", exact: true }).tap();
-    await page
-      .getByLabel("Выбрать дополнительно: Заголовок", { exact: true })
-      .check();
-    await page
-      .getByLabel("Выбрать дополнительно: Фото", { exact: true })
-      .check();
-    await page
-      .getByRole("button", { name: "Сгруппировать", exact: true })
-      .tap();
-    await page
-      .getByRole("button", { name: "Свернуть панель", exact: true })
-      .tap();
+    await setup(page, groupBlocks(fixture, ["a", "b"]));
+    await page.locator('[data-block-id="a"]').tap();
     await page.waitForTimeout(650);
     const before = await saved(page),
       s = Number(
@@ -262,11 +180,12 @@ for (const width of [320, 390, 768])
     await page.locator(".rotation-handle").scrollIntoViewIfNeeded();
     await touch(context, page, ".rotation-handle", 45, 30);
     expect((await saved(page)).blocks[0].rotation).not.toBe(0);
-    await page
-      .getByRole("button", { name: "Дублировать выделение", exact: true })
-      .tap();
-    expect((await saved(page)).groups).toHaveLength(2);
-    expect((await saved(page)).blocks).toHaveLength(4);
+    await page.locator(".mobile-selection-context summary").tap();
+    await page.getByRole("button", { name: "Дублировать", exact: true }).tap();
+    const result = await saved(page);
+    expect(result.groups).toHaveLength(1);
+    expect(result.blocks).toHaveLength(3);
+    expect(result.blocks[1]).toEqual(before.blocks[1]);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
