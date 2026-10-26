@@ -1,0 +1,927 @@
+/* XEROX RIOT v2 — service chrome only. Never select author content inside .page-surface. */
+.cutout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-transform: uppercase;
+}
+.cutout-piece {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: var(--paper-border);
+  box-shadow: 3px 3px 0 var(--ink);
+  background: var(--white-paper);
+  color: var(--ink);
+  font: 900 22px/1 var(--display-font);
+  transform: rotate(-1.5deg);
+}
+.cutout-piece:nth-child(even) {
+  transform: rotate(2deg);
+  background: var(--paper-dark);
+}
+.cutout-button.primary .cutout-piece {
+  background: var(--ink);
+  color: var(--white-paper);
+}
+.cutout-button.primary .cutout-piece:nth-child(even) {
+  background: var(--red);
+}
+.cutout-button:hover .cutout-piece {
+  transform: translateY(-2px);
+  box-shadow: 4px 5px 0 var(--ink);
+}
+.cutout-button:disabled .cutout-piece {
+  transform: none;
+  box-shadow: none;
+}
+.primary-button,
+.secondary-button,
+.ink-button {
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-weight: 900;
+  text-transform: uppercase;
+  gap: 8px;
+}
+.primary-button {
+  background: var(--red);
+  color: var(--white-paper);
+}
+.secondary-button {
+  background: var(--white-paper);
+  color: var(--ink);
+}
+.primary-button > svg,
+.secondary-button > svg {
+  background: var(--ink);
+  color: var(--white-paper);
+  padding: 2px;
+  box-sizing: content-box;
+}
+.primary-button:hover {
+  background: var(--pink);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.secondary-button:hover {
+  background: var(--paper-dark);
+  border-color: var(--ink);
+}
+.icon-button {
+  border: 1px solid #a89c96;
+  color: var(--white-paper);
+  background: #302a2c;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--mint);
+  outline-offset: 4px;
+}
+.riot-tag {
+  display: inline-block;
+  padding: 8px 11px;
+  background: var(--red);
+  color: var(--white-paper);
+  font: 500 11px/1.3 var(--ui-font);
+  transform: rotate(-3deg);
+}
+.riot-micro {
+  font: 500 10px/1.7 var(--ui-font);
+  letter-spacing: 0.04em;
+}
+.cutword {
+  display: inline-block;
+  padding: 0.025em 0.1em;
+  background: var(--ink);
+  color: var(--white-paper);
+  box-shadow: 4px 4px 0 #0f0f102b;
+  transform: rotate(-2deg);
+}
+.cutword.paper {
+  border: 2px solid var(--ink);
+  background: var(--white-paper);
+  color: var(--ink);
+  transform: rotate(2deg);
+}
+.cutword.red {
+  background: var(--red);
+  color: var(--white-paper);
+  transform: rotate(-3deg);
+}
+.cutword.serif {
+  font-family: var(--serif-font);
+  font-style: italic;
+  letter-spacing: -0.05em;
+}
+.cutword.mono {
+  font-family: var(--ui-font);
+  font-size: 0.8em;
+  letter-spacing: -0.06em;
+}
+/* Paper texture lives on empty chrome backgrounds, without a foreground noise layer. */
+.raw-home,
+.riot-auth,
+.explore-page {
+  background-color: var(--paper);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23000' opacity='.045' filter='url(%23n)' d='M0 0h160v160H0z'/%3E%3C/svg%3E");
+  color: var(--ink);
+  color-scheme: light;
+}
+.raw-nav {
+  max-width: none;
+  min-height: 74px;
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom: 4px solid var(--red);
+}
+.raw-edition {
+  color: #bdb4ad;
+}
+.riot-hero {
+  display: grid;
+  grid-template-columns: 1.04fr 0.96fr;
+  gap: 44px;
+  max-width: 1500px;
+  margin: auto;
+  padding: 48px 5vw 80px;
+  align-items: start;
+}
+.riot-hero-copy {
+  min-width: 0;
+}
+.riot-headline {
+  font: 900 clamp(58px, 7.4vw, 112px) / 0.96 var(--display-font);
+  letter-spacing: -0.045em;
+  margin: 30px 0;
+}
+.riot-headline > span {
+  display: block;
+  margin-bottom: 0.07em;
+}
+.riot-subtitle {
+  border-left: 8px solid var(--red);
+  padding-left: 16px;
+  font: 500 16px/1.6 var(--ui-font);
+  margin: 28px 0;
+}
+.riot-hero .raw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 24px 0;
+}
+.riot-hero .riot-micro {
+  margin-top: 24px;
+}
+.riot-collage {
+  position: relative;
+  min-width: 0;
+  margin-top: 24px;
+  padding: 14px;
+  background: var(--ink);
+  border: 6px solid var(--ink);
+  box-shadow: 14px 14px 0 var(--red);
+  transform: rotate(1.5deg);
+}
+.riot-collage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.6);
+  display: block;
+  border: 5px solid var(--white-paper);
+}
+.riot-collage .riot-art-main {
+  height: 230px;
+  filter: grayscale(1) contrast(1.5) sepia(0.25);
+}
+.riot-art-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 12px;
+  height: 205px;
+  margin: 12px 0;
+}
+.riot-art-row img {
+  object-position: 50% 30%;
+}
+.riot-art-row p {
+  background: var(--white-paper);
+  padding: 12px;
+  font: clamp(19px, 2.2vw, 30px) / 1.08 var(--serif-font);
+  overflow: hidden;
+}
+.riot-art-bottom {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 12px;
+  height: 180px;
+}
+.riot-art-bottom > span {
+  display: grid;
+  place-items: center;
+  background: var(--pink);
+  font: 150px/0.9 var(--display-font);
+  border: 5px solid var(--white-paper);
+}
+.riot-sticker {
+  position: absolute;
+  font: 900 clamp(24px, 3.3vw, 48px) / 1 var(--display-font);
+}
+.riot-sticker.one {
+  left: 20px;
+  top: 28px;
+}
+.riot-sticker.two {
+  left: 28px;
+  top: 210px;
+  transform: rotate(-4deg);
+}
+.riot-sticker.three {
+  left: 15%;
+  bottom: 38px;
+  max-width: 85%;
+  transform: rotate(-7deg);
+  font-size: clamp(20px, 2.5vw, 36px);
+}
+.riot-rec {
+  position: absolute;
+  right: 20px;
+  bottom: 178px;
+  color: var(--red);
+  font: 500 24px/1 var(--ui-font);
+}
+.riot-strip {
+  background: var(--ink);
+  color: var(--white-paper);
+  padding: 12px 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  font: 500 13px/1.4 var(--ui-font);
+}
+.riot-samples {
+  padding: 80px 5vw 90px;
+  max-width: 1500px;
+  margin: auto;
+}
+.riot-samples h2 {
+  font: 900 clamp(40px, 6vw, 90px) / 1 var(--display-font);
+  letter-spacing: -0.035em;
+  margin: 22px 0 45px;
+}
+.riot-sample-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+.riot-sample {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--white-paper);
+  border: 4px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+  transform: rotate(-2deg);
+}
+.riot-sample:nth-child(2) {
+  background: var(--ink);
+  color: var(--white-paper);
+  transform: rotate(2deg);
+}
+.riot-sample:nth-child(3) {
+  background: #cedcd2;
+  transform: rotate(-1deg);
+}
+.riot-sample h3 {
+  font: 900 44px/0.95 var(--display-font);
+  max-width: 220px;
+}
+.riot-sample img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  object-position: top;
+  border: 3px solid var(--ink);
+  filter: grayscale(1) contrast(1.3);
+}
+.riot-sample:hover {
+  transform: rotate(0deg);
+  outline: 3px solid var(--red);
+  outline-offset: 4px;
+}
+.raw-playground {
+  color: var(--ink);
+  border-block: 3px solid var(--ink);
+  background: var(--white-paper);
+}
+.raw-home .eyebrow {
+  color: var(--paper-muted);
+}
+.raw-section-heading h2 em,
+.raw-templates h2 em {
+  color: var(--red);
+}
+.raw-section-heading > p,
+.raw-templates p {
+  color: var(--paper-muted);
+}
+.raw-demo {
+  color: var(--paper);
+  background: var(--ink);
+  border: 4px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--red);
+  padding: 16px;
+}
+.raw-demo-caption {
+  color: var(--paper);
+}
+.raw-features {
+  background: var(--ink);
+  color: var(--white-paper);
+}
+.raw-features .eyebrow {
+  color: var(--mint);
+}
+.raw-feature-grid {
+  gap: 12px;
+  border: 0;
+}
+.raw-feature-grid article {
+  border: 2px solid var(--white-paper);
+  background: #262025;
+}
+.raw-feature-grid article:nth-child(even) {
+  background: var(--red);
+}
+.raw-feature-grid article > span,
+.raw-feature-grid p {
+  color: var(--white-paper);
+}
+.raw-template-links > a {
+  border: 3px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  background: var(--white-paper);
+  color: var(--ink);
+}
+.raw-template-links > a:nth-child(2) {
+  background: var(--paper-dark);
+}
+.raw-template-links span {
+  color: var(--paper-muted);
+}
+.raw-final {
+  background: var(--red);
+  color: var(--white-paper);
+}
+.raw-final h2 span,
+.raw-final .eyebrow {
+  color: var(--white-paper);
+}
+.raw-final .primary-button {
+  background: var(--white-paper);
+  color: var(--ink);
+}
+.raw-footer {
+  background: var(--ink);
+  color: var(--white-paper);
+}
+/* Local token scopes make paper instruments readable without touching canvas typography. */
+.editor-shell .panel,
+.riot-auth .auth-card,
+.account-card,
+.explore-report {
+  --bg: var(--paper-dark);
+  --surface: var(--white-paper);
+  --surface-raised: #ece6dc;
+  --paper: var(--ink);
+  --muted: #786f6a;
+  --border: #a89c96;
+  --border-strong: #504641;
+  --light-pink: #aa1930;
+  background: var(--white-paper);
+  color: var(--ink);
+  color-scheme: light;
+}
+.editor-toolbar {
+  background: var(--ink);
+  border-bottom: 3px solid var(--red);
+}
+.toolbar-edition {
+  color: var(--mint);
+  border-color: var(--mint);
+}
+.editor-toolbar .save-status {
+  background: #302a2c;
+}
+.editor-shell > .cloud-bar {
+  background: #211c1e;
+  border-bottom: 2px solid var(--red);
+}
+.cloud-bar button,
+.cloud-bar a {
+  font-weight: 500;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.cloud-bar a:first-of-type {
+  background: var(--red);
+  color: var(--white-paper);
+  border-color: var(--red);
+}
+.editor-shell .panel {
+  border: 3px solid var(--ink);
+}
+.panel-header {
+  background: var(--paper-dark);
+  border-left: 6px solid var(--red);
+  border-bottom: 2px solid var(--ink);
+}
+.panel-header > div > span {
+  font: 900 23px/1 var(--display-font);
+}
+.panel-header small {
+  font-size: 9px;
+}
+.panel-tabs button {
+  background: var(--white-paper);
+  color: var(--ink);
+  font-weight: 500;
+}
+.panel-tabs button.active {
+  background: var(--ink);
+  color: var(--white-paper);
+  box-shadow: inset 0 -3px var(--red);
+}
+.library-item {
+  background: var(--white-paper);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.tool-group-items .library-item:nth-child(even) {
+  background: #f6d8df;
+}
+.library-item:hover {
+  background: var(--paper-dark);
+}
+.library-item .library-icon {
+  color: var(--red);
+}
+.layer-row {
+  background: var(--white-paper);
+  border: 2px solid var(--ink);
+}
+.layer-row.selected {
+  border-color: var(--red);
+  box-shadow: inset 5px 0 var(--red);
+  background: #f8dde2;
+}
+.editor-shell .panel input,
+.editor-shell .panel textarea,
+.editor-shell .panel select {
+  background: #fff;
+  color: var(--ink);
+  border: 2px solid #504641;
+}
+.editor-shell .panel input[type="checkbox"],
+.editor-shell .panel input[type="range"] {
+  accent-color: var(--red);
+  min-height: 0;
+}
+.editor-shell .panel .primary-button {
+  color: var(--white-paper);
+  background: var(--red);
+}
+.editor-shell .panel .icon-button {
+  color: var(--ink);
+  background: var(--paper-dark);
+}
+.editor-shell .danger {
+  background: var(--white-paper);
+  color: #b01a30;
+  border: 2px solid #b01a30;
+  box-shadow: none;
+}
+.editor-shell .danger:hover {
+  background: var(--red);
+  color: var(--white-paper);
+}
+.workspace {
+  background: #252123;
+}
+.workspace-heading {
+  background: var(--ink);
+  border-bottom: 2px solid #6e6267;
+}
+.canvas-interaction-bar {
+  padding-inline: 12px;
+  color: #d6cec6;
+}
+.grid-visibility-control select {
+  border: 2px solid #a89c96;
+  color: var(--ink);
+  background: var(--white-paper);
+  min-height: 36px;
+}
+.editor-surface .grid-cell {
+  border-style: solid;
+}
+.selection-overlay {
+  outline: 3px solid var(--pink);
+}
+.selection-overlay .resize-handle::after {
+  background: var(--pink);
+  border-color: var(--ink);
+}
+/* Auth retains its existing form, routes, validation and recovery logic. */
+.riot-auth > header {
+  border-bottom: 3px solid var(--ink);
+}
+.riot-auth-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: start;
+  max-width: 1320px;
+  margin: 70px auto;
+}
+.riot-auth-poster {
+  min-width: 0;
+}
+.riot-auth-poster p {
+  margin: 30px 0;
+  font: 900 clamp(46px, 6.8vw, 100px) / 1.15 var(--display-font);
+  color: var(--ink);
+}
+.riot-auth .auth-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 28px;
+  border: 4px solid var(--ink);
+  box-shadow: 10px 10px 0 var(--red);
+}
+.riot-auth .auth-card h1 {
+  font-size: clamp(32px, 4vw, 58px);
+}
+.riot-auth input {
+  background: #fff;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+}
+.riot-auth .account-notice {
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  background: var(--paper-dark);
+}
+.riot-auth .auth-links a {
+  color: #b01a30;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.riot-auth .field-error {
+  color: #b01a30;
+}
+.riot-auth .cutout-piece {
+  font-size: 18px;
+}
+/* Lazy explore stylesheet must be imported before this file (see main.tsx). */
+.explore-page .explore-nav {
+  border-bottom: 3px solid var(--ink);
+}
+.explore-page .explore-intro h1 {
+  font-family: var(--display-font);
+}
+.explore-page .explore-intro em {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--red);
+  color: var(--white-paper);
+  font-family: var(--serif-font);
+  font-style: italic;
+  transform: rotate(-2deg);
+}
+.explore-page .explore-intro p,
+.explore-page .explore-card-info p,
+.explore-page .explore-footer {
+  color: var(--paper-muted);
+}
+.explore-page .explore-controls {
+  border-block: 2px solid var(--ink);
+}
+.explore-page .explore-controls input,
+.explore-page .explore-controls select {
+  background: var(--white-paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  color-scheme: light;
+}
+.explore-page .explore-card {
+  background: var(--white-paper);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.explore-page .explore-card:nth-child(3n + 2) {
+  transform: rotate(1deg);
+}
+.explore-page .explore-card:hover {
+  border-color: var(--red);
+}
+.explore-page .explore-author {
+  color: #b01a30;
+}
+.explore-page .explore-empty {
+  border: 2px solid var(--ink);
+  background: var(--white-paper);
+  color: var(--ink);
+}
+.explore-page .explore-type-cover {
+  background: var(--ink);
+  color: var(--white-paper);
+}
+.explore-page .cover-1 .explore-type-cover {
+  background: var(--paper-dark);
+  color: var(--ink);
+}
+.explore-page .cover-2 .explore-type-cover {
+  background: #cedcd2;
+  color: var(--ink);
+}
+.explore-page .cover-3 .explore-type-cover {
+  background: var(--red);
+  color: var(--white-paper);
+}
+@media (max-width: 1100px) and (min-width: 721px) {
+  .riot-hero {
+    gap: 26px;
+    padding-inline: 3vw;
+  }
+  .riot-headline {
+    font-size: 8vw;
+  }
+  .riot-collage .riot-art-main {
+    height: 200px;
+  }
+}
+@media (max-width: 1050px) {
+  .mobile-tool-dock {
+    padding-inline: 3px;
+    background: var(--ink);
+    border-top: 3px solid var(--pink);
+  }
+  .mobile-tool-dock button {
+    background: #302a2c;
+    border: 1px solid #a89c96;
+    color: var(--white-paper);
+    font: 500 9px/1.2 var(--ui-font);
+  }
+  .mobile-tool-dock button.active {
+    background: var(--white-paper);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    transform: rotate(-1deg);
+    box-shadow: 2px 2px 0 var(--red);
+  }
+  .mobile-tool-dock button.active svg {
+    color: var(--red);
+  }
+  .mobile-sheet {
+    background: var(--white-paper);
+    color: var(--ink);
+    border-top: 4px solid var(--red);
+  }
+  .sheet-header {
+    font: 900 18px/1 var(--display-font);
+    border-bottom: 2px solid var(--ink);
+  }
+  .sheet-grip span {
+    background: var(--ink);
+  }
+  .sheet-secondary-tools button,
+  .sheet-zoom button {
+    background: var(--paper-dark);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+  }
+  .editor-shell[data-mobile-tool] .editor-layout > .panel {
+    background: var(--white-paper);
+  }
+  .mobile-selection-context {
+    background: var(--ink);
+    border-bottom: 2px solid var(--pink);
+  }
+  .mobile-selection-context > button,
+  .mobile-selection-context summary {
+    background: var(--white-paper);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--pink);
+    font-weight: 500;
+  }
+  .mobile-selection-context > button:first-child {
+    background: var(--red);
+    color: var(--white-paper);
+  }
+  .mobile-publication {
+    color: var(--ink);
+  }
+  .mobile-publication .cloud-bar button,
+  .mobile-publication .cloud-bar a {
+    background: var(--white-paper);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+  }
+  .mobile-publication .cloud-bar a:first-of-type {
+    background: var(--red);
+    color: var(--white-paper);
+  }
+}
+@media (max-width: 720px) {
+  .raw-nav {
+    padding: 10px 18px;
+  }
+  .raw-menu-button {
+    background: #302a2c;
+    color: var(--white-paper);
+  }
+  .raw-nav nav a {
+    background: #302a2c;
+  }
+  .riot-hero {
+    display: flex;
+    flex-direction: column;
+    padding: 30px 18px 60px;
+    gap: 20px;
+  }
+  .riot-headline {
+    font-size: clamp(46px, 13.5vw, 86px);
+    margin: 30px 0;
+  }
+  .riot-headline .cutword {
+    max-width: 100%;
+  }
+  .riot-hero .raw-actions {
+    flex-direction: row;
+    gap: 20px;
+  }
+  .riot-hero .raw-actions a {
+    min-height: 44px;
+    font-size: 18px;
+  }
+  .cutout-piece {
+    padding: 10px 8px;
+    font-size: 20px;
+  }
+  .riot-subtitle {
+    font-size: 12px;
+  }
+  .riot-collage {
+    width: calc(100% - 10px);
+    margin-top: 6px;
+    padding: 8px;
+    box-shadow: 9px 9px 0 var(--red);
+  }
+  .riot-collage .riot-art-main {
+    height: 190px;
+  }
+  .riot-art-row {
+    height: 155px;
+    gap: 8px;
+  }
+  .riot-art-row p {
+    font-size: 22px;
+  }
+  .riot-art-bottom {
+    height: 140px;
+    gap: 8px;
+  }
+  .riot-art-bottom > span {
+    font-size: 100px;
+  }
+  .riot-sticker {
+    font-size: 34px;
+  }
+  .riot-sticker.two {
+    top: 180px;
+  }
+  .riot-sticker.three {
+    font-size: 24px;
+    left: 9%;
+  }
+  .riot-rec {
+    bottom: 140px;
+    font-size: 20px;
+  }
+  .riot-samples {
+    padding: 50px 22px 60px;
+  }
+  .riot-samples h2 {
+    font-size: clamp(30px, 7.8vw, 54px);
+  }
+  .riot-sample-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .riot-sample {
+    transform: rotate(-1deg);
+  }
+  .riot-sample img {
+    height: 260px;
+  }
+  .raw-feature-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .riot-auth-layout {
+    grid-template-columns: 1fr;
+    margin: 35px auto;
+    gap: 30px;
+  }
+  .riot-auth-poster p {
+    font-size: clamp(36px, 9vw, 64px);
+    margin: 24px 0;
+  }
+  .riot-auth .auth-card {
+    padding: 20px;
+    box-shadow: 6px 6px 0 var(--red);
+  }
+  .riot-auth > header {
+    flex-wrap: wrap;
+    padding-block: 15px;
+  }
+}
+.cloud-bar .cutout-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  gap: 3px;
+}
+.cloud-bar .cutout-piece {
+  min-height: 34px;
+  padding: 8px;
+  font: 500 11px/1 var(--ui-font);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.cloud-bar a.cutout-button:first-of-type {
+  background: none;
+  border: 0;
+}
+.explore-page .eyebrow,
+.explore-page .explore-empty p {
+  color: var(--paper-muted);
+}
+.raw-final p {
+  color: var(--white-paper);
+}
+@media (max-width: 1050px) {
+  .mobile-publication .cloud-bar .cutout-button {
+    border: 0;
+    padding: 0;
+    background: none;
+  }
+  .mobile-publication .cloud-bar .cutout-piece {
+    min-height: 44px;
+  }
+  .mobile-publication .cloud-bar a.cutout-button:first-of-type {
+    background: none;
+  }
+}
+/* Keep grid strokes one physical CSS pixel wide even when the composition is zoomed out. */
+.editor-surface .grid-cell {
+  border-width: calc(1px / var(--canvas-scale, 1));
+  box-shadow: inset 0 0 0 calc(1px / var(--canvas-scale, 1)) var(--grid-halo);
+}
+.editor-shell .panel {
+  --pink: #b01a30;
+}
+.explore-report select,
+.explore-report textarea {
+  background: #fff;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+}
+.raw-final .cutout-button {
+  min-width: 0;
+}
+.explore-page .explore-card-meta,
+.explore-page .explore-report-button {
+  color: var(--paper-muted);
+}
+@media (max-width: 1050px) {
+  /* Zoom remains in Properties; collapse duplicate rows while a tool sheet is open. */
+  .editor-shell[data-mobile-tool]:not([data-mobile-tool="none"])
+    .workspace
+    :is(.selection-tools, .canvas-view-controls) {
+    display: none;
+  }
+}

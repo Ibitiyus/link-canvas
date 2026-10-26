@@ -1,3 +1,4 @@
+import { CutoutLabel } from "./ui/Cutout";
 import { Link, useNavigate } from "react-router-dom";
 import { Cloud, UserRound } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
@@ -29,6 +30,7 @@ export function CloudBar() {
       {authError && <span role="alert">{authError}</span>}
       <div>
         <button
+          className="cutout-button secondary"
           disabled={
             !!session &&
             (!cloud.ready || cloud.busy || cloud.status === "saving")
@@ -47,13 +49,14 @@ export function CloudBar() {
               );
           }}
         >
-          Сохранить в облако
+          <CutoutLabel text="Сохранить в облако" />
         </button>
         <Link
+          className="cutout-button primary"
           to={session ? "/dashboard" : "/login?next=/dashboard"}
           onClick={() => saveNow()}
         >
-          Опубликовать
+          <CutoutLabel text="Опубликовать ↗" />
         </Link>
         <Link to="/dashboard" aria-label="Личный кабинет">
           <UserRound size={14} />

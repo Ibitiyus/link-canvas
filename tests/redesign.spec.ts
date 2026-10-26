@@ -203,7 +203,10 @@ test("reduced motion stops the decorative animation and provides a still GIF pre
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator(".raw-title")).toHaveCSS("animation-name", "none");
+  await expect(page.locator(".riot-headline")).toHaveCSS(
+    "animation-name",
+    "none",
+  );
   await expect(
     page.locator("[data-block-id=spec-gif] img"),
   ).not.toHaveAttribute("src", /\.gif$/);

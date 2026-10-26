@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Menu, X, MoveUpRight } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Brand } from "../components/ui/Brand";
+import { Cutout, CutoutLabel } from "../components/ui/Cutout";
 import { Showcase } from "../components/Showcase";
 const features = [
   [
@@ -48,7 +49,7 @@ export function Home() {
       </a>
       <header className="raw-nav">
         <Brand />
-        <span className="raw-edition">НЕЗАВИСИМЫЙ ВЕБ / VOL.06</span>
+        <span className="raw-edition">ISSUE 001 / XEROX RIOT</span>
         <button
           className="raw-menu-button"
           aria-label={menu ? "Закрыть меню" : "Открыть меню"}
@@ -80,60 +81,127 @@ export function Home() {
         </nav>
       </header>
       <main id="home-main">
-        <section className="raw-hero">
-          <div className="raw-hero-label">
-            <span>NO RULES / YOUR PAGE</span>
-            <span aria-hidden="true">/// 001</span>
-          </div>
-          <div className="raw-hero-grid">
-            <div className="raw-title">
-              <h1 aria-label="САЙТ НЕ ОБЯЗАН БЫТЬ НОРМАЛЬНЫМ.">
-                <span>САЙТ НЕ</span>
-                <span>ОБЯЗАН</span>
-                <span>БЫТЬ</span>
-                <span className="raw-last-line">НОРМАЛЬНЫМ.</span>
-              </h1>
-            </div>
-            <div className="raw-hero-aside">
-              <div className="raw-signal-mark" aria-hidden="true">
-                <span>×</span>
-                <b>
-                  RAW
-                  <br />
-                  SIGNAL
-                </b>
-                <i>СОБСТВЕННАЯ ЧАСТОТА</i>
-              </div>
-              <p>
-                Личная страница из того, что вам важно. Без одинаковых профилей.
-                С музыкой, фотографиями и вашим характером.
-              </p>
-              <span className="raw-materials">TEXT / PHOTO / MUSIC / GIF</span>
-            </div>
-          </div>
-          <div className="raw-hero-bottom">
-            <p>
-              СОБЕРИ. СЛОМАЙ.
+        <section className="riot-hero">
+          <div className="riot-hero-copy">
+            <span className="riot-tag">ISSUE 001 / XEROX RIOT</span>
+            <h1
+              className="riot-headline"
+              aria-label="САЙТ НЕ ОБЯЗАН БЫТЬ НОРМАЛЬНЫМ."
+            >
+              <span>
+                <b className="cutword paper mono">САЙТ</b>{" "}
+                <b className="cutword red">НЕ</b>
+              </span>
+              <span>
+                <b className="cutword">ОБЯЗАН</b>
+              </span>
+              <span>
+                <b className="cutword paper serif">БЫТЬ</b>
+              </span>
+              <span>
+                <b className="cutword red serif">НОРМАЛЬ</b>
+              </span>
+              <span>
+                <b className="cutword paper">НЫМ.</b>
+              </span>
+            </h1>
+            <p className="riot-subtitle">
+              TEXT / PHOTO / MUSIC / GIF / LINKS
               <br />
-              ПЕРЕДЕЛАЙ.
+              СОБЕРИ. СЛОМАЙ. ПЕРЕДЕЛАЙ.
             </p>
             <div className="raw-actions">
               <Link
-                className="primary-button"
+                className="cutout-button primary"
                 to="/editor"
                 aria-label="Создать ZIN"
               >
-                СОЗДАТЬ ZIN <ArrowUpRight />
+                <CutoutLabel text="СОЗДАТЬ ZIN" />
+                <Cutout>
+                  <ArrowUpRight />
+                </Cutout>
               </Link>
-              <Link className="secondary-button" to="/explore">
-                СМОТРЕТЬ ZIN <ArrowUpRight />
+              <Link className="cutout-button secondary" to="/explore">
+                <CutoutLabel text="СМОТРЕТЬ ZIN" />
+                <Cutout>
+                  <ArrowUpRight />
+                </Cutout>
               </Link>
             </div>
-            <span className="raw-local-note">
-              Начните без регистрации.
+            <p className="riot-micro">
+              Начните без регистрации. Ваш черновик остаётся у вас.
               <br />
-              Ваш черновик остаётся у вас.
-            </span>
+              NO TEMPLATE / YOUR PAGE / CUT &amp; PASTE INTERNET
+            </p>
+          </div>
+          <div
+            className="riot-collage"
+            role="img"
+            aria-label="Ксерокс-коллаж: вырезки, афиша, музыка и собственная страница"
+          >
+            <img
+              className="riot-art-main"
+              src="/templates/v1/architecture.webp"
+              alt=""
+            />
+            <div className="riot-art-row">
+              <img src="/demo/poster.svg" alt="" />
+              <p>
+                running round
+                <br />
+                the whole city /<br />
+                <i>make a little noise.</i>
+              </p>
+            </div>
+            <div className="riot-art-bottom">
+              <span>✳</span>
+              <img src="/templates/previews/punk-zine.png" alt="" />
+            </div>
+            <div className="riot-sticker one">
+              <b className="cutword paper mono">YOUR</b>
+              <b className="cutword">ZIN_</b>
+            </div>
+            <div className="riot-sticker two">
+              <b className="cutword red">YOUR</b>
+              <b className="cutword">PAGE</b>
+            </div>
+            <div className="riot-sticker three">
+              <b className="cutword red">IS THERE ANYONE</b>
+              <b className="cutword">OUT THERE?</b>
+            </div>
+            <span className="riot-rec">● REC</span>
+          </div>
+        </section>
+        <div className="riot-strip">
+          ✳ CUT / PASTE / PUBLISH ✳ ALL PAGES SHOULDN’T LOOK THE SAME ✳ YOUR
+          PAGE / YOUR RULES ✳
+        </div>
+        <section className="riot-samples" aria-labelledby="samples-title">
+          <span className="riot-tag">01 / ПРИМЕРЫ</span>
+          <h2 id="samples-title">
+            ZIN НЕ ДОЛЖНЫ БЫТЬ
+            <br />
+            <span className="cutword red">ОПРЯТНЫМИ.</span>
+          </h2>
+          <div className="riot-sample-grid">
+            {[
+              ["punk-zine", "CUT MY WIRES", "TEXT + LINKS"],
+              ["music-artist", "LOUD ENOUGH", "MUSIC + PHOTO"],
+              ["photographer", "NO MORE POLITE", "PHOTO + STORIES"],
+            ].map(([id, title, type]) => (
+              <Link className="riot-sample" to={`/templates/${id}`} key={id}>
+                <span className="riot-micro">КОМПОЗИЦИЯ / {type}</span>
+                <h3>{title} ↗</h3>
+                <img
+                  src={`/templates/previews/${id}.png`}
+                  alt={`Пример композиции ${title}`}
+                  loading="lazy"
+                />
+                <span className="riot-micro">
+                  ОТКРЫТЬ И ПЕРЕДЕЛАТЬ ПОД СЕБЯ ↗
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
         <section
@@ -229,9 +297,9 @@ export function Home() {
         <section className="raw-final">
           <span className="eyebrow">04 / ВАША ЧАСТОТА</span>
           <h2>
-            MAKE
+            ХВАТИТ
             <br />
-            <span>SOMETHING.</span>
+            <span>СМОТРЕТЬ.</span>
           </h2>
           <div>
             <p>
@@ -239,8 +307,15 @@ export function Home() {
               <br />
               Начните со своей страницы.
             </p>
-            <Link className="primary-button" to="/editor">
-              СОЗДАТЬ ZIN <ArrowUpRight />
+            <Link
+              className="cutout-button secondary"
+              to="/editor"
+              aria-label="Собери свой ZIN"
+            >
+              <CutoutLabel text="СОЗДАТЬ ZIN" />
+              <Cutout>
+                <ArrowUpRight aria-hidden="true" />
+              </Cutout>
             </Link>
           </div>
         </section>

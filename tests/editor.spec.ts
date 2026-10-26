@@ -17,6 +17,7 @@ async function reset(page: Page) {
 }
 async function add(page: Page, type: string) {
   await expect(page.locator(".editor-toolbar")).toBeVisible();
+  await page.locator(".library-item").first().waitFor({ state: "attached" });
   if (
     !(await page
       .getByRole("button", { name: `Добавить: ${type}`, exact: true })

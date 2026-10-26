@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { CutoutLabel } from "../components/ui/Cutout";
 import { Brand } from "../components/ui/Brand";
 import { useAuth } from "../auth/AuthContext";
 import { safeReturnPath, usernameError } from "../auth/usernames";
@@ -96,123 +97,145 @@ export function AuthPage({
     reset: "Новый пароль",
   }[mode];
   return (
-    <div className="account-page">
+    <div className="account-page riot-auth">
       <header>
         <Brand />
         <Link to="/editor">Продолжить без аккаунта ↗</Link>
       </header>
-      <main className="auth-card">
-        <span className="eyebrow">ВАШЕ ПРОСТРАНСТВО В ОБЛАКЕ</span>
-        <h1>{title}</h1>
-        <p>
-          Локальная страница остаётся в этом браузере. После входа вы сможете
-          выбрать её перенос в облако.
-        </p>
-        {!cloudConfigured && (
-          <p className="account-notice" role="status">
-            {configurationError ||
-              "Облачный режим пока не подключён. Редактор и локальное сохранение доступны без регистрации."}
-          </p>
-        )}
-        {auth.error && (
-          <p role="alert" className="field-error">
-            {auth.error}
-          </p>
-        )}
-        {error && (
-          <p role="alert" className="field-error">
-            {error}
-          </p>
-        )}
-        {message && (
-          <p role="status" className="account-notice">
-            {message}
-          </p>
-        )}
-        <form onSubmit={submit}>
-          {mode === "register" && (
-            <label>
-              Имя пользователя
-              <input
-                aria-label="Имя пользователя"
-                required
-                minLength={3}
-                maxLength={30}
-                autoComplete="username"
-                value={username}
-                onChange={(e) =>
-                  setUsername(e.target.value.toLowerCase().trim())
-                }
-              />
-              <small>
-                Латинские буквы, цифры и _. Адрес страницы: /u/
-                {username || "ваше_имя"}
-              </small>
-            </label>
-          )}
-          {mode !== "reset" && (
-            <label>
-              Email
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
-          )}
-          {mode !== "forgot" && (
-            <label>
-              Пароль
-              <input
-                aria-label="Пароль"
-                type="password"
-                required
-                minLength={8}
-                maxLength={128}
-                autoComplete={
-                  mode === "login" ? "current-password" : "new-password"
-                }
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <small>Не меньше 8 символов.</small>
-            </label>
-          )}
-          <button
-            className="primary-button"
-            disabled={
-              busy ||
-              !cloudConfigured ||
-              auth.loading ||
-              (mode === "reset" && !auth.session)
-            }
-          >
-            {busy
-              ? "Подождите…"
-              : {
-                  login: "Войти",
-                  register: "Зарегистрироваться",
-                  forgot: "Отправить письмо",
-                  reset: "Сохранить пароль",
-                }[mode]}
-          </button>
-        </form>
-        {mode === "reset" && !auth.session && !auth.loading && (
+      <div className="riot-auth-layout">
+        <aside
+          className="riot-auth-poster"
+          aria-label="Войди. Делай. Публикуй."
+        >
+          <span className="riot-tag">ACCESS / ZIN USER AREA</span>
           <p>
-            Откройте действующую ссылку из письма для восстановления пароля.
+            <span className="cutword paper mono">ВОЙДИ.</span>
+            <br />
+            <span className="cutword red">ДЕЛАЙ.</span>
+            <br />
+            <span className="cutword">ПУБЛИКУЙ.</span>
           </p>
-        )}
-        <div className="auth-links">
-          <Link to={`/login?next=${encodeURIComponent(next)}`}>Войти</Link>
-          <Link to={`/register?next=${encodeURIComponent(next)}`}>
-            Создать аккаунт
-          </Link>
-          <Link to="/forgot-password">Забыли пароль?</Link>
-          <Link to="/dashboard">Личный кабинет</Link>
-        </div>
-      </main>
+          <span className="riot-micro">
+            ТВОЯ СТРАНИЦА. ТВОЙ ШУМ. ТВОИ ПРАВИЛА.
+          </span>
+        </aside>
+        <main className="auth-card">
+          <span className="eyebrow">ВАШЕ ПРОСТРАНСТВО В ОБЛАКЕ</span>
+          <h1>{title}</h1>
+          <p>
+            Локальная страница остаётся в этом браузере. После входа вы сможете
+            выбрать её перенос в облако.
+          </p>
+          {!cloudConfigured && (
+            <p className="account-notice" role="status">
+              {configurationError ||
+                "Облачный режим пока не подключён. Редактор и локальное сохранение доступны без регистрации."}
+            </p>
+          )}
+          {auth.error && (
+            <p role="alert" className="field-error">
+              {auth.error}
+            </p>
+          )}
+          {error && (
+            <p role="alert" className="field-error">
+              {error}
+            </p>
+          )}
+          {message && (
+            <p role="status" className="account-notice">
+              {message}
+            </p>
+          )}
+          <form onSubmit={submit}>
+            {mode === "register" && (
+              <label>
+                Имя пользователя
+                <input
+                  aria-label="Имя пользователя"
+                  required
+                  minLength={3}
+                  maxLength={30}
+                  autoComplete="username"
+                  value={username}
+                  onChange={(e) =>
+                    setUsername(e.target.value.toLowerCase().trim())
+                  }
+                />
+                <small>
+                  Латинские буквы, цифры и _. Адрес страницы: /u/
+                  {username || "ваше_имя"}
+                </small>
+              </label>
+            )}
+            {mode !== "reset" && (
+              <label>
+                Email
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </label>
+            )}
+            {mode !== "forgot" && (
+              <label>
+                Пароль
+                <input
+                  aria-label="Пароль"
+                  type="password"
+                  required
+                  minLength={8}
+                  maxLength={128}
+                  autoComplete={
+                    mode === "login" ? "current-password" : "new-password"
+                  }
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <small>Не меньше 8 символов.</small>
+              </label>
+            )}
+            <button
+              className="cutout-button primary"
+              disabled={
+                busy ||
+                !cloudConfigured ||
+                auth.loading ||
+                (mode === "reset" && !auth.session)
+              }
+            >
+              <CutoutLabel
+                text={
+                  busy
+                    ? "Подождите…"
+                    : {
+                        login: "Войти ↗",
+                        register: "Зарегистрироваться ↗",
+                        forgot: "Отправить письмо ↗",
+                        reset: "Сохранить пароль ↗",
+                      }[mode]
+                }
+              />
+            </button>
+          </form>
+          {mode === "reset" && !auth.session && !auth.loading && (
+            <p>
+              Откройте действующую ссылку из письма для восстановления пароля.
+            </p>
+          )}
+          <div className="auth-links">
+            <Link to={`/login?next=${encodeURIComponent(next)}`}>Войти</Link>
+            <Link to={`/register?next=${encodeURIComponent(next)}`}>
+              Создать аккаунт
+            </Link>
+            <Link to="/forgot-password">Забыли пароль?</Link>
+            <Link to="/dashboard">Личный кабинет</Link>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

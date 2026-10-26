@@ -47,19 +47,34 @@ export function MobileEditorTools({
   useEffect(() => {
     const workspace = document.querySelector<HTMLElement>(".workspace"),
       heading = workspace?.querySelector<HTMLElement>(".workspace-heading"),
-      bar = workspace?.querySelector<HTMLElement>(".canvas-interaction-bar");
+      bar = workspace?.querySelector<HTMLElement>(".canvas-interaction-bar"),
+      composition = workspace?.querySelector<HTMLElement>(".page-surface"),
+      scroll = workspace?.querySelector<HTMLElement>(".canvas-scroll");
     if (!workspace) return;
     const measure = () =>
       setCanvasTop(
         Math.round(
-          workspace.getBoundingClientRect().top +
-            (heading?.offsetHeight ?? 0) +
-            (bar?.offsetHeight ?? 0) +
-            44,
+          Math.max(
+            scroll?.getBoundingClientRect().top ?? 0,
+            composition?.getBoundingClientRect().top ??
+              workspace.getBoundingClientRect().top +
+                (heading?.offsetHeight ?? 0) +
+                (bar?.offsetHeight ?? 0) +
+                44,
+          ),
         ),
       );
     const observer = new ResizeObserver(measure);
-    [workspace, heading, bar].forEach((node) => {
+    // Include the tool rows: selection and zoom controls affect the visible canvas.
+    [
+      workspace,
+      heading,
+      bar,
+      composition,
+      workspace.querySelector(".selection-tools"),
+      workspace.querySelector(".canvas-view-controls"),
+      workspace.querySelector(".mobile-selection-context"),
+    ].forEach((node) => {
       if (node) observer.observe(node);
     });
     measure();
@@ -105,7 +120,10 @@ export function MobileEditorTools({
   const mediumHeight =
     viewport < 700
       ? Math.min(fullHeight, viewport * 0.46)
-      : Math.min(viewport * 0.4, fullHeight * 0.75);
+      : Math.min(
+          viewport * 0.4,
+          fullHeight * (tool === "library" || tool === "layers" ? 0.9 : 0.75),
+        );
   const height = tool
     ? (dragHeight ?? (size === "full" ? fullHeight : mediumHeight))
     : 0;
