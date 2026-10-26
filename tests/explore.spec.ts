@@ -49,7 +49,7 @@ async function setup(page: Page, source = cards) {
   });
   await page.goto("/explore");
   await expect(
-    page.getByRole("heading", { name: "ЧУЖОЙ МИР. ТВОЁ ВДОХНОВЕНИЕ." }),
+    page.getByRole("heading", { name: "ПОСМОТРИ, ЧТО НАТВОРИЛИ." }),
   ).toBeVisible();
   return requests;
 }
@@ -91,7 +91,11 @@ test("bounded pagination, debounce, categories, sorting and no heavy media reque
   page.on("request", (request) => {
     if (
       /\.(gif|mp4|webm|mp3|woff2?)($|\?)/.test(request.url()) &&
-      !request.url().includes("/assets/")
+      !request.url().includes("/assets/") &&
+      // Vite serves the app's bundled UI fonts here in development.
+      !request
+        .url()
+        .startsWith("http://127.0.0.1:5180/node_modules/@fontsource/")
     )
       media.push(request.url());
   });

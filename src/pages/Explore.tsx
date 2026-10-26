@@ -244,9 +244,9 @@ export default function Explore() {
         <section className="explore-intro">
           <span className="eyebrow">НЕЗАВИСИМЫЕ ЦИФРОВЫЕ МИРЫ / EXPLORE</span>
           <h1>
-            ЧУЖОЙ МИР.
+            ПОСМОТРИ,
             <br />
-            <em>ТВОЁ ВДОХНОВЕНИЕ.</em>
+            <em>ЧТО НАТВОРИЛИ.</em>
           </h1>
           <p>
             Откройте ZIN авторов, которые решили поделиться своей страницей. Без

@@ -14,6 +14,8 @@ import "./styles/effects.css";
 import "./styles/templates.css";
 import "./styles/accounts.css";
 import "./styles/raw-signal.css";
+import "./styles/explore.css";
+import "./styles/xerox-riot.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AppErrorBoundary>
