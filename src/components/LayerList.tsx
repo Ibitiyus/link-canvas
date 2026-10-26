@@ -28,16 +28,12 @@ export function LayerList() {
     project,
     selectedId,
     selectedIds,
-    selectOnly,
-    renameGroup,
-    ungroup,
     select,
     updateBlock,
     moveLayer,
     duplicate,
     remove,
   } = useProject();
-  const [collapsed, setCollapsed] = useState<string[]>([]);
   const [menu, setMenu] = useState<string | null>(null),
     [drag, setDrag] = useState<string | null>(null),
     [over, setOver] = useState<string | null>(null);
@@ -117,40 +113,8 @@ export function LayerList() {
             group && !top.slice(0, index).some((b) => b.groupId === group.id);
         return (
           <Fragment key={block.id}>
-            {first && (
-              <div className="group-header" data-group-id={group.id}>
-                <button
-                  aria-label={`Свернуть группу: ${group.name}`}
-                  aria-expanded={!collapsed.includes(group.id)}
-                  onClick={() =>
-                    setCollapsed((current) =>
-                      current.includes(group.id)
-                        ? current.filter((id) => id !== group.id)
-                        : [...current, group.id],
-                    )
-                  }
-                >
-                  {collapsed.includes(group.id) ? "▸" : "▾"}
-                </button>
-                <button onClick={() => select(block.id)}>{group.name}</button>
-                <input
-                  aria-label={`Переименовать группу: ${group.name}`}
-                  value={group.name}
-                  maxLength={160}
-                  onChange={(e) => renameGroup(group.id, e.target.value)}
-                />
-                <button onClick={() => ungroup(group.id)}>
-                  Разгруппировать
-                </button>
-                <button onClick={() => moveLayer(block.id, "up")}>
-                  Группу выше
-                </button>
-                <button onClick={() => moveLayer(block.id, "down")}>
-                  Группу ниже
-                </button>
-              </div>
-            )}
-            {(!group || !collapsed.includes(group.id)) && (
+            {first && <div className="group-header">{group.name}</div>}
+            {
               <div
                 key={block.id}
                 data-layer-id={block.id}
@@ -197,21 +161,6 @@ export function LayerList() {
                 onPointerCancel={() => clearTimeout(timer.current)}
               >
                 <div className="layer-main">
-                  <input
-                    className="layer-check"
-                    type="checkbox"
-                    aria-label={`Выбрать дополнительно: ${block.name}`}
-                    checked={selectedIds.includes(block.id)}
-                    onChange={() => select(block.id, true)}
-                  />
-                  {block.groupId && (
-                    <button
-                      aria-label={`Редактировать отдельно: ${block.name}`}
-                      onClick={() => selectOnly(block.id)}
-                    >
-                      ↳
-                    </button>
-                  )}
                   <button
                     className="layer-grip"
                     aria-label={`Переместить слой: ${block.name}`}
@@ -313,7 +262,7 @@ export function LayerList() {
                   </button>
                 </div>
               </div>
-            )}
+            }
           </Fragment>
         );
       })}

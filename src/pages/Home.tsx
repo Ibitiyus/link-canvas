@@ -1,3 +1,5 @@
+import { ExploreSelection } from "../explore/ExploreSelection";
+import { ServiceArrow } from "../components/ui/ServiceArrow";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Menu, X, MoveUpRight } from "lucide-react";
@@ -19,7 +21,7 @@ const features = [
   [
     "03",
     "СЛОЙ ЗА СЛОЕМ.",
-    "Группируйте, вращайте, перекрывайте. Добавляйте движение и эффекты.",
+    "Вращайте, перекрывайте. Добавляйте движение и эффекты.",
   ],
   [
     "04",
@@ -72,8 +74,9 @@ export function Home() {
             }
           }}
         >
-          <Link to="/explore">Смотреть ZIN ↗</Link>
-          <Link to="/templates">Шаблоны ↗</Link>
+          <Link to="/explore">
+            Смотреть ZIN <ServiceArrow />
+          </Link>
           <a href="#playground" onClick={() => setMenu(false)}>
             Попробовать
           </a>
@@ -155,7 +158,7 @@ export function Home() {
             </div>
             <div className="riot-art-bottom">
               <span>✳</span>
-              <img src="/templates/previews/punk-zine.png" alt="" />
+              <img src="/demo/signal-still.svg" alt="" />
             </div>
             <div className="riot-sticker one">
               <b className="cutword paper mono">YOUR</b>
@@ -176,34 +179,7 @@ export function Home() {
           ✳ CUT / PASTE / PUBLISH ✳ ALL PAGES SHOULDN’T LOOK THE SAME ✳ YOUR
           PAGE / YOUR RULES ✳
         </div>
-        <section className="riot-samples" aria-labelledby="samples-title">
-          <span className="riot-tag">01 / ПРИМЕРЫ</span>
-          <h2 id="samples-title">
-            ZIN НЕ ДОЛЖНЫ БЫТЬ
-            <br />
-            <span className="cutword red">ОПРЯТНЫМИ.</span>
-          </h2>
-          <div className="riot-sample-grid">
-            {[
-              ["punk-zine", "CUT MY WIRES", "TEXT + LINKS"],
-              ["music-artist", "LOUD ENOUGH", "MUSIC + PHOTO"],
-              ["photographer", "NO MORE POLITE", "PHOTO + STORIES"],
-            ].map(([id, title, type]) => (
-              <Link className="riot-sample" to={`/templates/${id}`} key={id}>
-                <span className="riot-micro">КОМПОЗИЦИЯ / {type}</span>
-                <h3>{title} ↗</h3>
-                <img
-                  src={`/templates/previews/${id}.png`}
-                  alt={`Пример композиции ${title}`}
-                  loading="lazy"
-                />
-                <span className="riot-micro">
-                  ОТКРЫТЬ И ПЕРЕДЕЛАТЬ ПОД СЕБЯ ↗
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
+        <ExploreSelection />
         <section
           className="raw-playground"
           id="playground"
@@ -250,50 +226,6 @@ export function Home() {
             ))}
           </div>
         </section>
-        <section className="raw-templates">
-          <div>
-            <span className="eyebrow">
-              03 / ГОТОВАЯ ОСНОВА — ВАШЕ ПРОДОЛЖЕНИЕ
-            </span>
-            <h2>
-              ШАБЛОН —<br />
-              <em>ТОЛЬКО НАЧАЛО.</em>
-            </h2>
-            <p>
-              Cybercore, Punk Zine, Old Web и ещё пять композиций. Любой элемент
-              можно изменить. Или начните с пустого полотна.
-            </p>
-            <Link className="secondary-button" to="/templates">
-              Выбрать шаблон ↗
-            </Link>
-          </div>
-          <div className="raw-template-links">
-            <Link to="/templates/cybercore">
-              <span>01 / ХРОМ И ШУМ</span>
-              <strong>
-                CYBER
-                <br />
-                CORE ↗
-              </strong>
-            </Link>
-            <Link to="/templates/punk-zine">
-              <span>02 / ВЫРЕЗАЙ И КЛЕЙ</span>
-              <strong>
-                PUNK
-                <br />
-                ZINE ↗
-              </strong>
-            </Link>
-            <Link to="/templates/blank-canvas">
-              <span>03 / НИЧЕГО ЛИШНЕГО</span>
-              <strong>
-                BLANK
-                <br />
-                CANVAS ↗
-              </strong>
-            </Link>
-          </div>
-        </section>
         <section className="raw-final">
           <span className="eyebrow">04 / ВАША ЧАСТОТА</span>
           <h2>
@@ -329,8 +261,9 @@ export function Home() {
         </p>
         <nav aria-label="Ссылки в подвале">
           <Link to="/explore">Галерея</Link>
-          <Link to="/templates">Шаблоны</Link>
-          <Link to="/preview">Мой предпросмотр ↗</Link>
+          <Link to="/preview">
+            Мой предпросмотр <ServiceArrow />
+          </Link>
         </nav>
         <span>
           BUILT WITH ZIN

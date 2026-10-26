@@ -1,14 +1,6 @@
 import { LocalConflict, LocalPersistence } from "../model/localPersistence";
-import type { Effects } from "../model/effects";
 import { isFree } from "../model/placement";
-import {
-  switchLayout,
-  groupBlocks,
-  ungroupBlocks,
-  transformSelection,
-  duplicateSelection,
-  cleanGroups,
-} from "../model/creative";
+import { switchLayout, cleanGroups } from "../model/creative";
 import { positionPatch, moveLayer } from "../model/layers";
 import { createId } from "../model/id";
 import {
@@ -53,23 +45,13 @@ interface ProjectStore {
   replace: (project: Project) => void;
   selectedId: string | null;
   selectedIds: string[];
-  multiSelect: boolean;
-  setMultiSelect: (value: boolean) => void;
-  select: (id: string | null, additive?: boolean) => void;
-  selectOnly: (id: string) => void;
+  select: (id: string | null) => void;
   setLayout: (id: string, layout: "grid" | "free") => void;
-  groupSelection: () => void;
-  ungroup: (id: string) => void;
-  updateGroupEffects: (id: string, effects: Effects) => void;
   showAnimations: boolean;
   setShowAnimations: (value: boolean) => void;
   previewEffect: { id: string; token: number } | null;
   playEffect: (id: string) => void;
-  renameGroup: (id: string, name: string) => void;
   patchSelection: (patch: Partial<Block>) => void;
-  transform: (ids: string[], from: Block, to: Block) => void;
-  duplicateSelected: () => void;
-  removeSelected: () => void;
   change: (update: Project | ((project: Project) => Project)) => void;
   add: (type: BlockType) => void;
   updateBlock: (id: string, patch: Partial<Block>) => void;
@@ -122,32 +104,14 @@ export function ProjectProvider({
     present: initial.project,
     future: [],
   } satisfies History);
-  const [selection, setSelection] = useState<string[]>([]),
-    [multiSelect, setMultiSelect] = useState(false);
+  const [selection, setSelection] = useState<string[]>([]);
   const [showAnimations, setShowAnimations] = useState(false);
   const [previewEffect, setPreviewEffect] = useState<{
     id: string;
     token: number;
   } | null>(null);
   const selectedId = selection[0] ?? null;
-  const select = (id: string | null, additive = false) => {
-    if (!id) {
-      setSelection([]);
-      return;
-    }
-    const source = history.present.blocks.find((b) => b.id === id);
-    const ids = source?.groupId
-      ? history.present.blocks
-          .filter((b) => b.groupId === source.groupId)
-          .map((b) => b.id)
-      : [id];
-    setSelection((current) => {
-      if (!additive) return ids;
-      return ids.every((i) => current.includes(i))
-        ? current.filter((i) => !ids.includes(i))
-        : [...new Set([...current, ...ids])];
-    });
-  };
+  const select = (id: string | null) => setSelection(id ? [id] : []);
   const [message, notify] = useState(initial.error);
   const [status, setStatus] = useState<"saving" | "saved" | "error">(
     initial.error ? "error" : "saving",
@@ -365,11 +329,6 @@ export function ProjectProvider({
         setShowAnimations,
         previewEffect,
         playEffect: (id) => setPreviewEffect({ id, token: Date.now() }),
-        updateGroupEffects: (id, effects) =>
-          change((p) => ({
-            ...p,
-            groups: p.groups?.map((g) => (g.id === id ? { ...g, effects } : g)),
-          })),
         replace,
         selectedId: project.blocks.some((b) => b.id === selectedId)
           ? selectedId
@@ -377,37 +336,8 @@ export function ProjectProvider({
         selectedIds: selection.filter((id) =>
           project.blocks.some((b) => b.id === id),
         ),
-        multiSelect,
-        setMultiSelect,
         select,
-        selectOnly: (id) => setSelection([id]),
         setLayout: (id, layout) => change((p) => switchLayout(p, id, layout)),
-        groupSelection: () => {
-          if (selection.length < 2) return;
-          if (
-            project.blocks.some((b) => selection.includes(b.id) && b.locked)
-          ) {
-            notify("Сначала разблокируйте выбранные элементы.");
-            return;
-          }
-          const result = groupBlocks(project, selection);
-          if (result === project)
-            notify(
-              "Не удалось создать группу. Допускается не более 100 групп.",
-            );
-          else {
-            change(result);
-            setMultiSelect(false);
-          }
-        },
-        ungroup: (id) => change((p) => ungroupBlocks(p, id)),
-        renameGroup: (id, name) =>
-          change((p) => ({
-            ...p,
-            groups: p.groups?.map((g) =>
-              g.id === id ? { ...g, name: name.slice(0, 160) } : g,
-            ),
-          })),
         patchSelection: (patch) =>
           change((p) => ({
             ...p,
@@ -417,38 +347,6 @@ export function ProjectProvider({
                 : b,
             ),
           })),
-        transform: (ids, from, to) => {
-          const result = transformSelection(project, ids, from, to);
-          if (result === project && !from.locked)
-            notify(
-              "Размер группы выходит за допустимые размеры элементов или шрифта (8–144 пкс).",
-            );
-          else change(result);
-        },
-        duplicateSelected: () => {
-          const result = duplicateSelection(project, selection);
-          if (!result.ids.length) {
-            notify(
-              "Нельзя добавить копию: предел — 200 элементов и 100 групп.",
-            );
-            return;
-          }
-          change(result.project);
-          setSelection(result.ids);
-          setMultiSelect(false);
-        },
-        removeSelected: () => {
-          if (
-            project.blocks.some((b) => selection.includes(b.id) && b.locked) &&
-            !confirm("Удалить закреплённые элементы?")
-          )
-            return;
-          change((p) => ({
-            ...p,
-            blocks: p.blocks.filter((b) => !selection.includes(b.id)),
-          }));
-          setSelection([]);
-        },
         change,
         add,
         updateBlock: (id, patch) => change((p) => editBlock(p, id, patch)),

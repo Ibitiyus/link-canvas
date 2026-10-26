@@ -1,3 +1,4 @@
+import { ServiceArrow } from "../components/ui/ServiceArrow";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CutoutLabel } from "../components/ui/Cutout";
@@ -100,7 +101,9 @@ export function AuthPage({
     <div className="account-page riot-auth">
       <header>
         <Brand />
-        <Link to="/editor">Продолжить без аккаунта ↗</Link>
+        <Link to="/editor">
+          Продолжить без аккаунта <ServiceArrow />
+        </Link>
       </header>
       <div className="riot-auth-layout">
         <aside

@@ -21,9 +21,7 @@ export function PageSettings() {
           onChange={(event) => updatePage({ title: event.target.value })}
         />
       </Field>
-      <h3>
-        <span>01 /</span> ОФОРМЛЕНИЕ
-      </h3>
+      <h3>ОФОРМЛЕНИЕ</h3>
       <div className="theme-presets" aria-label="Варианты оформления">
         <button
           className="theme-dark"
@@ -90,9 +88,7 @@ export function PageSettings() {
           <option value="mono">Моноширинный</option>
         </select>
       </Field>
-      <h3>
-        <span>02 /</span> СЕТКА
-      </h3>
+      <h3>СЕТКА</h3>
       <Field label="Колонки">
         <select
           value={page.columns}

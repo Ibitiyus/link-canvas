@@ -1,3 +1,4 @@
+import { ServiceArrow } from "../components/ui/ServiceArrow";
 import { GallerySettings } from "../explore/GallerySettings";
 import "../styles/explore.css";
 import { useEffect, useState } from "react";
@@ -52,8 +53,12 @@ export function Dashboard() {
       <header>
         <Brand />
         <nav>
-          <Link to="/explore">Explore ↗</Link>
-          <Link to="/editor">Редактор ↗</Link>
+          <Link to="/explore">
+            Explore <ServiceArrow />
+          </Link>
+          <Link to="/editor">
+            Редактор <ServiceArrow />
+          </Link>
           <button onClick={() => void run(auth.signOut)}>Выйти</button>
         </nav>
       </header>

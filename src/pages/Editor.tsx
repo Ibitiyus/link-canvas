@@ -1,4 +1,3 @@
-import { SelectionTools } from "../components/SelectionTools";
 import {
   MobileEditorTools,
   type MobileTool,
@@ -48,11 +47,7 @@ export function Editor() {
     showAnimations,
     previewEffect,
     selectedIds,
-    multiSelect,
-    transform,
     patchSelection,
-    duplicateSelected,
-    removeSelected,
     select,
     updateBlock,
     undo,
@@ -80,14 +75,14 @@ export function Editor() {
         redo();
       } else if (command && event.key.toLowerCase() === "d" && selectedId) {
         event.preventDefault();
-        selectedIds.length > 1 ? duplicateSelected() : duplicate(selectedId);
+        duplicate(selectedId);
       } else if (
         (event.key === "Delete" || event.key === "Backspace") &&
         selectedId
       ) {
         event.preventDefault();
         if (!project.blocks.some((b) => selectedIds.includes(b.id) && b.locked))
-          selectedIds.length > 1 ? removeSelected() : remove(selectedId);
+          remove(selectedId);
       } else if (event.key === "Escape") select(null);
     };
     window.addEventListener("keydown", key);
@@ -177,7 +172,7 @@ export function Editor() {
         <main className="workspace" id="workspace-panel">
           <div className="workspace-heading">
             <div>
-              <span className="eyebrow">02 / ВАШЕ МЕСТО В ИНТЕРНЕТЕ</span>
+              <span className="eyebrow">ВАШЕ МЕСТО В ИНТЕРНЕТЕ</span>
               <h1>
                 {project.page.title || "Без названия"}
                 <span className="draft-badge">ЛОКАЛЬНЫЙ ЧЕРНОВИК</span>
@@ -218,13 +213,7 @@ export function Editor() {
                 <details>
                   <summary>Ещё</summary>
                   <div>
-                    <button
-                      onClick={() =>
-                        selectedIds.length > 1
-                          ? duplicateSelected()
-                          : duplicate(selectedId)
-                      }
-                    >
+                    <button onClick={() => duplicate(selectedId)}>
                       Дублировать
                     </button>
                     <button onClick={() => setTool("layers")}>
@@ -244,9 +233,7 @@ export function Editor() {
                     <button
                       onClick={() => {
                         if (confirm("Удалить выбранные элементы?"))
-                          selectedIds.length > 1
-                            ? removeSelected()
-                            : remove(selectedId);
+                          remove(selectedId);
                       }}
                     >
                       Удалить
@@ -258,7 +245,6 @@ export function Editor() {
               <span>Коснитесь блока, чтобы изменить его.</span>
             )}
           </div>
-          <SelectionTools />
           <div className="canvas-scroll">
             <div
               className="canvas-ruler"
@@ -282,10 +268,6 @@ export function Editor() {
               showAnimations={showAnimations}
               previewEffect={previewEffect}
               selectedId={selectedId}
-              selectedIds={selectedIds}
-              multiSelect={multiSelect}
-              onTransform={transform}
-              onUnlockSelection={() => patchSelection({ locked: false })}
               onSelect={select}
               onUpdate={updateBlock}
             />

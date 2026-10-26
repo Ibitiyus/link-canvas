@@ -210,17 +210,10 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
   await page.getByRole("button", { name: /^Слои/ }).click();
   await page.keyboard.press("Escape");
   await page
-    .getByLabel("Выбрать дополнительно: Текст", { exact: true })
-    .check();
-  await page
-    .getByLabel("Выбрать дополнительно: Изображение", { exact: true })
-    .check();
-  await page
-    .getByRole("button", { name: "Сгруппировать", exact: true })
+    .locator(".layer-select")
+    .filter({ hasText: "Текст" })
+    .first()
     .click();
-  await expect(
-    page.getByRole("button", { name: "Сохранено", exact: true }),
-  ).toBeVisible();
   await page.getByText("Анимация и эффекты", { exact: true }).click();
   await page.getByLabel("Тип анимации", { exact: true }).selectOption("float");
   await expect(
@@ -239,15 +232,12 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
     .eq("owner_id", user.id)
     .single();
   expect(cloudDraft.error).toBeNull();
-  expect(cloudDraft.data!.project.groups).toHaveLength(1);
-  expect(cloudDraft.data!.project.groups[0].effects.animation.type).toBe(
-    "float",
-  );
+  expect(cloudDraft.data!.project.groups).toHaveLength(0);
   expect(
-    cloudDraft
-      .data!.project.blocks.filter((b: { groupId?: string }) => b.groupId)
-      .every((b: { layout: string }) => b.layout === "free"),
-  ).toBe(true);
+    cloudDraft.data!.project.blocks.find(
+      (b: { type: string }) => b.type === "text",
+    ).effects.animation.type,
+  ).toBe("float");
   expect(
     cloudDraft.data!.project.blocks.find(
       (b: { type: string }) => b.type === "decoration",
@@ -268,7 +258,9 @@ test("migrates all eight block types and fonts, publishes to an anonymous device
     await visitor.goto(address!);
     await expect(visitor.locator("[data-block-id]")).toHaveCount(8);
     await expect(
-      visitor.locator(".effect-group > .effect-root > .effect-animation"),
+      visitor.locator(
+        ".canvas-block:has(.type-text) > .effect-root > .effect-animation",
+      ),
     ).toHaveCSS("animation-name", "zin-float");
     await expect(
       visitor.locator(".free-block:has(.type-decoration)"),

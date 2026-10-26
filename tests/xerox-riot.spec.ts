@@ -7,7 +7,9 @@ for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     await expect(page.locator(".riot-collage img")).toHaveCount(3);
-    await expect(page.locator(".riot-sample")).toHaveCount(3);
+    await expect(page.locator('.raw-home a[href^="/templates"]')).toHaveCount(
+      0,
+    );
     await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName(
       "САЙТ НЕ ОБЯЗАН БЫТЬ НОРМАЛЬНЫМ.",
     );

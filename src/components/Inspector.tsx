@@ -1,6 +1,5 @@
 import { EffectsInspector } from "./EffectsInspector";
 import { freeSize } from "../model/creative";
-import { GroupInspector } from "./GroupInspector";
 import { isFree } from "../model/placement";
 import { BlockBackground } from "./BlockBackground";
 import { POSITION_LIMIT, SIZE_LIMIT } from "../model/decoration";
@@ -34,7 +33,6 @@ export function Inspector({
   const {
     project,
     selectedId,
-    selectedIds,
     setLayout,
     updateBlock,
     duplicate,
@@ -60,7 +58,7 @@ export function Inspector({
       id="inspector-panel"
       aria-label="Настройки блока и страницы"
     >
-      <PanelHeader index="03" title="НАСТРОЙКИ" subtitle="ВСЁ РЕШАЮТ ДЕТАЛИ" />
+      <PanelHeader title="НАСТРОЙКИ" subtitle="ВСЁ РЕШАЮТ ДЕТАЛИ" />
       <div className="panel-tabs">
         <button
           className={tab === "block" ? "active" : ""}
@@ -79,8 +77,6 @@ export function Inspector({
       </div>
       {tab === "page" ? (
         <PageSettings />
-      ) : selectedIds.length > 1 ? (
-        <GroupInspector />
       ) : !block ? (
         <div className="inspector-empty">
           <MousePointer2 size={32} />
@@ -111,9 +107,7 @@ export function Inspector({
               </button>
             </div>
           </div>
-          <h3>
-            <span>01 /</span> СОДЕРЖИМОЕ
-          </h3>
+          <h3>СОДЕРЖИМОЕ</h3>
           <Field label="Название блока">
             <input
               maxLength={160}
@@ -239,9 +233,7 @@ export function Inspector({
             effects={block.effects}
             onChange={(effects) => patch({ effects })}
           />
-          <h3>
-            <span>02 /</span> ОФОРМЛЕНИЕ
-          </h3>
+          <h3>ОФОРМЛЕНИЕ</h3>
           <div className="field-pair">
             <ColorField
               label={block.type === "qrcode" ? "Цвет QR-кода" : "Цвет текста"}
@@ -253,9 +245,7 @@ export function Inspector({
             value={block.background}
             onChange={(background) => patch({ background })}
           />
-          <h3>
-            <span>03 /</span> ЭФФЕКТЫ
-          </h3>
+          <h3>ЭФФЕКТЫ</h3>
           <div className="field-pair">
             <NumberField
               label="Скругление"
@@ -325,8 +315,7 @@ export function Inspector({
             </>
           )}
           <h3>
-            <span>04 /</span> РАЗМЕЩЕНИЕ{" "}
-            <small>{isFree(block) ? "Свободно" : "Сетка"}</small>
+            РАЗМЕЩЕНИЕ <small>{isFree(block) ? "Свободно" : "Сетка"}</small>
           </h3>
           <Field label="Режим размещения">
             <select

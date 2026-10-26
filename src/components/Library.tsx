@@ -40,11 +40,7 @@ export function Library({
       id="library-panel"
       aria-label="Библиотека блоков и слои"
     >
-      <PanelHeader
-        index="01"
-        title="БИБЛИОТЕКА БЛОКОВ"
-        subtitle="ДОБАВЬТЕ НЕМНОГО СЕБЯ"
-      />
+      <PanelHeader title="БИБЛИОТЕКА БЛОКОВ" subtitle="ДОБАВЬТЕ НЕМНОГО СЕБЯ" />
       <TemplateEntry />
       <div className="panel-tabs">
         <button

@@ -2,7 +2,7 @@ import { editorGrid, type GridVisibility } from "../model/editorGrid";
 import type { CSSProperties } from "react";
 import { EffectSurface } from "./EffectSurface";
 import { isFree } from "../model/placement";
-import { selectionBox, transformSelection } from "../model/creative";
+import { selectionBox } from "../model/creative";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { Grip } from "lucide-react";
 import { gridRows } from "../model/grid";
@@ -23,11 +23,7 @@ interface Props {
   rowHeight?: number;
   editing?: boolean;
   selectedId?: string | null;
-  onSelect?: (id: string | null, additive?: boolean) => void;
-  selectedIds?: string[];
-  multiSelect?: boolean;
-  onUnlockSelection?: () => void;
-  onTransform?: (ids: string[], from: Block, to: Block) => void;
+  onSelect?: (id: string | null) => void;
   onUpdate?: (id: string, patch: Partial<Block>) => void;
 }
 export function Canvas({
@@ -39,10 +35,6 @@ export function Canvas({
   rowHeight = ROW_HEIGHT,
   selectedId,
   onSelect,
-  selectedIds = [],
-  multiSelect = false,
-  onTransform,
-  onUnlockSelection,
   onUpdate,
 }: Props) {
   const board = useRef<HTMLDivElement>(null),
@@ -57,10 +49,6 @@ export function Canvas({
   const { page, blocks } = project,
     rows = gridRows(blocks),
     height = rows * rowHeight + (rows - 1) * page.gap;
-  const gestureIds = useRef<string[]>([]),
-    groupOrigin = useRef<Block | null>(null);
-  const multiBox =
-    selectedIds.length > 1 ? selectionBox(project, selectedIds) : null;
   const { gesture, mode, begin, suppressClick } = useCanvasGesture({
     board,
     width: page.maxWidth,
@@ -70,28 +58,15 @@ export function Canvas({
     onSelect: (id) => {
       if (id !== "__selection__" && id !== selectedId) onSelect?.(id);
     },
-    onUpdate: (id, patch) => {
-      if (id === "__selection__" && groupOrigin.current)
-        onTransform?.(gestureIds.current, groupOrigin.current, patch as Block);
-      else onUpdate?.(id, patch);
-    },
+    onUpdate: (id, patch) => onUpdate?.(id, patch),
     enabled: editing,
     reset: project,
   });
-  const selected = multiBox ?? blocks.find((b) => b.id === selectedId),
+  const selected = blocks.find((b) => b.id === selectedId),
     order = orderedLayers(blocks),
     stack = new Map(order.map((b, i) => [b.id, i + 1]));
-  const visualBlocks =
-    gesture?.block.id === "__selection__" && groupOrigin.current
-      ? transformSelection(
-          project,
-          gestureIds.current,
-          groupOrigin.current,
-          gesture.block,
-        ).blocks
-      : blocks;
-  const gridBlocks = visualBlocks.filter((b) => !isFree(b)),
-    decorBlocks = orderedLayers(visualBlocks).filter(isFree);
+  const gridBlocks = blocks.filter((b) => !isFree(b)),
+    decorBlocks = orderedLayers(blocks).filter(isFree);
   const occupiedCells = useMemo(() => {
     const cells = new Set<number>();
     if (!editing) return cells;
@@ -108,34 +83,8 @@ export function Canvas({
     immediate = false,
   ) => {
     if (!editing) return;
-    immediate ||=
-      moveOnPress &&
-      (block.id === "__selection__" ||
-        selectedIds.includes(block.id) ||
-        block.id === selectedId);
-    if (!edge && !immediate && (multiSelect || event.shiftKey)) {
-      event.stopPropagation();
-      onSelect?.(block.id, true);
-      return;
-    }
-    let ids =
-      block.id === "__selection__"
-        ? selectedIds
-        : selectedIds.includes(block.id) && selectedIds.length > 1
-          ? selectedIds
-          : block.groupId &&
-              !(selectedIds.length === 1 && selectedIds[0] === block.id)
-            ? blocks.filter((b) => b.groupId === block.groupId).map((b) => b.id)
-            : [block.id];
-    if (ids.length > 1) {
-      const box = selectionBox(project, ids);
-      if (!box) return;
-      gestureIds.current = ids;
-      groupOrigin.current = box;
-      if (block.id !== "__selection__" && !selectedIds.includes(block.id))
-        onSelect?.(block.id);
-      begin(event, box, edge, immediate);
-    } else begin(event, block, edge, immediate);
+    immediate ||= moveOnPress && block.id === selectedId;
+    begin(event, block, edge, immediate);
   };
   const placement = (b: Block) => ({
     gridColumn: `${b.col + 1} / span ${b.colSpan}`,
@@ -206,11 +155,7 @@ export function Canvas({
         minHeight={height + CANVAS_PADDING * 2}
         decorations={order
           .filter(isFree)
-          .filter(
-            (b) =>
-              !b.hidden ||
-              (editing && (selectedIds.includes(b.id) || b.id === selectedId)),
-          )}
+          .filter((b) => !b.hidden || (editing && b.id === selectedId))}
       >
         <div
           className={`page-surface ${editing ? "editor-surface" : ""}`}
@@ -280,7 +225,7 @@ export function Canvas({
                 key={block.id}
                 data-testid={`block-${block.id}`}
                 data-block-id={block.id}
-                className={`canvas-block ${editing ? "editable" : ""} ${(selectedIds.includes(block.id) || selectedId === block.id) && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""} ${gesture?.block.id === block.id ? "drag-source" : ""}`}
+                className={`canvas-block ${editing ? "editable" : ""} ${selectedId === block.id && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""} ${gesture?.block.id === block.id ? "drag-source" : ""}`}
                 style={{
                   ...placement(block),
                   zIndex: stack.get(block.id),
@@ -293,12 +238,7 @@ export function Canvas({
                 onClick={(event) => {
                   if (editing) {
                     event.stopPropagation();
-                    if (
-                      !multiSelect &&
-                      !event.shiftKey &&
-                      (block.id !== selectedId || selectedIds.length > 1)
-                    )
-                      onSelect?.(block.id);
+                    if (block.id !== selectedId) onSelect?.(block.id);
                   }
                 }}
                 onKeyDown={(event) => {
@@ -308,12 +248,7 @@ export function Canvas({
                     (event.key === "Enter" || event.key === " ")
                   ) {
                     event.preventDefault();
-                    if (
-                      !multiSelect &&
-                      !event.shiftKey &&
-                      (block.id !== selectedId || selectedIds.length > 1)
-                    )
-                      onSelect?.(block.id);
+                    if (block.id !== selectedId) onSelect?.(block.id);
                   }
                 }}
                 tabIndex={editing ? 0 : undefined}
@@ -375,7 +310,7 @@ export function Canvas({
                   <div
                     key={block.id}
                     data-block-id={block.id}
-                    className={`free-block ${editing ? "editable" : ""} ${(selectedIds.includes(block.id) || selectedId === block.id) && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""}`}
+                    className={`free-block ${editing ? "editable" : ""} ${selectedId === block.id && editing ? "selected" : ""} ${block.locked ? "is-locked" : ""}`}
                     style={{
                       ...freePlacement({
                         ...block,
@@ -390,12 +325,7 @@ export function Canvas({
                     onClick={(event) => {
                       if (editing) {
                         event.stopPropagation();
-                        if (
-                          !multiSelect &&
-                          !event.shiftKey &&
-                          (block.id !== selectedId || selectedIds.length > 1)
-                        )
-                          onSelect?.(block.id);
+                        if (block.id !== selectedId) onSelect?.(block.id);
                       }
                     }}
                     onPointerDownCapture={(event) => {
@@ -430,7 +360,7 @@ export function Canvas({
                     (b) => b.groupId === group.id,
                   ),
                   bounds = selectionBox(
-                    { ...project, blocks: visualBlocks },
+                    project,
                     members.map((b) => b.id),
                   )!;
                 return (
@@ -486,9 +416,7 @@ export function Canvas({
                     type="button"
                     className="selection-unlock"
                     onClick={() => {
-                      if (selected.id === "__selection__")
-                        onUnlockSelection?.();
-                      else onUpdate?.(selected.id, { locked: false });
+                      onUpdate?.(selected.id, { locked: false });
                     }}
                   >
                     Разблокировать
