@@ -226,12 +226,24 @@ summary:focus-visible {
   gap: 12px;
   height: 180px;
 }
-.riot-art-bottom > span {
+.riot-art-star {
   display: grid;
   place-items: center;
   background: var(--pink);
-  font: 150px/0.9 var(--display-font);
   border: 5px solid var(--white-paper);
+}
+.riot-art-star::before,
+.riot-art-star::after {
+  content: "";
+  grid-area: 1 / 1;
+  width: min(72%, 120px);
+  aspect-ratio: 1;
+  background:
+    linear-gradient(currentColor, currentColor) center / 100% 14% no-repeat,
+    linear-gradient(currentColor, currentColor) center / 14% 100% no-repeat;
+}
+.riot-art-star::after {
+  transform: rotate(45deg);
 }
 .riot-sticker {
   position: absolute;
@@ -804,8 +816,9 @@ summary:focus-visible {
     height: 140px;
     gap: 8px;
   }
-  .riot-art-bottom > span {
-    font-size: 100px;
+  .riot-art-star::before,
+  .riot-art-star::after {
+    max-width: 80px;
   }
   .riot-sticker {
     font-size: 34px;

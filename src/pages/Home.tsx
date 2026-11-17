@@ -157,7 +157,7 @@ export function Home() {
               </p>
             </div>
             <div className="riot-art-bottom">
-              <span>✳</span>
+              <span className="riot-art-star" aria-hidden="true" />
               <img src="/demo/signal-still.svg" alt="" />
             </div>
             <div className="riot-sticker one">
